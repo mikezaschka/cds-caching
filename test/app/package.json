@@ -1,0 +1,66 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^8",
+    "express": "^4",
+    "@sap-cloud-sdk/http-client": "~3.25.0",
+    "cds-caching": "*"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1",
+    "@cap-js/cds-types": "^0.9.0"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "file": "db.sqlite"
+        },
+        "model": [
+          "db",
+          "srv",
+          "srv/app-service",
+          "cds-caching",
+          "cds-caching/srv/statistics-service"
+        ]
+      },
+      "API_BUSINESS_PARTNER": {
+        "kind": "odata-v2",
+        "model": "test/app/srv/external/API_BUSINESS_PARTNER",
+        "credentials": {
+          "url": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_BUSINESS_PARTNER/",
+          "headers": {
+            "APIKey": "FILL IN YOUR API KEY"
+          }
+        }
+      },
+      "caching": {
+        "impl": "cds-caching",
+        "namespace": "myCache"
+      },
+      "caching-redis": {
+        "impl": "cds-caching",
+        "namespace": "redisCache",
+        "store": "redis",
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 10000,
+          "maxLatencies": 1000
+        },
+        "credentials": {
+          "host": "localhost",
+          "port": 6379
+        }
+      }
+    }
+  }
+}

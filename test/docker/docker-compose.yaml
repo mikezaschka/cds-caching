@@ -1,0 +1,7 @@
+services:
+  redis:
+    image: redis:latest
+    environment:
+      REDIS_HOST: redis
+    ports:
+      - 6379:6379

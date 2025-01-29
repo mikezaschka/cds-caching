@@ -1,0 +1,58 @@
+{
+  "name": "cds-caching",
+  "version": "1.0.0",
+  "description": "A caching plugin for SAP CAP applications supporting Redis",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikezaschka/cds-caching.git"
+  },
+  "keywords": [
+    "sap",
+    "cap",
+    "cds",
+    "caching",
+    "redis",
+    "keyv"
+  ],
+  "author": "Mike Zaschka <opensource@mikezaschka.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikezaschka/cds-caching/issues"
+  },
+  "homepage": "https://github.com/mikezaschka/cds-caching#readme",
+  "main": "cds-plugin.js",
+  "files": [
+    "srv/**",
+    "index.cds"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "prepare": "husky install"
+  },
+  "peerDependencies": {
+    "@sap/cds": ">=8"
+  },
+  "workspaces": [
+    ".",
+    "test/**"
+  ],
+  "dependencies": {
+    "@keyv/compress-gzip": "^2.0.2",
+    "@keyv/compress-lz4": "^1.0.0",
+    "@keyv/redis": "^4.2.0",
+    "keyv": "^5.2.3"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "chai-as-promised": "^7.1.2",
+    "chai-subset": "^1.6.0",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

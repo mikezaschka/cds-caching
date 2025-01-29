@@ -1,0 +1,13 @@
+test
+node_modules
+.git
+.gitignore
+.eslintrc.js
+.husky
+.jest
+.npmignore
+.npmrc
+.prettierrc
+.prettierignore
+.vscode
+

@@ -1,0 +1,36 @@
+{
+    "requires": {
+        "API_BUSINESS_PARTNER": {
+            "kind": "odata-v2",
+            "model": "test/app/srv/external/API_BUSINESS_PARTNER",
+            "credentials": {
+                "url": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_BUSINESS_PARTNER/",
+                "headers": {
+                    "APIKey": "FILL IN YOUR API KEY"
+                }
+            }
+        },
+        "caching": {
+            "impl": "cds-caching",
+            "namespace": "myCache"
+        },
+        "caching-redis": {
+            "impl": "cds-caching",
+            "namespace": "myCache",
+            "store": "redis",
+            "credentials": {
+                "host": "localhost",
+                "port": 6379
+            }
+        },
+        "caching-bp": {
+            "impl": "cds-caching",
+            "namespace": "bpCache",
+            "store": "redis",
+            "credentials": {
+                "host": "localhost",
+                "port": 6379
+            }
+        }
+    }
+}

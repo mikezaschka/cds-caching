@@ -16,7 +16,7 @@ By reducing database requests and accelerating response times, caching is ideal 
 * **Tag Support** – Use dynamic tags for flexible cache invalidation options.
 * **Pluggable Storage Options** – Choose between in-memory caching or Redis.
 * **Compression** – Compress cached data to save memory.
-* **Integrated Statistics** – Integrated statistics on cache hits, etc.
+* **Integrated Statistics (WIP)** – Integrated statistics on cache hits, etc.
 ### Installation
 
 Installing and using cds-caching is straightforward since it’s a CAP plugin. Simply run:
@@ -59,10 +59,6 @@ For more control, you can specify additional options. Some of those will be expl
         "namespace": "my::app::caching",
         "store": "in-memory", // "in-memory" or "redis"
         "compression": "lz4", // "lz4" or "gzip"
-        "statistics": {
-          "enabled": true,
-          "persistenceInterval": 5000 // interval to save in db
-        },
         "credentials": { // if store is redis
           "host": "localhost",
           "port": 6379,
@@ -272,7 +268,7 @@ Some other examples :
 
 ```javascript
 // Read-through for a CQN query
-const queryResult = await cache.run(SELECT.from("Foo"), db, { ttl: 360 })
+const queryResult = await cache.run(SELECT.from("Foo"), db, { ttl: 3600 })
 
 // Read-through for a custom REST request
 const restService = await cds.connect.to({
@@ -293,7 +289,7 @@ The **read-through approach** can also be applied to **non-CAP-specific** operat
 const expensiveFunction = async (param) => { /* Do something complex */ }
 
 // Wrap the function with caching
-const cachedExpensiveFunction = await cache.wrap("key", expensiveFunction, { ttl: 360 }) 
+const cachedExpensiveFunction = await cache.wrap("key", expensiveFunction, { ttl: 3600 }) 
 
 // First call executes the function
 result = await cachedExpensiveFunction("someParam"); // No cache hit

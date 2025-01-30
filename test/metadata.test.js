@@ -18,9 +18,9 @@ describe('CachingService Metadata', () => {
             await cache.set('key', "value", { tags: ['tag1', 'tag2'] });
 
             // Verify tags are stored
-            const tags = await cache.getTags('key');
+            const tags = await cache.tags('key');
 
-            
+
             expect(tags).to.have.members(['tag1', 'tag2']);
         })
 
@@ -54,7 +54,7 @@ describe('CachingService Metadata', () => {
             await cache.set('key', 'value');
             const afterTime = Date.now();
 
-            const metadata = await cache.getMetadata('key');
+            const metadata = await cache.metadata('key');
             expect(metadata.timestamp).to.be.at.least(beforeTime);
             expect(metadata.timestamp).to.be.at.most(afterTime);
         })

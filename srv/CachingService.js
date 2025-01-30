@@ -314,7 +314,7 @@ class CachingService extends cds.Service {
     }
 
     // Metadata
-    async getMetadata(key) {
+    async metadata(key) {
         const wrappedValue = await this.send('GET', { key: this.createKey(key) });
         if (!wrappedValue) return null;
 
@@ -322,7 +322,7 @@ class CachingService extends cds.Service {
         return metadata;
     }
 
-    async getTags(key) {
+    async tags(key) {
         const wrappedValue = await this.send('GET', { key: this.createKey(key) });
         return wrappedValue?.tags || [];
     }

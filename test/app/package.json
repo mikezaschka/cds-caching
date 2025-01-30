@@ -24,14 +24,7 @@
         "kind": "sqlite",
         "credentials": {
           "file": "db.sqlite"
-        },
-        "model": [
-          "db",
-          "srv",
-          "srv/app-service",
-          "cds-caching",
-          "cds-caching/srv/statistics-service"
-        ]
+        }
       },
       "API_BUSINESS_PARTNER": {
         "kind": "odata-v2",

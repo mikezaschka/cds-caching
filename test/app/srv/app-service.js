@@ -13,6 +13,9 @@ class AppService extends cds.ApplicationService {
         this.on('getBoundCachedValue', async (req) => {
             return "cached value";
         });
+        this.on('manualCachedValue', async (req) => {
+            return "cached value";
+        });
         return super.init()
     }
 }

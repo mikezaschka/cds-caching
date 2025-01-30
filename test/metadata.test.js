@@ -19,6 +19,8 @@ describe('CachingService Metadata', () => {
 
             // Verify tags are stored
             const tags = await cache.getTags('key');
+
+            
             expect(tags).to.have.members(['tag1', 'tag2']);
         })
 
@@ -27,7 +29,7 @@ describe('CachingService Metadata', () => {
             await cache.set('key2', "value2", { tags: ['group1'] });
 
             // Invalidate by tag
-            await cache.invalidateByTag('group1');
+            await cache.deleteByTag('group1');
 
             // Both should be invalidated
             expect(await cache.has('key1')).to.be.false;
@@ -38,7 +40,7 @@ describe('CachingService Metadata', () => {
             await cache.set('key1', 'value1', { tags: ['group1'] });
             await cache.set('key2', 'value2'); // No tags
 
-            await cache.invalidateByTag('group1');
+            await cache.deleteByTag('group1');
 
             // Only tagged item should be invalidated
             expect(await cache.has('key1')).to.be.false;

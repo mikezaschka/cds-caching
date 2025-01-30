@@ -85,19 +85,31 @@ describe('CachingService', () => {
 
         it('should cache a request that has been manually cached for a function', async () => {
             // Cache the request
+            const cache = await cds.connect.to('caching'); 
             const cachedData = new Promise(async (resolve, reject) => {
                 AppService.prepend(function () {
                     this.on('manualCachedValue', async (req, next) => {
-                        const data = await cache.run(req, next);
+                        const data = await cache.run(req, next, { key: { template: "my:{hash}" }});
                         cacheKey = req.cacheKey;
                         req.reply(data);
                     })
                     this.after('manualCachedValue', async (event, req) => {
+                        console.log(req.cacheKey);
                         const cacheData = await cache.get(req.cacheKey);
                         resolve(cacheData)
                     })
                 })
             })
+
+            // const req = new cds.Request({
+            //     locale: "en",
+            //     tenant: "t0",
+            //     user: cds.User.Privileged,
+            //     event: 'manualCachedValue',
+            //     params: { param1: 'test' }
+            // })
+            // const data = await AppService.send(req)
+            // console.log(data);
 
             const { headers, status, data } = await GET`/odata/v4/app/manualCachedValue(param1='test')`
             expect(data.value).to.deep.equal(await cachedData);
@@ -118,8 +130,7 @@ describe('CachingService', () => {
             // IMPORTANT: Have to connect to the same instance as the cache
             const cache = await cds.connect.to('caching'); 
             const { data, headers } = await GET`/odata/v4/app/Foo(1)/getBoundCachedValue(param1='test')`
-            console.log(data);
-
+            
             const cacheData = await cache.get(headers['x-sap-cap-cache-key']);
             //console.log(headers['x-sap-cap-cache-key']);
             

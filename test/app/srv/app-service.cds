@@ -8,11 +8,7 @@ service AppService {
         actions {
             @cache: {
                 service  : 'caching',
-                ttl      : 0,
-                tags: [
-                    { value: 'foo', field: 'ID', prefix: 'foo-', suffix: '-{tenant}-{user}-{locale}' },
-                    { field: 'param1', prefix: 'param1-', suffix: '-{tenant}-{user}-{locale}' }
-                ]
+                ttl      : 0
             }
             function getBoundCachedValue(param1 : String) returns String;
         };
@@ -27,8 +23,7 @@ service AppService {
 
     @cache: {
         service  : 'caching-bp',
-        ttl      : 0,
-        tags: [{ value: 'bp', field: 'BusinessPartner', separator: '|' }]
+        ttl      : 0
     }
     @readonly
     entity BusinessPartners as projection on API_BUSINESS_PARTNER.A_BusinessPartner;

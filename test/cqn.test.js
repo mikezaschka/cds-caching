@@ -67,7 +67,13 @@ describe('CachingService', () => {
 
         it("should not cache a query if it's not a SELECT query", async () => {
             const query = INSERT.into(Foo).entries([{ id: 1 }])
-            expect(() => cache.createKey(query)).to.throw('Only SELECT queries are supported by the cache')
+            expect(cache.createKey(query)).to.be.undefined  
+        })
+
+        it("should execute an UPDATE query but not cache it", async () => {
+            const query = UPDATE(Foo).set({ ID: 1 }).where({ ID: 1 })
+            await cache.run(query, cds)
+            expect(await cache.get(query)).to.be.undefined
         })
 
         it("should cache a query run against an ApplicationService", async () => {

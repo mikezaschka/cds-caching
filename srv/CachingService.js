@@ -26,7 +26,11 @@ class CachingService extends cds.Service {
 
         let cacheOptions = {
             namespace: this.options.namespace || this.name,
-            ...(this.options.store === "redis" ? { store: new KeyvRedis(this.options.credentials) } : {}),
+            ...(this.options.store === "redis" ? { store: new KeyvRedis({
+                ...this.options.credentials,
+                // Redis, Hyperscaler Option on BTP provides a URI
+                ...(this.options.credentials.uri ? { url: this.options.credentials.uri } : {}),
+            }) } : {}),
             compression: this.options.compression === "lz4" ? new KeyvLz4() : this.options.compression === "gzip" ? new KeyvGzip() : undefined
         }
 
@@ -48,14 +52,21 @@ class CachingService extends cds.Service {
             this.LOG._error && this.LOG.error('Cache error', err);
         });
 
+
         this.on('SET', async (event) => {
             this.LOG._debug && this.LOG.debug(`SET ${event.data.key}`);
+            if (typeof event.data.value === "object") {
+                event.data.value = JSON.stringify(event.data.value);
+            }
             await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0) * 1000)
         });
 
         this.on('GET', async (event) => {
             const value = await this.cache.get(event.data.key);
             this.LOG._debug && this.LOG.debug(`GET ${event.data.key}`);
+            if (typeof value === "string") {
+                return JSON.parse(value);
+            }
             return value;
         });
 
@@ -200,6 +211,10 @@ class CachingService extends cds.Service {
                     const req = arg1;
                     const next = arguments[1];
 
+                    if (req.query?.UPDATE || req.query?.INSERT || req.query?.DELETE) {
+                        return next();
+                    }
+
                     req.cacheOptions = req.event ? this.extractFunctionCacheOptions(req, arguments[2]) : this.extractEntityCacheOptions(req, arguments[2]);
                     req.cacheKey = this.createKey(req, req.cacheOptions.key);
                     req.res?.setHeader('x-sap-cap-cache-key', req.cacheKey);
@@ -213,20 +228,26 @@ class CachingService extends cds.Service {
                 case "cds.ql":
                     const query = arg1;
                     const srv = arguments[1];
-                    let options = {
-                        ttl: 0,
-                        tags: [],
-                        key: { template: '{hash}' },
-                        ...(arguments[2] || {}),
-                    };
-                    query.cacheKey = this.createKey(query, options.key);
-                    if (await this.has(query.cacheKey)) {
-                        return this.get(query.cacheKey);
+
+                    if (query.SELECT) {
+                        
+                        let options = {
+                            ttl: 0,
+                            tags: [],
+                            key: { template: '{hash}' },
+                            ...(arguments[2] || {}),
+                        };
+                        query.cacheKey = this.createKey(query, options.key);
+                        if (await this.has(query.cacheKey)) {
+                            return this.get(query.cacheKey);
+                        }
+                        const data = await srv.run(query);
+                        options.tags = this.resolveTags(options.tags, data, query.params);
+                        await this.set(query.cacheKey, data, options);
+                        return data;
+                    } else {
+                        return srv.run(query);
                     }
-                    const data = await srv.run(query);
-                    options.tags = this.resolveTags(options.tags, data, query.params);
-                    await this.set(query.cacheKey, data, options);
-                    return data;
 
             }
         }
@@ -284,7 +305,7 @@ class CachingService extends cds.Service {
     }
 
 
-    async invalidateByTag(tag) {
+    async deleteByTag(tag) {
         for await (const [key, wrappedValue] of this.iterator()) {
             if (wrappedValue?.tags?.includes(tag)) {
                 await this.delete(key);
@@ -309,7 +330,11 @@ class CachingService extends cds.Service {
     // Iterators
     async *iterator() {
         for await (const [key, value] of this.cache.iterator()) {
-            yield [key, value];
+            if (typeof value === "string") {    
+                yield [key, JSON.parse(value)];
+            } else {
+                yield [key, value];
+            }
         }
     }
 
@@ -438,7 +463,7 @@ class CachingService extends cds.Service {
                     if (keyOrObject.SELECT) {
                         return this.createCacheKey((!options.value && !options.template) ? { template: '{hash}' } : options, { query: keyOrObject });
                     } else {
-                        throw new Error('Only SELECT queries are supported by the cache');
+                        return undefined;
                     }
                 default:
                     return this.createCacheKey((!options.value && !options.template) ? { template: '{hash}' } : options, { data: keyOrObject });

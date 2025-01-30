@@ -45,7 +45,7 @@
       },
       "caching": {
         "impl": "cds-caching",
-        "namespace": "myCache"
+        "namespace": "myCache"       
       },
       "caching-redis": {
         "impl": "cds-caching",

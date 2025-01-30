@@ -63,11 +63,8 @@ For more control, you can specify additional options:
         "impl": "cds-caching",
         "namespace": "my::app::caching",
         "options": {
-          "store": "memory",  // "memory" or "redis"
+          "store": "in-memory",  // "in-memory" or "redis"
           "compression": "lz4",  // "lz4", "gzip", or false
-          "ttl": 3600,  // default TTL in seconds
-          "maxSize": 1000,  // maximum number of items (memory store only)
-          "maxMemory": 104857600,  // maximum memory usage in bytes (memory store only)
           "redis": {
             "host": "localhost",
             "port": 6379,
@@ -148,173 +145,9 @@ await cache.set("key", "value")
 await cache.get("key")
 ```
 
+## TODO:
 
-## High level caching
-
-High level caching provides easy-to-use caching mechanisms through annotations and wrapper functions. This approach is recommended for most use cases as it requires minimal code changes and integrates seamlessly with CAP.
-
-### Using Annotations
-
-You can enable caching for your services using the `@cache` annotation:
-
-```cds
-@cache.ttl: 3600  // Cache for 1 hour
-@cache.tags: ['products']
-entity Products as projection on my.Products {
-    key ID: UUID;
-    name: String;
-    price: Decimal;
-}
-
-service CatalogService {
-    // Cache the entire entity
-    @cache.ttl: 3600
-    @cache.tags: ['catalog']
-    entity Products as projection on my.Products;
-
-    // Cache specific actions/functions
-    @cache.ttl: 1800
-    @cache.tags: ['calculations']
-    action calculateTotal(items: array of {
-        productId: UUID;
-        quantity: Integer;
-    }) returns Decimal;
-}
-```
-
-### Using the Cache Wrapper
-
-For more dynamic caching needs, you can use the cache wrapper:
-
-```javascript
-const cache = await cds.connect.to("caching")
-
-// Cache any async operation
-const result = await cache.wrap(
-    async () => {
-        // Your expensive operation here
-        return expensiveCalculation()
-    },
-    {
-        key: 'calculation-result',
-        ttl: 3600,
-        tags: ['calculations']
-    }
-)
-
-// Cache with dynamic keys
-const userProfile = await cache.wrap(
-    async () => fetchUserProfile(userId),
-    {
-        key: `user-profile-${userId}`,
-        ttl: 1800,
-        tags: [`user:${userId}`, 'profiles']
-    }
-)
-```
-
-### Cache Invalidation
-
-You can invalidate cache entries using tags:
-
-```javascript
-const cache = await cds.connect.to("caching")
-
-// Invalidate all products
-await cache.invalidateByTag('products')
-
-// Invalidate specific user's data
-await cache.invalidateByTag(`user:${userId}`)
-
-// Get cache metadata
-const metadata = await cache.getMeta('my-key')
-// Returns: { tags: ['tag1', 'tag2'], timestamp: 1234567890 }
-
-// Get just the tags
-const tags = await cache.getTags('my-key')
-// Returns: ['tag1', 'tag2']
-```
-
-### Request Caching
-
-Cache entire HTTP requests with customizable options:
-
-```javascript
-module.exports = async (srv) => {
-    srv.before('READ', 'Products', async (req) => {
-        const cache = await cds.connect.to("caching")
-        
-        await cache.cacheRequest(req, {
-            ttl: 3600,
-            tags: ['products'],
-            isolation: 'tenant'  // 'global' | 'tenant' | 'user'
-        })
-    })
-}
-```
-
-## Compression
-
-The caching service supports two compression algorithms:
-
-- **LZ4**: Fast compression/decompression, good for most use cases
-- **GZIP**: Better compression ratio but slower, good for text-heavy data
-
-Configure compression globally:
-
-```javascript
-{
-  "options": {
-    "compression": "lz4"
-  }
-}
-
-## Best Practices
-
-1. **Choose Appropriate TTL**
-   - Set shorter TTLs for frequently changing data
-   - Use longer TTLs for static content
-   - Consider business requirements when setting expiration times
-
-2. **Use Tags Effectively**
-   - Group related cache entries with common tags
-   - Use hierarchical tags (e.g., 'products:electronics')
-   - Include user/tenant IDs in tags when appropriate
-
-3. **Cache Invalidation**
-   - Implement cache invalidation strategies based on your data update patterns
-   - Use tags to invalidate related cache entries
-   - Consider implementing cache warming for critical data
-
-4. **Monitor Cache Performance**
-   - Track cache hit/miss ratios
-   - Monitor memory usage
-   - Set up alerts for cache-related issues
-
-## Configuration Options
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "namespace": "my::app::caching",
-        "options": {
-          "store": "memory",  // or "redis"
-          "compression": "lz4",  // or "gzip" or false
-          "ttl": 3600,  // default TTL in seconds
-          "redis": {
-            "host": "localhost",
-            "port": 6379,
-            "password": "optional"
-          }
-        }
-      }
-    }
-  }
-}
-```
+- [ ] Add more documentation and examples
 
 ## Contributing
 

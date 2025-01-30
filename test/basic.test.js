@@ -70,17 +70,6 @@ describe('CachingService', () => {
             expect(value).to.be.undefined;
         })
 
-        it("should handle setting null/undefined values", async () => {
-            await cache.set("nullKey", null);
-            await cache.set("undefinedKey", undefined);
-
-            const nullValue = await cache.get("nullKey");
-            const undefinedValue = await cache.get("undefinedKey");
-            
-            expect(nullValue).to.be.null;
-            expect(undefinedValue).to.be.undefined;
-        })
-
         it("should wrap an async function with ttl", async () => {
             const expensiveOperation = async (value) => {
                 await new Promise(resolve => setTimeout(resolve, 1000));

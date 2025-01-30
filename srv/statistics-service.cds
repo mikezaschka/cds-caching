@@ -1,6 +1,7 @@
 using {cds_caching as stats} from '../index.cds';
 
-@path: 'cache-stats'
+@path    : 'cache-stats'
+@requires: 'cache-admin'
 service StatisticsService {
     @readonly
     entity Statistics as projection on stats.Statistics;
@@ -29,8 +30,6 @@ service StatisticsService {
 
     // Action to get current statistics
     function getCurrentStats()       returns CurrentStats;
-
     // Action to manually trigger stats persistence
-    @(restrict: 'admin')
     action   persistStats()          returns Boolean;
 }

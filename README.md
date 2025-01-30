@@ -30,18 +30,18 @@ Next, add a caching service configuration to your package.json. You can even def
 ```json
 
 {
-	"cds": {
-		"requires": {
-			"caching": {
-				"impl": "cds-caching",
-				"namespace": "my::app::caching"
-			},
-			"bp-caching": {
-				"impl": "cds-caching",
-				"namespace": "my::app::bp-caching"
-			}
-		}
-	}
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "namespace": "my::app::caching"
+      },
+      "bp-caching": {
+        "impl": "cds-caching",
+        "namespace": "my::app::bp-caching"
+      }
+    }
+  }
 }
 
 ```
@@ -52,26 +52,25 @@ For more control, you can specify additional options. Some of those will be expl
 ```javascript
 
 {
-	"cds": {
-		"requires": {
-			"caching": {
-				"impl": "cds-caching",
-				"namespace": "my::app::caching",
-				"store": "in-memory", // "in-memory" or "redis"
-				"compression": "lz4", // "lz4" or "gzip"
-				"statistics": {
-					"enabled": true,
-					"persistenceInterval": 5000 // interval to save in db
-				},
-				"credentials": { // if store is redis
-					"host": "localhost",
-						"port": 6379,
-						"password": "optional",
-					}
-				}
-			}
-		}
-	}
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "namespace": "my::app::caching",
+        "store": "in-memory", // "in-memory" or "redis"
+        "compression": "lz4", // "lz4" or "gzip"
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 5000 // interval to save in db
+        },
+        "credentials": { // if store is redis
+          "host": "localhost",
+          "port": 6379,
+          "password": "optional",
+        }
+      }
+    }
+  }
 }
 
 ```
@@ -116,17 +115,17 @@ Here’s how you can listen for and react to cache events:
 
 // Log before the cache is cleared
 cache.before("CLEAR", () => {
-	console.log("Cache is about to be cleared")
+  console.log("Cache is about to be cleared")
 })
 
 // Log before storing data
 cache.before("SET", (event) => {
-	console.log(`Storing key: ${event.data.key} with value: ${event.data.value}`)
+  console.log(`Storing key: ${event.data.key} with value: ${event.data.value}`)
 })
 
 // Log after retrieving data
 cache.after("GET", (event) => {
-	console.log(`Retrieved key: ${event.data.key} with value: ${event.data.value}`)
+  console.log(`Retrieved key: ${event.data.key} with value: ${event.data.value}`)
 })
 
 
@@ -222,13 +221,13 @@ Caching requests is particularly useful when exposing **remote services** throug
 
 ```javascript
 this.on('READ', BusinessPartners, async (req, next) => {
-	const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-	let value = await cache.get(req)
-	if(!value) {
-		value = await bupa.run(req)
-		await cache.set(req, next, { ttl: 3600 })
-	}
-	return value;
+  const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
+  let value = await cache.get(req)
+  if(!value) {
+    value = await bupa.run(req)
+    await cache.set(req, next, { ttl: 3600 })
+  }
+  return value;
 })
 ```
 
@@ -272,16 +271,15 @@ With this approach, **all requests to the external service will be automatically
 Some other examples :
 
 ```javascript
-
 // Read-through for a CQN query
 const queryResult = await cache.run(SELECT.from("Foo"), db, { ttl: 360 })
 
 // Read-through for a custom REST request
 const restService = await cds.connect.to({
-	"kind": "rest",
-	"credentials": {
-		"url": "https://services.odata.org/V3/Northwind/Northwind.svc/"
-	}
+  "kind": "rest",
+  "credentials": {
+    "url": "https://services.odata.org/V3/Northwind/Northwind.svc/"
+  }
 });
 const restResult = await cache.send({ method: "GET", path: "Products" }, restService, { ttl: 3600 });
 ```

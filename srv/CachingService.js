@@ -29,7 +29,7 @@ class CachingService extends cds.Service {
             ...(this.options.store === "redis" ? { store: new KeyvRedis({
                 ...this.options.credentials,
                 // Redis, Hyperscaler Option on BTP provides a URI
-                ...(this.options.credentials.uri ? { url: this.options.credentials.uri } : {}),
+                ...(this.options.credentials?.uri ? { url: this.options.credentials?.uri } : {}),
             }) } : {}),
             compression: this.options.compression === "lz4" ? new KeyvLz4() : this.options.compression === "gzip" ? new KeyvGzip() : undefined
         }

@@ -25,7 +25,7 @@ describe('CachingService', () => {
         })
 
         it("should respect the ttl", async () => {
-            await cache.set("key", ["value", "value2"], { ttl: 1 });
+            await cache.set("key", ["value", "value2"], { ttl: 1000 });
 
             const value = await cache.get("key");
             expect(value).to.eql(["value", "value2"]);
@@ -75,7 +75,7 @@ describe('CachingService', () => {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return value;
             }
-            const cachedExpensiveOperation = cache.wrap("key", expensiveOperation, { ttl: 1 });
+            const cachedExpensiveOperation = cache.wrap("key", expensiveOperation, { ttl: 1000 });
             await cachedExpensiveOperation("value");
 
             await new Promise(resolve => setTimeout(resolve, 2000));

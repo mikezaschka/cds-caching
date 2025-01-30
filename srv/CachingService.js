@@ -58,7 +58,7 @@ class CachingService extends cds.Service {
             if (typeof event.data.value === "object") {
                 event.data.value = JSON.stringify(event.data.value);
             }
-            await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0) * 1000)
+            await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0))
         });
 
         this.on('GET', async (event) => {
@@ -151,7 +151,7 @@ class CachingService extends cds.Service {
             ...(arguments[2] || {}),
         }
 
-        if (typeof arg1 !== "object" || !service.send || typeof options !== "object") {
+        if (typeof arg1 !== "object" || !service.send || typeof options !== "object" || arg1.method !== "GET") {
             return super.send(...arguments);
         }
 

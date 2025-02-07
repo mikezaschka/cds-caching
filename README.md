@@ -93,6 +93,97 @@ For more control, you can specify additional options:
 }
 ```
 
+### Real-World Usage and Deployment
+
+
+#### Storage Options
+
+cds-caching provides two storage options:
+
+##### In-Memory Cache (for small-scale use)
+- Simple and fast, but not persistent
+- Not suitable for production since Node.js runtime memory is limited
+- Data is lost when the application restarts
+
+##### Redis Cache (recommended for production)
+- Persistent and supports distributed caching
+- Works across multiple app instances, making it ideal for scalable applications
+- Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)
+- Even trial accounts provide Redis access
+
+#### Development Setup
+
+##### Running Redis Locally via Docker
+For local development, Redis can be quickly set up using Docker. A simple docker-compose configuration provides a lightweight caching environment:
+
+1. Create a `docker-compose.yml` file:
+```yaml
+services:
+  redis:
+    image: redis:latest
+    container_name: local-redis
+    ports:
+      - "6379:6379"
+```
+
+2. Run Redis with: 
+```bash
+docker compose up -d
+```
+
+3. Modify the `package.json` configuration to connect to the local Redis instance:
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "namespace": "myCache",
+        "store": "redis",
+        "[development]": {
+          "credentials": {
+            "host": "localhost",
+            "port": 6379
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Now, caching will be handled by Redis instead of in-memory storage during development.
+
+#### Production Deployment on SAP BTP
+
+![Redis on SAP BTP](./docs/caching-btp.png)
+
+For production deployments on SAP BTP, Redis can be provisioned as a managed service through the Redis on SAP BTP hyperscaler option. An instance can be provisioned via trial or even as a Free Tier to explore the service. However, for production scenarios the size of the Redis instance should match your caching requirements.
+
+To bind Redis to your CAP application on SAP BTP, add the following configuration in `mta.yaml`. This will automatically create the service instance and bind your application to it. Since the credentials will automatically be fetched by CAP, make sure to maintain the service-tags to match the kind property of your cds-caching service(s) in the package.json:
+
+```yaml
+modules:
+  - name: cap-app-srv
+    # ... other module configuration ...
+    requires:
+      - name: redis-cache
+
+resources:
+  - name: redis-cache
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: redis-cache
+      service-plan: trial
+      service-tags:
+        # Must match the kind property in the package.json
+        - cds-caching
+```
+
+> 👉 **Tip**: There is a detailed [blog series on Redis in SAP BTP](https://community.sap.com/t5/technology-blogs-by-sap/redis-on-sap-btp-understanding-service-entitlements-and-metrics/ba-p/13738371) explaining how to set up Redis and connect via SSH for local/hybrid testing, as this is by default not possible.
+
+
+
 ### Usage Patterns
 
 The caching service provides a flexible API for caching data in CAP applications. Here are the key usage patterns:

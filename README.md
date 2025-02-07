@@ -615,7 +615,7 @@ The result of the function.
 
 --- 
 
-### `await cache.iterator()`
+### `await cache.iterator() : AsyncIterator<{ key: string, value: { value: any, tags: string[], timestamp: number } }>`
 
 Returns an iterator over all cache entries.
 
@@ -625,6 +625,36 @@ An iterator over all cache entries.
 
 ---
 
+### `await cache.tags(key: any) : string[]`
+
+Returns the tags for a given key.
+
+#### `key: any`
+
+The key to get the tags for. The key handling is the same as for the `createKey` method.
+
+#### Returns
+
+An array of tags. If the key does not exist, an empty array is returned.
+
+---   
+
+### `await cache.metadata(key: any) : { tags: string[], timestamp: number } | undefined`
+
+Returns the metadata for a given key.
+
+#### `key: any`
+
+The key to get the metadata for. The key handling is the same as for the `createKey` method.
+
+#### Returns
+
+An object containing the metadata for the given key or `undefined` if the key does not exist. The metadata object contains the following properties:
+
+- `tags`: An array of tags.
+- `timestamp`: The timestamp of the cache entry.  
+
+---
 
 ### Contributing
 

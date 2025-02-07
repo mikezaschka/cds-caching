@@ -523,6 +523,24 @@ class CachingService extends cds.Service {
         ].filter(Boolean).join('');
     }
 
+    /**
+     * Executes an async function and caches its result
+     * 
+     * @param {string} key - the key to cache
+     * @param {function} asyncFunction - the async function to execute
+     * @param {object} options - additional options
+     * @returns {Promise<any>} - the result
+     */
+    async exec(key, asyncFunction, options = {}) {
+        const cacheKey = this.createKey(key, options.key);
+        if (await this.has(cacheKey)) {
+            return this.get(cacheKey);
+        }
+        const response = await asyncFunction();
+        await this.set(cacheKey, response, options);
+        return response;
+    }
+
 }
 
 module.exports = CachingService;

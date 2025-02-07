@@ -82,6 +82,22 @@ describe('CachingService', () => {
             const value2 = await cache.get("key");
             expect(value2).to.be.undefined;
         })
+
+        it("should execute and cache an async function", async () => {
+            const expensiveOperation = async () => {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                return ["expensive", "result"];
+            }
+
+            // First call should execute the function
+            const result1 = await cache.exec("key", expensiveOperation);
+            expect(result1).to.eql(["expensive", "result"]);
+
+            // Second call should return cached result
+            const result2 = await cache.exec("key", expensiveOperation);
+            expect(result2).to.eql(["expensive", "result"]);
+            expect(result2).to.eql(await cache.get("key"));
+        })
     })
 
     describe('event handling', () => {

@@ -266,7 +266,49 @@ const result = await cache.exec("key", async () => {
 })
 ```
 
-#### 2. Tag-Based
+#### 2. Key-Based
+
+Key-based invalidation is a way to invalidate cache entries based on a specific key.
+
+```javascript
+await cache.delete("key")
+```
+
+Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.run, cache.send, cache.createKey) and for the annotations.
+ 
+```javascript
+// No key override given, string will just be used as keys
+await cache.set('key', 'value') // key: key 
+
+// No key override given, objects will be smartly hashed 
+await cache.set(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
+
+// Automatically build the key for retrieval/deletion
+cache.createKey(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
+
+// Override and use your own key based on a fixed value
+await cache.set(SELECT.from(Foo, 1), { key: { value: "foo:1" } })
+
+// Override and only for requests, use request context information
+await cache.run(req, remoteService, { key: { template: "mykey:{tenant}:{user}:{locale}:{hash}" } })
+
+// This requests will be cached for all users and for each locale 
+await cache.set(req, remoteService, { key: { template: "mykey:{user}:{locale}:{hash}" } })
+```
+
+Overriding keys support the following configuration options:
+- `value` – generates a static value
+- `prefix` – will add this piece at the beginning
+- `suffix` - will ad this piece at the end
+- `template` - will set a value filled with placeholders, available placeholders are (only relevant for cds.Requests):
+  - `{user}`: The current user
+  - `{tenant}`: The current tenant
+  - `{locale}`: The current locale
+  - `{hash}`: The hash of the request query/params/data/path/etc.
+
+With well-structured keys, invalidating cache entries becomes a lot easier. However, for more complex scenarios tags provide an even more effective solution, as tags can automatically be created based on the cached data.
+
+#### 3. Tag-Based
 
 Tags are a way to invalidate cache entries based on a specific tag. Tags need to be provided explicitly when storing a value in the cache and are supported for all cache methods (e.g. `set`, `run`, `send`, `wrap`, `exec`).
 Tags can be provided as an array of strings or as an array of objects with the following properties:
@@ -434,7 +476,8 @@ The following properties are accepted:
 | Property      | Description   | Example  |
 | ------------- | ------------- | ----------
 | ttl           | Time-to-live in milliseconds. | `1000`
-| tags          | Array of tags to associate with the value. Tags can be dynamic based on the given value (see chapter Cache Invalidation Strategies) | `[{template: 'user-{user}', value: '123'}]`
+| key           | Key override for the cache for full control over the key management (see chapter Cache Invalidation Strategies) | `{template: 'user-{user}', value: '123'}`
+| tags          | Array of tags to associate with the value. Tags can be dynamic based on the stored cache data (see chapter Cache Invalidation Strategies) | `[{template: 'user-{user}', value: '123'}]`
 
 ---
 

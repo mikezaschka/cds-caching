@@ -2,33 +2,50 @@
 
 ## Overview
 
-This plugin for the [SAP Cloud Application Programming Model (CAP)](https://cap.cloud.sap/docs/) provides a robust caching service for CAP applications, addressing common performance challenges in distributed systems.
+This plugin for the [SAP Cloud Application Programming Model (CAP)](https://cap.cloud.sap/docs/) provides a caching service to improve performance in CAP applications.
+While CAP in general performs well for most use cases, caching can help with:
+- Slow remote service calls
+- Complex calculations
+- Heavy queries
+- External API integration 
 
-By reducing database requests and accelerating response times, caching is ideal for handling expensive operations like complex queries/calculations or external API calls. However, it introduces another layer of complexity and should be used with caution.
+While caching can help with these, it also adds complexity and should be used judiciously.
+
+Please also read the introduction blog post in the SAP Community: [Boosting performance in SAP Cloud Application Programming Model (CAP) applications with cds-caching](https://community.sap.com/t5/technology-blogs-by-members/boosting-performance-in-sap-cloud-application-programming-model-cap/ba-p/14002015).
+
+### Caching vs. Replication
+
+It's important to understand the difference between **caching** and **data replication**:
+
+* **Caching** temporarily stores data to reduce latency and improve response times. It's ideal for read-heavy workloads but does not maintain data integrity or understand data semantics.
+
+* **Replication** creates full, persistent copies of remote data within your application to ensure availability and enable seamless data sharing across systems. It focuses on resilience rather than performance optimization.
+
+cds-caching is specifically designed for efficient caching, not data replication.
 
 ### Key Features
 
 * **Flexible Key-Value Store** – Store and retrieve data using simple key-based access.
-* **CachingService** – A cds.Service-based implementation with an intuitive API for seamless integration.
+* **CachingService** – A CALESI-compliant cds.Service implementation with an intuitive API for seamless integration.
 * **Event Handling** – Monitor and react to cache events, such as before/after storage and retrieval.
 * **CAP-specific Caching** – Effortlessly cache CQN queries or CAP cds.Requests using code or the @cache annotation.
 * **TTL Support** – Automatically manage data expiration with configurable time-to-live (TTL) settings.
 * **Tag Support** – Use dynamic tags for flexible cache invalidation options.
 * **Pluggable Storage Options** – Choose between in-memory caching or Redis.
-* **Compression** – Compress cached data to save memory.
-* **Integrated Statistics (WIP)** – Integrated statistics on cache hits, etc.
+* **Compression** – Compress cached data to save memory using LZ4 or GZIP.
+* **Integrated Statistics** – Monitor cache performance with hit rates, latencies, and more.
+
 ### Installation
 
-Installing and using cds-caching is straightforward since it’s a CAP plugin. Simply run:
+Installing and using cds-caching is straightforward since it's a CAP plugin. Simply run:
 
-```
+```bash
 npm install cds-caching
 ```
 
 Next, add a caching service configuration to your package.json. You can even define **multiple caching services**, which is recommended if you need to cache different types of data within your application.
 
-```json
-
+```javascript
 {
   "cds": {
     "requires": {
@@ -36,6 +53,7 @@ Next, add a caching service configuration to your package.json. You can even def
         "impl": "cds-caching",
         "namespace": "my::app::caching"
       },
+      // Optional: Define a specific caching service for Business Partner API
       "bp-caching": {
         "impl": "cds-caching",
         "namespace": "my::app::bp-caching"
@@ -43,14 +61,13 @@ Next, add a caching service configuration to your package.json. You can even def
     }
   }
 }
-
 ```
+
 ### Advanced Configuration
 
-For more control, you can specify additional options. Some of those will be explained later:
+For more control, you can specify additional options:
 
 ```javascript
-
 {
   "cds": {
     "requires": {
@@ -63,23 +80,31 @@ For more control, you can specify additional options. Some of those will be expl
           "host": "localhost",
           "port": 6379,
           "password": "optional",
+          "url": "redis://..." // Alternative: Redis connection URI
+        },
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 60000, // Optional: Interval for statistics persistence
+          "maxLatencies": 1000 // Optional: Maximum number of latencies to track
         }
       }
     }
   }
 }
-
 ```
-### Low level  usage
 
-The **cds-caching** plugin provides direct **key-value storage**, allowing fine-grained caching control. Its API follows a familiar pattern, making it easy to use if you have ever worked with other caching solutions and frameworks.
-Here’s how you can interact with the cache:
+### Usage Patterns
+
+The caching service provides a flexible API for caching data in CAP applications. Here are the key usage patterns:
+#### 1. Low-Level Key-Value API
+
+The most basic way to use cds-caching is through its key-value API:
 
 ```javascript
 // Connect to the caching service
 const cache = await cds.connect.to("caching")
 
-// Store a value
+// Store a value (can be any object)
 await cache.set("key", "value")
 
 // Retrieve the value
@@ -95,125 +120,35 @@ await cache.delete("key")
 await cache.clear()
 ```
 
-This **low-level API** is useful when you need direct access to cached data, such as storing configuration values, or precomputed results. While the core API is simple, **cds-caching** also provides **higher-level caching strategies** that are more integrated with CAP.  We will look at those in a minute. Before, let's focus on cache events.
-#### Cache Events
+#### 2. CQN Query Caching
 
-The caching service follows the same event-driven principles as cds.Service instances. This means you can hook into events **before** and **after** storing or retrieving data. This is useful for logging, debugging, or performing additional actions when cache operations occur.
-
-Each cache event (event.data.value) contains the following structure:
-* **value** – The cached data.
-* **tags** – Tags assigned to the cached entry.
-* **timestamp** – The timestamp when the cache entry was created. 
-
-Here’s how you can listen for and react to cache events:
+For more advanced CAP integration, cache CAP's CQN queries directly. By passing in the query, a dynamic key is generated based on the CQN structure of the query. Note, that passing in queries with dynamic parameters (e.g. `SELECT.from(Foo).where({id: 1})`) will result in a different key for each query execution.
 
 ```javascript
+// Create and execute a CQN query
+const query = SELECT.from(Foo)
+const result = await db.run(query)
 
-// Log before the cache is cleared
-cache.before("CLEAR", () => {
-  console.log("Cache is about to be cleared")
-})
+// Cache the result
+await cache.set(query, result)
 
-// Log before storing data
-cache.before("SET", (event) => {
-  console.log(`Storing key: ${event.data.key} with value: ${event.data.value}`)
-})
-
-// Log after retrieving data
-cache.after("GET", (event) => {
-  console.log(`Retrieved key: ${event.data.key} with value: ${event.data.value}`)
-})
-
-
+// Retrieve from cache using the same query
+const cachedResult = await cache.get(query)
 ```
-
-This approach allows you to monitor cache activity and, if needed, manipulate data before storage or retrieval.
-#### Invalidation via Time-To-Live (TTL)
-
-**cds-caching** supports automatic cache invalidation via **TTL (Time-To-Live)**. Cached values will expire after the specified TTL, preventing stale data from lingering in memory.
+Handling the cache manually via read-aside pattern is possible, but the caching service provides a more convenient way to cache and retrieve CQN queries. By using the `run` method, the caching service will transparently cache the result of the query and return the cached result if available for all further requests.
 
 ```javascript
-// Store a value with a ttl
-await cache.set("key", "value", { ttl: 6000 }) // 60 seconds
-
-// Retrieve the value in time
-await cache.get("key") // => value
-
-await new Promise((resolve) => setTimeout(resolve, 6100)) // wait 61 seonds
-
-// Now the value is not available anymore
-await cache.get("key") // => undefined
-```
-
-TTL-based invalidation is useful for **temporary data, rate-limiting mechanisms, and frequently updated information**. However, **cds-caching** also supports other invalidation strategies, which will be covered in the advanced section.
-#### Compression
-
-To optimize storage, **cds-caching** supports **data compression**. This reduces cache size and can improve performance, especially when caching large datasets. Compression is **applied only when storing data**, meaning applications interact with uncompressed values. Available compression methods include:
-* **lz4** – Faster compression and decompression, ideal for performance-critical applications.
-* **gzip** – Higher compression ratio, reducing storage footprint at the cost of slightly increased CPU usage.
- 
-Compression can be configured via package.json:
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "compression": "lz4"
-      }
-    }
-  }
-}
-```
-
-### Medium level usage
-
-One of the core principles of **cds-caching** is **seamless integration with CAP**, aligning with CAP’s design and query execution model. As a result, **cds-caching** provides **native support** for **CQN (Core Query Notation) queries** and **cds.Requests**.
-#### Caching CQN queries
-
-CQN queries are widely used in CAP for **database operations** and **remote service calls (e.g., OData requests)**. Since these queries often involve **repeated data retrieval**, caching them can **significantly reduce response times** and **offload system resources**.
-
-**cds-caching** treats **CQN queries as first-class objects**, allowing them to be passed directly into the caching API. Internally, it generates a unique key based on the CQN query structure, ensuring **consistent retrieval** and **cache integrity**.  
-
-**Example: Caching a CQN Query**
-
-```javascript
-
-// Create the CQN object
 const query = SELECT.from(Foo)
 
-// Execute to fetch the result
-const result = await cds.run(query) // => [{...}, {...}]
-
-// Store value in the cache
-await cache.set(query, result) 
-
-// Retrieve the value from the cache using the same CQN object
-const cachedResult = await cache.get(query) // => [{...}, {...}]
-
-// Create the key that is used internally
-const key = cache.createKey(query)
-
-// Delete the value from the cache
-await cache.delete(query)
-
+// Runs the query internally and caches the result
+const result = await cache.run(query, db)
 ```
 
-While **CQN queries** can be cached directly, **cds-caching** also supports **caching full** cds.Requests, including their **request context**.  
-#### Caching  cds.Requests
+This will transparently cache the result of the query and return the cached result if available for all further requests.
 
-Caching requests is particularly useful when exposing **remote services** through **local CAP services**. For example, if your CAP application proxies an **external API**, caching can significantly reduce redundant requests and improve response times.  
+#### 3. Request-Level Caching
 
-👉 **Use Case:** [Exposing Remote Services](https://cap.cloud.sap/docs/guides/using-services#expose-remote-services)
-
-**cds-caching** automatically includes contextual information in the cache key, making request caching **tenant- and user-aware**. The cache key incorporates:
-
-* req.tenant – Ensures data is scoped per tenant in multi-tenant environments.
-* req.user – Allows user-specific caching when necessary.
-* req.locale – Supports localized responses when caching multilingual content.
-
-**Example: Caching a cds.Request**
+Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale.
 
 ```javascript
 this.on('READ', BusinessPartners, async (req, next) => {
@@ -221,102 +156,437 @@ this.on('READ', BusinessPartners, async (req, next) => {
   let value = await cache.get(req)
   if(!value) {
     value = await bupa.run(req)
-    await cache.set(req, next, { ttl: 3600 })
+    await cache.set(req, value, { ttl: 3600 })
   }
-  return value;
+  return value
 })
 ```
 
-**When Not to Cache Full OData Services** 
-
-While caching individual **requests** can improve performance, **caching an entire OData service is generally not recommended**. Here’s why:
-
-1. **Data Inconsistency** – OData services expose **live business data**, which frequently changes. Caching responses without an **appropriate invalidation strategy** can lead to outdated or incorrect data being served.
-
-2. **Complex Query Variations** – OData allows **dynamic query parameters** ($filter, $expand, $orderby, etc.), making it difficult to cache efficiently without storing excessive variations.
-
-3. **Large Payloads** – Full OData responses can be **significantly large**, consuming cache memory inefficiently compared to caching targeted **CQN queries** or specific **request results**.
-
-👉 **Best Practice:** Instead of caching entire OData service responses, cache **specific queries or request results** where the data is frequently accessed and doesn’t change often.
-
-For example, focussing on remote services, **static master data**, or **computed results** is much safer and more efficient than blindly caching full OData responses.
-
-### Read-through CQN queries and cds.Requests
-
-While this API is useful, it follows the **read-aside cache pattern**, meaning **manual cache checks** are required before fetching and storing data. In scenarios where caching logic becomes repetitive, **higher-level caching strategies** can help streamline this process and thanks to the already available CAP API, those are also available in cds-caching.
-
-In **read-through caching**, queries and requests are executed **through the caching service itself**, reducing the need for manual cache handling. **cds-caching** extends CAP’s built-in service methods with two key functions:
-
-* run – Executes **CQN queries** or **requests** against a database or remote OData service.
-[CAP Documentation: srv.run(query)](https://cap.cloud.sap/docs/node.js/core-services#srv-run-query)
-
-* send – Sends **custom synchronous requests** (e.g., to REST APIs) with configurable paths and headers.
-[CAP Documentation: srv.send(request)](https://cap.cloud.sap/docs/node.js/core-services#srv-send-request)
-
-Using **read-through caching**, the previous read-aside pattern can be reduced to a **single line of code**:
+Alternatively use read-through caching via the `run` method to let the caching service handle the caching transparently:
 
 ```javascript
-this.on('READ', BusinessPartners, async (req, next) => {
-	const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-	return cache.run(req, bupa, { ttl: 3600 })
+const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
+const result = await cache.run(req, bupa)
+```
+
+This will transparently cache the result of the request and return the cached result if available for all further requests.
+
+#### 4. Declarative Caching with Annotations
+
+Use annotations to enable caching on service entities or OData functions. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale. 
+
+**Caching an entire entity should be used with caution, as it will cache all permutations of requests ($filter, $expand, $orderby, etc.) on the entity, which will lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.**
+
+```
+service MyService {
+  @cache: {     
+    ttl: 3600
+  }
+  entity BusinessPartners as projection on BusinessPartner {
+    // ... entity definition
+  }
+
+
+  @cache: {
+    ttl: 1800,
+    tags: [{
+      template: 'user-{user}'
+    }]
+  }
+  function getUserPreferences() returns array of Preferences;
+}
+```
+
+#### 5. Function Caching
+
+While not directly related to CAP functionality, the caching service provides two methods for read-through caching of JavaScript functions:
+
+```javascript
+// Using wrap() to create a cached version of a function
+const expensiveOperation = async (value) => {
+  // ... some expensive computation
+  return result
+}
+
+// Creates a cached version of the function
+const cachedOperation = cache.wrap("key", expensiveOperation, { 
+  ttl: 3600,
+  tags: ['computation']
+})
+
+// Each call checks cache first, only executes if cache miss
+const result = await cachedOperation("input")
+
+// Using exec() for immediate execution with caching
+const result = await cache.exec("key", async () => {
+  // ... some expensive computation
+  return result
+}, { 
+  ttl: 3600,
+  tags: ['computation']
 })
 ```
 
-With this approach, **all requests to the external service will be automatically executed and cached**, eliminating the need for manual cache handling.
+The key differences between `wrap()` and `exec()`:
+- `wrap()` returns a new function that includes caching logic
+- `exec()` immediately executes the function and caches the result
+- Use `wrap()` when you need to reuse the cached function multiple times
+- Use `exec()` for one-off executions with caching
 
-Some other examples :
+### Cache Invalidation Strategies
+
+The caching service provides different strategies to invalidate cached values.
+
+**IMPORTANT: You should not use cds-caching without a proper invalidation strategy.**
+
+#### 1. Time-Based (TTL)
+
+The most basic strategy is to use a time-to-live (TTL) for the cache. The caching service will automatically delete the value from the cache after the specified TTL has expired.
+The TTL can be specified for individually through all cache methods (e.g. `set`, `run`, `send`, `wrap`, `exec`).
 
 ```javascript
-// Read-through for a CQN query
-const queryResult = await cache.run(SELECT.from("Foo"), db, { ttl: 3600 })
+// Store with 60 seconds TTL
+await cache.set("key", "value", { ttl: 60000 })
 
-// Read-through for a custom REST request
-const restService = await cds.connect.to({
-  "kind": "rest",
-  "credentials": {
-    "url": "https://services.odata.org/V3/Northwind/Northwind.svc/"
+// Run with 30 seconds TTL
+const result = await cache.run(query, db, { ttl: 30000 })
+
+// Send with 10 seconds TTL
+const result = await cache.send(request, service, { ttl: 10000 })
+
+// Wrap with 10 seconds TTL
+const cachedOperation = cache.wrap("key", expensiveOperation, { ttl: 10000 })
+
+// Exec with 10 seconds TTL
+const result = await cache.exec("key", async () => {
+  // ... some expensive computation
+  return result
+}, { 
+  ttl: 10000
+})
+```
+
+#### 2. Tag-Based
+
+Tags are a way to invalidate cache entries based on a specific tag. Tags need to be provided explicitly when storing a value in the cache and are supported for all cache methods (e.g. `set`, `run`, `send`, `wrap`, `exec`).
+Tags can be provided as an array of strings or as an array of objects with the following properties:
+- `value`: The value to use for the tag.
+- `data`: A field from the value to use for the tag. This is working for objects and arrays of objects.
+- `prefix`: A prefix that will be added to the tag.
+- `suffix`: A suffix that will be added to the tag.
+- `template`: A template string that will be used to generate the tag (e.g. `{tenant}-{locale}-{user}-{hash}`). This is useful for dynamic tags based on cds.Requests. 
+Templates support the following properties:
+  - `{user}`: The current user
+  - `{tenant}`: The current tenant
+  - `{locale}`: The current locale
+  - `{hash}`: The hash of the current query
+
+
+
+```javascript
+
+// Store with tags
+await cache.set("key", "value", { 
+  tags: [{ value: "user-123" }] 
+})
+
+// Invalidate by tag
+await cache.deleteByTag('user-123')
+```
+This is really useful for invalidating cache entries based on a specific attribute or context.
+
+#### 3. Dynamic Tags
+
+Dynamic tags using data `data` property are a way to invalidate cache entries based on the data itself. The caching service will automatically generate a tag for the value and invalidate the cache entry when the value changes.
+
+```javascript
+
+const businessPartners = [
+  {
+    businessPartner: 1,
+    name: 'John Doe'
+  },
+  {
+    businessPartner: 2,
+    name: 'Jane Doe'
   }
-});
-const restResult = await cache.send({ method: "GET", path: "Products" }, restService, { ttl: 3600 });
+]
+
+// Store with dynamic tags
+await cache.set("key", businessPartners, { 
+  tags: [
+    { data: 'businessPartner', prefix: 'bp-' },
+    { value: "businessPartner" }
+  ]
+})
+
+// Introspect the tags
+const tags = await cache.tags("key") // => ["bp-1", "bp-2", "businessPartner"]
+
+// Invalidate by tag
+await cache.deleteByTag('bp-1')
+await cache.deleteByTag('bp-2')
 ```
 
-The **read-through strategy** makes caching **cleaner and more maintainable**, as it abstracts cache management entirely. However, **the first request is still slow** (since there’s no cached value yet), but all subsequent requests will be **served instantly from the cache**.
-#### Wrapping async complex code
-
-The **read-through approach** can also be applied to **non-CAP-specific** operations. **cds-caching** provides a wrap function that caches the result of **any asynchronous function**.
+This is really usefull for caching results with multiple rows where you can't predict the tags beforehand or when you want to invalidate cache entries based on the data itself. This is also possible for the `run` method.
 
 ```javascript
-const expensiveFunction = async (param) => { /* Do something complex */ }
-
-// Wrap the function with caching
-const cachedExpensiveFunction = await cache.wrap("key", expensiveFunction, { ttl: 3600 }) 
-
-// First call executes the function
-result = await cachedExpensiveFunction("someParam"); // No cache hit
-
-// Subsequent calls retrieve the result from cache
-result = await cachedExpensiveFunction("someParam"); // Cache hit 
+const result = await cache.run(query, db, { 
+  tags: [{ data: 'businessPartner', prefix: 'bp-' }]
+})
 ```
 
-This is particularly useful for **heavy computations**, ensuring they only need to be executed **once per TTL period**.
+This will transparently cache the result of the query and create a tag for each business partner in the result. If you use the same technique in other places and you want to invalidate the cache entries for a specific business partner, you can do this by simply invalidating the tag `bp-1`.
+
+### Cache Iteration
+
+The caching service provides an iterator interface to traverse all cache entries:
+
+```javascript
+const iterator = await cache.iterator()
+
+for await (const entry of iterator) {
+  console.log(entry)
+}
+```
+
+This will return an iterator over all cache entries. You can use this to traverse all cache entries and invalidate them based on a specific condition. You should only use this for small caches (e.g. by using multiple caching services with different namespaces).
+
+### OData Service Caching Considerations
+
+While caching individual requests can improve performance, **caching an entire OData service is generally not recommended**. Here's why:
+
+1. **Data Consistency**: OData services expose live business data that frequently changes. Caching responses without an appropriate invalidation strategy can lead to outdated or incorrect data being served.
+
+2. **Query Complexity**: OData allows dynamic query parameters ($filter, $expand, $orderby, etc.), making it difficult to cache efficiently without storing excessive variations.
+
+3. **Payload Size**: Full OData responses can be significantly large, consuming cache memory inefficiently compared to caching targeted CQN queries or specific request results.
+
+Instead of caching entire OData service responses, focus on:
+- Specific queries or request results
+- Static master data
+- Computed results
+- Remote service calls with stable data
+
+### Best Practices
+
+1. **Cache Selectively**: Not all data benefits from caching. Focus on:
+   - Frequently accessed, rarely changed data
+   - Computationally expensive operations
+   - Remote service calls with stable data
+
+2. **Use Appropriate TTLs**: Set TTLs based on data volatility:
+   - Short TTLs (seconds/minutes) for frequently changing data
+   - Longer TTLs (hours/days) for stable reference data
+
+3. **Implement Cache Tags**: Use tags for granular cache invalidation:
+   - Group related cache entries
+   - Enable targeted invalidation
+   - Use dynamic tags for user/tenant-specific caching
+
+4. **Monitor Cache Performance**: Regularly check cache statistics:
+   - Hit rates
+   - Memory usage
+   - Response times
+   - Error rates
+
+### Limitations and Considerations
+
+1. **Memory Usage**: Monitor cache size, especially with in-memory storage
+2. **Consistency**: Consider data freshness requirements when setting TTLs
+3. **Multi-Tenant**: Use appropriate namespacing and key strategies
+4. **Redis Setup**: Ensure proper configuration for production use
+
+## Full API
+
+### `cache.createKey(key: any)` : `string`
+
+Creates a key from a string or an object. This method is used internally when passing keys to the cache methods, so you don't need to call it directly other then to retrieve the dynamic generated key for a given object.
+
+#### `key: any`
+
+The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using MD5. cds.Requests are handled explicitly as the dynamic generated key includes the user, tenant and locale and query hash.
+
+#### Returns
+
+A string key.
+
+---
+
+### `await cache.set(key: any, value: any[, options: object])`
+
+Sets a value in the cache.
+
+#### `key: any`
+
+The key to store the value under. The key handling is the same as for the `≈` method.
+
+#### `value: any`
+
+The value to store in the cache. The value will be serialized to a string using `JSON.stringify` (unless the value is already a string).
+
+#### `options: object`
+
+Object literal containing cache options.
+
+The following properties are accepted:
+
+| Property      | Description   | Example  |
+| ------------- | ------------- | ----------
+| ttl           | Time-to-live in milliseconds. | `1000`
+| tags          | Array of tags to associate with the value. Tags can be dynamic based on the given value (see chapter Cache Invalidation Strategies) | `[{template: 'user-{user}', value: '123'}]`
+
+---
+
+### `await cache.get(key: any)`
+
+Gets a value from the cache.
+
+#### `key: any`
+
+The key to retrieve the value from. The key handling is the same as for the `createKey` method.
+
+#### Returns
+
+The deserialized value from the cache or `undefined` if the value does not exist.
+
+---
+
+### `await cache.has(key: any)`
+
+Checks if a value exists in the cache.
+
+#### `key: any`
+
+The key to check for existence. The key handling is the same as for the `createKey` method.
+
+#### Returns
+
+`true` if the value exists in the cache, `false` otherwise.
+
+---
+
+### `await cache.delete(key: any)`
+
+Deletes a value from the cache. 
+
+#### `key: any`
+
+The key to delete the value from. The key handling is the same as for the `createKey` method.
+
+--- 
+
+### `await cache.clear()`
+
+Clears the whole cache.
+
+---
+
+### `await cache.deleteByTag(tag: string)`
+
+Deletes all values from the cache that are associated with the given tag.
+
+#### `tag: string`
+
+The tag to delete the values from.
+
+--- 
+
+### `await cache.run(query: cds.CQN , service: cds.Service)`
+
+Runs a query against the provided service and caches the result for all further requests. This method is useful for read-through caching. (see Usage Patterns and [CAP docs](https://cap.cloud.sap/docs/node.js/core-services#srv-run-query) for more information)
+
+#### `object: cds.CQN`
+
+The CQN query to run.
+
+#### `service: cds.Service`
+
+The service to run the query on.
+
+#### Returns
+
+The result of the query, either from the cache or the service.
+
+---
+
+### `await cache.send(request: cds.Request, service: cds.Service)`
+
+Sends a request to a cds.Service and caches the result. In contrast to the `run` method, this method is useful for caching full cds.Requests.
+
+#### `request: cds.Request`
+
+The request to send.  
+
+#### `service: cds.Service  `
+
+The service to send the request to.
+
+#### Returns
+
+The result of the request, either from the cache or the service.
+
+---
+
+### `await cache.wrap(key: any, fn: async function, options: object)`
+
+Wraps a function in a cache.
+
+#### `key: any` 
+
+The key to store the cached function under. The key handling is the same as for the `createKey` method. 
+
+#### `fn: async function`
+
+The async function to wrap in a cache.
+
+#### `options: object`
+
+The options to use for the cache.
+
+#### Returns
+
+A cached version of the function. The cached function will check the cache first and only execute the function if the cache miss.
+
+---
+
+### `await cache.exec(key: any, fn: async function, options: object)`
+
+Executes a function and caches the result. This method is useful for one-off executions with caching.
+
+#### `key: any`
+
+The key to store the cached function under. The key handling is the same as for the `createKey` method. 
+
+#### `fn: async function`
+
+The async function to execute.
+
+#### `options: object`
+
+The options to use for the cache. 
+
+#### Returns
+
+The result of the function.
+
+--- 
+
+### `await cache.iterator()`
+
+Returns an iterator over all cache entries.
+
+#### Returns  
+
+An iterator over all cache entries.
+
+---
 
 
-## TODO:
+### Contributing
 
-- [ ] Add documentation for cache iteration
-- [ ] Add documentation for cache invalidation
-- [ ] Add documentation for cache annotations
-- [ ] Add documentation for cache key generation
-- [ ] Add documentation for cache tags
-- [ ] Add documentation for cache statistics
-- [ ] Add documentation for running locally with redis on docker
-- [ ] Add documentation for running with redis on BTP
+Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
 
+### License
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for detail
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.

@@ -237,11 +237,12 @@ const result = await cache.run(query, db)
 
 This will transparently cache the result of the query and return the cached result if available for all further requests.
 
-#### 3. Request-Level Caching
+#### 3. RemoteService Request-Level Caching
 
-Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale.
+Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls or even application services. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale.
 
 ```javascript
+// Cache the requests to an exposed external entity
 this.on('READ', BusinessPartners, async (req, next) => {
   const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
   let value = await cache.get(req)
@@ -256,17 +257,45 @@ this.on('READ', BusinessPartners, async (req, next) => {
 Alternatively use read-through caching via the `run` method to let the caching service handle the caching transparently:
 
 ```javascript
-const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-const result = await cache.run(req, bupa)
+this.on('READ', BusinessPartners, async (req, next) => {
+  const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
+  return await cache.run(req, bupa)
+})
+
 ```
 
 This will transparently cache the result of the request and return the cached result if available for all further requests.
 
-#### 4. Declarative Caching with Annotations
+### 4. ApplicationService Request-Level Caching
 
-Use annotations to enable caching on service entities or OData functions. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale. 
 
-**Caching an entire entity should be used with caution, as it will cache all permutations of requests ($filter, $expand, $orderby, etc.) on the entity, which will lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.**
+> Caching an entire entity should be used with caution, as it will cache all permutations of requests ($filter, $expand, $orderby, etc.) on the entity, which will lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.
+
+
+But not only external services can be cached, it's also possible to cache requests against an ApplicationService.
+Here, you should make use of the [`prepend`](https://cap.cloud.sap/docs/node.js/core-services#srv-prepend) function, to register the `on` handler before the default handler. Thus, it is possible to first check for the cache entries and only execute the default behavior if necessary.
+
+
+```javascript
+class MyService extends cds.ApplicationService {
+  async init() {
+
+    // Read-through caching for the full entity
+    this.prepend(() => {
+      const { MyEntity } = this.entities;
+      this.on('READ', MyEntity, async (req, next) => {
+        const cache = cds.connect.to("caching");
+        return cache.run(req, next);
+      });
+    });
+    return super.init()
+  }
+}
+```
+
+#### 5. ApplicationService Request-Level Caching with Annotations
+
+Alternatively to doing this via code, you can use annotations to enable caching on service entities or OData functions. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale. 
 
 ```
 service MyService {

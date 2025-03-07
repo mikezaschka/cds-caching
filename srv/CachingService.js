@@ -277,7 +277,7 @@ class CachingService extends cds.Service {
     async set(key, value, options = {}) {
         const wrappedValue = {
             value,
-            tags: options.tags || [],
+            tags: this.resolveTags(options.tags, value, options.params) || [],
             timestamp: Date.now()
         };
         await this.send('SET', {
@@ -346,85 +346,77 @@ class CachingService extends cds.Service {
      * @returns {string[]} Array of resolved tags
      */
     resolveTags(tagConfigs = [], data, params = {}) {
-        let resolvedTags = [];
+        // Handle empty/invalid configs
+        if (!tagConfigs?.length) return [];
 
-        // Handle no data/params case
-        if (!data && !params) {
-            // Only process static tags when no sources are present
-            return tagConfigs
-                .filter(config => config.value)
-                .map(config => config.value);
-        }
-
-        // Convert data to array if single object
-        const dataArray = data ? (Array.isArray(data) ? data : [data]) : [];
+        // Convert data to array if single object or string
+        const dataArray = !data ? [] :
+            Array.isArray(data) ? data :
+            typeof data === 'string' ? [data] : [data];
 
         // Process each tag configuration
-        tagConfigs.forEach(config => {
-            if (config.value) {
-                // Static tag
-                resolvedTags.push(config.value);
-            } else if (config.data) {
-                // Dynamic tags from data
-                dataArray.forEach(item => {
-                    if (typeof config.data === "string") {
-                        // Single data configuration
-                        const dataValue = item[config.data];
-                        if (dataValue) {
-                            const tag = [
-                                config.prefix,
-                                dataValue,
-                                config.suffix
-                            ].filter(Boolean).join('');
-                            resolvedTags.push(tag);
-                        }
-                    } else if (Array.isArray(config.data)) {
-                        // Multiple data configuration
-                        const dataValues = config.data
-                            .map(data => item[data])
-                            .filter(Boolean);
+        const resolvedTags = tagConfigs.flatMap(config => {
+            // Handle string tags
+            if (typeof config === 'string') {
+                return [config];
+            }
 
-                        if (dataValues.length > 0) {
-                            const combinedValue = dataValues.join(config.separator || ':');
-                            const tag = [
-                                config.prefix,
-                                combinedValue,
-                                config.suffix
-                            ].filter(Boolean).join('');
-                            resolvedTags.push(tag);
-                        }
-                    }
-                });
-            } else if (config.param) {
-                // Dynamic tags from params
-                if (typeof config.param === "string") {
-                    // Single param configuration
-                    const paramValue = params[config.param];
-                    if (paramValue) {
-                        const tag = [
-                            config.prefix,
-                            paramValue,
-                            config.suffix
-                        ].filter(Boolean).join('');
-                        resolvedTags.push(tag);
-                    }
-                } else if (Array.isArray(config.param)) {
-                    // Multiple params configuration
-                    const paramValues = config.param
-                        .map(param => params[param])
+            // Handle invalid/empty config objects
+            if (!config || typeof config !== 'object') {
+                return [];
+            }
+
+            // Handle static value tags
+            if (config.value) {
+                const tag = [
+                    config.prefix,
+                    config.value,
+                    config.suffix
+                ].filter(Boolean).join('');
+                return [tag];
+            }
+
+            // Handle data-based tags
+            if (config.data && dataArray.length) {
+                return dataArray.flatMap(item => {
+                    if (typeof item !== 'object') return [];
+
+                    const dataFields = Array.isArray(config.data) ? config.data : [config.data];
+                    const values = dataFields
+                        .map(field => item[field])
                         .filter(Boolean);
 
-                    if (paramValues.length > 0) {
-                        const combinedValue = paramValues.join(config.separator || ':');
-                        const tag = [
-                            config.prefix,
-                            combinedValue,
-                            config.suffix
-                        ].filter(Boolean).join('');
-                        resolvedTags.push(tag);
-                    }
-                }
+                    if (!values.length) return [];
+
+                    const value = values.join(config.separator || ':');
+                    const tag = [
+                        config.prefix,
+                        value,
+                        config.suffix
+                    ].filter(Boolean).join('');
+                    return [tag];
+                });
             }
+
+            // Handle param-based tags
+            if (config.param) {
+                const paramFields = Array.isArray(config.param) ? config.param : [config.param];
+                const values = paramFields
+                    .map(field => params[field])
+                    .filter(Boolean);
+
+                if (!values.length) return [];
+
+                const value = values.join(config.separator || ':');
+                const tag = [
+                    config.prefix,
+                    value,
+                    config.suffix
+                ].filter(Boolean).join('');
+                return [tag];
+            }
+
+            return [];
         });
 
         // Remove duplicates

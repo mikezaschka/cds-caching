@@ -17,7 +17,7 @@ service AppService {
 
     @cache: {
         service  : 'caching',
-        ttl      : 5
+        ttl      : 5000
     }
     entity CachedFoo        as projection on db.Foo;
 

@@ -26,12 +26,12 @@ cds-caching is specifically designed for efficient caching, not data replication
 ### Key Features
 
 * **Flexible Key-Value Store** – Store and retrieve data using simple key-based access.
-* **CachingService** – A CALESI-compliant cds.Service implementation with an intuitive API for seamless integration.
+* **CachingService** – A cds.Service implementation with an intuitive API for seamless integration into CAP.
 * **Event Handling** – Monitor and react to cache events, such as before/after storage and retrieval.
 * **CAP-specific Caching** – Effortlessly cache CQN queries or CAP cds.Requests using code or the @cache annotation.
 * **TTL Support** – Automatically manage data expiration with configurable time-to-live (TTL) settings.
 * **Tag Support** – Use dynamic tags for flexible cache invalidation options.
-* **Pluggable Storage Options** – Choose between in-memory caching or Redis.
+* **Pluggable Storage Options** – Choose between in-memory caching, SQLite or Redis.
 * **Compression** – Compress cached data to save memory using LZ4 or GZIP.
 * **Integrated Statistics** – Monitor cache performance with hit rates, latencies, and more.
 
@@ -74,13 +74,20 @@ For more control, you can specify additional options:
       "caching": {
         "impl": "cds-caching",
         "namespace": "my::app::caching",
-        "store": "in-memory", // "in-memory" or "redis"
+        "store": "in-memory", // "in-memory" or "sqlite" or "redis"
         "compression": "lz4", // "lz4" or "gzip"
-        "credentials": { // if store is redis
+        "credentials": { // if store is redis or sqlite
+
+          // Redis specific
           "host": "localhost",
           "port": 6379,
           "password": "optional",
           "url": "redis://..." // Alternative: Redis connection URI
+
+          // SQLite specific
+          "url": "sqlite://./cache.sqlite"
+          "table": "cache",
+          "busyTimeout": 10000
         },
         "statistics": {
           "enabled": true,
@@ -98,12 +105,19 @@ For more control, you can specify additional options:
 
 #### Storage Options
 
-cds-caching provides two storage options:
+cds-caching provides 3 storage options:
 
-##### In-Memory Cache (for small-scale use)
+##### In-Memory Cache (for development / small-scale uses)
 - Simple and fast, but not persistent
 - Not suitable for production since Node.js runtime memory is limited
 - Data is lost when the application restarts
+- Memory on SAP BTP Cloud Foundry is limited (up to 16 GB) and produces costs
+
+##### SQLite (for medium-size use uses)
+- Data is stored in local SQLite database
+- Data is persited next to SAP BTP application with disk-quota up to 10 GB
+- Cache will be removed after each deployment to SAP BTP
+- No distributed cache between application instances (horizontal scaling)
 
 ##### Redis Cache (recommended for production)
 - Persistent and supports distributed caching
@@ -111,7 +125,7 @@ cds-caching provides two storage options:
 - Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)
 - Even trial accounts provide Redis access
 
-#### Development Setup
+#### Redis Development Setup
 
 ##### Running Redis Locally via Docker
 For local development, Redis can be quickly set up using Docker. A simple docker-compose configuration provides a lightweight caching environment:

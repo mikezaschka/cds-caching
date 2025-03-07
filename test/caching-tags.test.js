@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const { expect } = require('@cap-js/cds-test');
 const CachingService = require('../srv/CachingService');
 
 describe('CachingService Tag Resolution', () => {

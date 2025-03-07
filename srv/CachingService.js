@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const { Keyv } = require('keyv');
 const { default: KeyvRedis } = require('@keyv/redis');
+const { default: KeyvSqlite } = require('@keyv/sqlite');
 const { default: KeyvLz4 } = require('@keyv/compress-lz4');
 const { default: KeyvGzip } = require('@keyv/compress-gzip');
 const crypto = require('crypto');
@@ -20,30 +21,45 @@ class CachingService extends cds.Service {
         this.options = this.options || {
             store: null,
             compression: null,
-            credentials: {
-            }
+            credentials: { }
         };
+
+        let store;
+
+        switch (this.options.store) {
+            case "sqlite":
+                store = new KeyvSqlite({
+                    url: this.options.credentials?.url,
+                    table: this.options.credentials?.table || 'cache',
+                    busyTimeout: this.options.credentials?.busyTimeout || 10000
+                });
+                break;
+            case "redis":
+                store = new KeyvRedis({
+                    ...this.options.credentials,
+                    // Redis, Hyperscaler Option on BTP provides a URI
+                    ...(this.options.credentials?.uri ? { url: this.options.credentials?.uri } : {}),
+                });
+
+                cds.once("shutdown", async () => {
+                    if (this.cache.store?.disconnect) {
+                        await this.cache.store.disconnect().catch((err) => {
+                            this.LOG._error && this.LOG.error('Error disconnecting from Redis', err);
+                        });
+                    }
+                });
+                break;
+            default:
+                store = new Map();
+                break;
+        }
 
         let cacheOptions = {
             namespace: this.options.namespace || this.name,
-            ...(this.options.store === "redis" ? { store: new KeyvRedis({
-                ...this.options.credentials,
-                // Redis, Hyperscaler Option on BTP provides a URI
-                ...(this.options.credentials?.uri ? { url: this.options.credentials?.uri } : {}),
-            }) } : {}),
+            store: store,
             compression: this.options.compression === "lz4" ? new KeyvLz4() : this.options.compression === "gzip" ? new KeyvGzip() : undefined
         }
 
-        if (this.options.store === "redis") {
-
-            cds.once("shutdown", async () => {
-                if (this.cache.store?.disconnect) {
-                    await this.cache.store.disconnect().catch((err) => {
-                        this.LOG._error && this.LOG.error('Error disconnecting from Redis', err);
-                    });
-                }
-            });
-        }
 
         this.cache = new Keyv(cacheOptions);
         this.LOG._info && this.LOG.info(`Caching service initialized with namespace ${cacheOptions.namespace}`);
@@ -218,8 +234,9 @@ class CachingService extends cds.Service {
                     req.cacheOptions = req.event ? this.extractFunctionCacheOptions(req, arguments[2]) : this.extractEntityCacheOptions(req, arguments[2]);
                     req.cacheKey = this.createKey(req, req.cacheOptions.key);
                     req.res?.setHeader('x-sap-cap-cache-key', req.cacheKey);
-                    if (await this.has(req.cacheKey)) {
-                        return this.get(req.cacheKey);
+                    const cachedValue = await this.get(req.cacheKey);
+                    if (cachedValue) {
+                        return cachedValue;
                     }
                     const response = await next();
                     req.cacheOptions.tags = this.resolveTags(req.cacheOptions.tags, response, req.params);
@@ -230,7 +247,7 @@ class CachingService extends cds.Service {
                     const srv = arguments[1];
 
                     if (query.SELECT) {
-                        
+
                         let options = {
                             ttl: 0,
                             tags: [],
@@ -330,7 +347,7 @@ class CachingService extends cds.Service {
     // Iterators
     async *iterator() {
         for await (const [key, value] of this.cache.iterator()) {
-            if (typeof value === "string") {    
+            if (typeof value === "string") {
                 yield [key, JSON.parse(value)];
             } else {
                 yield [key, value];
@@ -352,7 +369,7 @@ class CachingService extends cds.Service {
         // Convert data to array if single object or string
         const dataArray = !data ? [] :
             Array.isArray(data) ? data :
-            typeof data === 'string' ? [data] : [data];
+                typeof data === 'string' ? [data] : [data];
 
         // Process each tag configuration
         const resolvedTags = tagConfigs.flatMap(config => {
@@ -443,13 +460,13 @@ class CachingService extends cds.Service {
                 case "Request":
                 case "NoaRequest":
 
-                    return this.createCacheKey((!options.value && !options.template) ? { template: '{tenant}:{user}:{locale}:{hash}' } : options, { 
-                        req: keyOrObject, 
-                        params: keyOrObject.params, 
-                        data: keyOrObject.data, 
-                        locale: keyOrObject.locale, 
-                        user: keyOrObject.user.id, 
-                        tenant: keyOrObject.tenant 
+                    return this.createCacheKey((!options.value && !options.template) ? { template: '{tenant}:{user}:{locale}:{hash}' } : options, {
+                        req: keyOrObject,
+                        params: keyOrObject.params,
+                        data: keyOrObject.data,
+                        locale: keyOrObject.locale,
+                        user: keyOrObject.user.id,
+                        tenant: keyOrObject.tenant
                     });
                 case "cds.ql":
                     if (keyOrObject.SELECT) {

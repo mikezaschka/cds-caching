@@ -38,7 +38,11 @@
       },
       "caching": {
         "impl": "cds-caching",
-        "namespace": "myCache"       
+        "namespace": "myCache",
+        "store": "sqlite",
+        "credentials": {
+          "url": "sqlite://./cache.sqlite"
+        }
       },
       "caching-redis": {
         "impl": "cds-caching",

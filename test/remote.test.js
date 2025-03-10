@@ -1,6 +1,5 @@
 const cds = require('@sap/cds');
 const { INSERT } = require('@sap/cds/lib/ql/cds-ql');
-const { should } = require('chai');
 const { scanCachingAnnotations } = require('./../srv/util');
 const { path } = require('@sap/cds/lib/compile/parse');
 

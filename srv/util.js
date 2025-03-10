@@ -24,7 +24,7 @@ const bindFunction = async (service, action, isBound = false) => {
             const cache = await cds.connect.to(action['@cache.service'] || "caching");
             const data = await cache.run(req, next, { 
                 ttl: action['@cache.ttl'], 
-                tags: extractCacheProperties(action, 'tags'),
+                tags: action['@cache.tags'], 
                 key: extractCacheProperties(action, 'key')
             });
             return data;
@@ -37,9 +37,11 @@ const bindEntity = async (service, entity) => {
         service.on('READ', entity.name, async (req, next) => {
             const cache = await cds.connect.to(entity['@cache.service'] || "caching");
 
+            console.log(entity);
+
             const data = await cache.run(req, next, {
                 ttl: entity['@cache.ttl'], 
-                tags: extractCacheProperties(entity, 'tags'),
+                tags: entity['@cache.tags'], 
                 key: extractCacheProperties(entity, 'key')
             });
             return data;

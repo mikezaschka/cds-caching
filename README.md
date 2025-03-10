@@ -460,10 +460,19 @@ Templates support the following properties:
 
 
 ```javascript
-
-// Store with tags
+// Store with static tag
 await cache.set("key", "value", { 
   tags: [{ value: "user-123" }] 
+})
+
+// Store with template tag (will generate a tag like "tenant-global-user-anonymous")
+await cache.set("key", "value", { 
+  tags: [{ template: "tenant-{tenant}-user-{user}" }] 
+})
+
+// Store with data-based tag
+await cache.set("key", { id: 123, name: "Product" }, { 
+  tags: [{ data: "id", prefix: "product-" }] 
 })
 
 // Invalidate by tag

@@ -100,6 +100,50 @@ describe('CachingService Tag Resolution', () => {
         });
     });
 
+    describe('Template-based Tags', () => {
+        const testParams = {
+            tenant: 'tenant123',
+            user: 'user456',
+            locale: 'en-US'
+        };
+
+        it('should resolve template tag with single placeholder', () => {
+            const tags = [{ template: 'tenant-{tenant}' }];
+            const result = cachingService.resolveTags(tags, null, testParams);
+            expect(result).to.deep.equal(['tenant-tenant123']);
+        });
+
+        it('should resolve template tag with multiple placeholders', () => {
+            const tags = [{ template: '{tenant}-{user}-{locale}' }];
+            const result = cachingService.resolveTags(tags, null, testParams);
+            expect(result).to.deep.equal(['tenant123-user456-en-US']);
+        });
+
+        it('should handle template with hash placeholder', () => {
+            const data = { id: 123, name: 'Test' };
+            const tags = [{ template: 'data-{hash}' }];
+            const result = cachingService.resolveTags(tags, data);
+            // We can't predict the exact hash, but we can check the format
+            expect(result[0]).to.match(/^data-[0-9a-f]{32}$/);
+        });
+
+        it('should handle template with prefix and suffix', () => {
+            const tags = [{ 
+                template: '{tenant}-{user}',
+                prefix: 'tag-',
+                suffix: '-v1'
+            }];
+            const result = cachingService.resolveTags(tags, null, testParams);
+            expect(result).to.deep.equal(['tag-tenant123-user456-v1']);
+        });
+
+        it('should use default values for missing placeholders', () => {
+            const tags = [{ template: '{tenant}-{user}-{locale}' }];
+            const result = cachingService.resolveTags(tags, null, {});
+            expect(result).to.deep.equal(['global-anonymous-en']);
+        });
+    });
+
     describe('Combined Scenarios', () => {
         const testData = { BusinessPartner: '12345', Name: 'John' };
         const testParams = { userId: 'user123', role: 'admin' };

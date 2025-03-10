@@ -21,7 +21,7 @@ class CachingService extends cds.Service {
         this.options = this.options || {
             store: null,
             compression: null,
-            credentials: { }
+            credentials: {}
         };
 
         let store;
@@ -74,6 +74,9 @@ class CachingService extends cds.Service {
             if (typeof event.data.value === "object") {
                 event.data.value = JSON.stringify(event.data.value);
             }
+
+            console.log(event.data);
+
             await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0))
         });
 
@@ -239,7 +242,7 @@ class CachingService extends cds.Service {
                         return cachedValue;
                     }
                     const response = await next();
-                    req.cacheOptions.tags = this.resolveTags(req.cacheOptions.tags, response, req.params);
+                    req.cacheOptions.tags = this.resolveTags(req.cacheOptions.tags, response, { ...req.params, user: req.user.id, tenant: req.tenant, locale: req.locale, hash: this.createKey(req, { template: '{hash}' }) });
                     await this.set(req.cacheKey, response, req.cacheOptions);
                     return response;
                 case "cds.ql":
@@ -259,7 +262,7 @@ class CachingService extends cds.Service {
                             return this.get(query.cacheKey);
                         }
                         const data = await srv.run(query);
-                        options.tags = this.resolveTags(options.tags, data, query.params);
+                        options.tags = this.resolveTags(options.tags, data, { ...query.params, hash: this.createKey(query, { template: '{hash}' }) });
                         await this.set(query.cacheKey, data, options);
                         return data;
                     } else {
@@ -390,6 +393,36 @@ class CachingService extends cds.Service {
                     config.value,
                     config.suffix
                 ].filter(Boolean).join('');
+                return [tag];
+            }
+
+            // Handle template-based tags
+            if (config.template) {
+                const createHash = (data) => crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
+
+                const hashParts = [
+                    ...(data ? [data] : []),
+                    ...(params ? [params] : [])
+                ];
+
+                const contextVars = {
+                    tenant: params.tenant || 'global',
+                    user: params.user || 'anonymous',
+                    locale: params.locale || 'en',
+                    hash: createHash(hashParts)
+                };
+
+                const value = config.template.replace(
+                    /\{(tenant|user|locale|hash)\}/g,
+                    (match, variable) => contextVars[variable]
+                );
+
+                const tag = [
+                    config.prefix,
+                    value,
+                    config.suffix
+                ].filter(Boolean).join('');
+
                 return [tag];
             }
 

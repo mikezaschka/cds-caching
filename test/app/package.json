@@ -41,7 +41,7 @@
         "namespace": "myCache",
         "store": "sqlite",
         "credentials": {
-          "url": "sqlite://./cache.sqlite"
+          "url": "file::memory:"
         }
       },
       "caching-redis": {

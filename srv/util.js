@@ -1,5 +1,20 @@
 const cds = require("@sap/cds")
 
+const extractCacheProperties = (entity, prefix) => {
+    const result = {};
+    for (const key of Object.keys(entity)) {
+        if (key.startsWith(`@cache.${prefix}.`)) {
+            const subKey = key.substring(`@cache.${prefix}.`.length);
+            result[subKey] = entity[key];
+        }
+    }
+    // If there are no subproperties but the main property exists, use it directly
+    if (Object.keys(result).length === 0 && entity[`@cache.${prefix}`]) {
+        return entity[`@cache.${prefix}`];
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
+};
+
 const bindFunction = async (service, action, isBound = false) => {
     const cache = await cds.connect.to(action['@cache.service'] || "caching");
     cache.addCachableFunction(action.name.split('.').pop(), action, isBound);
@@ -9,8 +24,8 @@ const bindFunction = async (service, action, isBound = false) => {
             const cache = await cds.connect.to(action['@cache.service'] || "caching");
             const data = await cache.run(req, next, { 
                 ttl: action['@cache.ttl'], 
-                tags: action['@cache.tags'],
-                key: action['@cache.key']
+                tags: extractCacheProperties(action, 'tags'),
+                key: extractCacheProperties(action, 'key')
             });
             return data;
         })
@@ -21,10 +36,11 @@ const bindEntity = async (service, entity) => {
     service.prepend(function () {
         service.on('READ', entity.name, async (req, next) => {
             const cache = await cds.connect.to(entity['@cache.service'] || "caching");
+
             const data = await cache.run(req, next, {
                 ttl: entity['@cache.ttl'], 
-                tags: entity['@cache.tags'],
-                key: entity['@cache.key']
+                tags: extractCacheProperties(entity, 'tags'),
+                key: extractCacheProperties(entity, 'key')
             });
             return data;
         })

@@ -61,6 +61,11 @@ describe('CachingService', () => {
             expect(headers).to.have.property('x-sap-cap-cache-key');
         })
 
+        it("should respect the cache key template", async () => {
+            const { headers } = await GET`/odata/v4/app/CachedFoo`
+            expect(headers['x-sap-cap-cache-key']).to.equal('0718b9c855de1ed89d376ebd83b24fda_anonymous');
+        })
+
         it("should cache a request for an annotated entity of an ApplicationService", async () => {
             // IMPORTANT: Have to connect to the same instance as the cache
             const cache = await cds.connect.to('caching'); 

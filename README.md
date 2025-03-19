@@ -82,7 +82,7 @@ For more control, you can specify additional options:
           "host": "localhost",
           "port": 6379,
           "password": "optional",
-          "url": "redis://..." // Alternative: Redis connection URI
+          "uri": "redis://..." // Alternative: Redis connection URI
 
           // SQLite specific
           "url": "sqlite://./cache.sqlite"

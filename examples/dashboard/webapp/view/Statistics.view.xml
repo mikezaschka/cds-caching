@@ -1,0 +1,431 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.Statistics"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.f"
+	xmlns:card="sap.f.cards"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:ui="sap.ui.table"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:semantic="sap.m.semantic"
+	xmlns:unified="sap.ui.unified"
+	xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" app:routePattern="statistics" core:require="{
+		formatter: 'cds/plugin/caching/dashboard/model/formatter'
+	}">
+
+	<Page visible="{= ${app>/selectedCache} !== null }" id="statisticsPage" title="{i18n>statisticsTitle}" showNavButton="false" showHeader="false">
+
+		<content>
+
+			<Toolbar class="sapUiTinyMarginBottom" design="Transparent" style="Clear">
+				<Label text="Period:" class="sapUiTinyMarginEnd" />
+				<Select id="periodFilter" selectedKey="{ui>/periodFilter}" change=".onPeriodFilterChange" class="sapUiTinyMarginEnd">
+					<core:Item key="hourly" text="Hourly" />
+					<core:Item key="daily" text="Daily" />
+					<core:Item key="monthly" text="Monthly" />
+				</Select>
+
+				<Label text="From:" class="sapUiTinyMarginEnd" />
+				<DateTimePicker width="200px" id="fromDate" value="{ui>/fromDate}" change=".onDateFilterChange" class="sapUiTinyMarginEnd" />
+
+				<Label text="To:" class="sapUiTinyMarginEnd" />
+				<DateTimePicker width="200px" id="toDate" value="{ui>/toDate}" change=".onDateFilterChange" class="sapUiTinyMarginEnd" />
+
+				<Button icon="sap-icon://refresh" text="Refresh" press=".onRefresh" type="Transparent" class="sapUiTinyMarginEnd" />
+
+
+			</Toolbar>
+
+			<f:GridContainer allowDenseFill="true" snapToRow="false">
+				<f:layout>
+					<f:GridContainerSettings rowSize="84px" columnSize="84px" gap="8px" />
+				</f:layout>
+
+				<!-- Summary Metrics Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Summary Metrics" subtitle="Key performance indicators" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Total Records" />
+										<Text text="Data points collected" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{ui>/totalRecords}" state="Information" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Total Requests" />
+										<Text text="Overall traffic volume" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatNumber', path: 'ui>/totalRequests'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Hit Ratio" />
+										<Text text="Cache effectiveness" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatPercentage', path: 'ui>/avgHitRatio'}" state="Success" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Cache Efficiency" />
+										<Text text="Miss/Hit latency ratio" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatCacheEfficiency', path: 'ui>/avgCacheEfficiency'}" state="Warning" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Latency Performance Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Latency Performance" subtitle="Response time metrics" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Latency" />
+										<Text text="Overall response time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/avgLatency'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P95 Latency" />
+										<Text text="95th percentile" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p95Latency'}" state="Warning" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P99 Latency" />
+										<Text text="99th percentile" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p99Latency'}" state="Error" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Hit Latency Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Cache Hits" subtitle="Hit performance metrics" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Hit Latency" />
+										<Text text="Cache hit response time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/avgHitLatency'}" state="Success" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P95 Hit Latency" />
+										<Text text="95th percentile hit time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p95HitLatency'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P99 Hit Latency" />
+										<Text text="99th percentile hit time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p99HitLatency'}" state="Warning" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Miss Latency Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Cache Misses" subtitle="Miss performance metrics" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Miss Latency" />
+										<Text text="Cache miss response time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/avgMissLatency'}" state="Error" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P95 Miss Latency" />
+										<Text text="95th percentile miss time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p95MissLatency'}" state="Warning" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="P99 Miss Latency" />
+										<Text text="99th percentile miss time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/p99MissLatency'}" state="Error" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Write Operations Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Write Operations" subtitle="Set/Delete performance" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Set Latency" />
+										<Text text="Cache set operation time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/avgSetLatency'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Average Delete Latency" />
+										<Text text="Cache delete operation time" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatLatency', path: 'ui>/avgDeleteLatency'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- System Performance Card -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="System Performance" subtitle="Throughput and resource usage" />
+					</f:header>
+					<f:content>
+						<List>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Throughput" />
+										<Text text="Requests per second" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatThroughput', path: 'ui>/avgThroughput'}" state="Success" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Error Rate" />
+										<Text text="Percentage of errors" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatPercentage', path: 'ui>/avgErrorRate'}" state="Success" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Memory Usage" />
+										<Text text="Heap memory consumption" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatMemoryUsage', path: 'ui>/avgMemoryUsage'}" state="Success" />
+								</HBox>
+							</CustomListItem>
+							<CustomListItem>
+								<HBox alignItems="Center" justifyContent="SpaceBetween">
+									<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+										<Title level="H3" text="Item Count" />
+										<Text text="Number of cached items" />
+									</VBox>
+									<ObjectStatus class="sapUiTinyMargin" text="{formatter: 'formatter.formatNumber', path: 'ui>/avgItemCount'}" state="Information" />
+								</HBox>
+							</CustomListItem>
+						</List>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="2" columns="4" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Statistics Table -->
+				<f:Card class="sapUiTinyMarginBottom">
+					<f:header>
+						<card:Header title="Statistics Data" subtitle="Detailed statistics records" />
+					</f:header>
+					<f:content>
+						<Table id="statisticsTable" items="{ui>/statistics}" busyIndicatorDelay="0" busy="{ui>/loading}" noDataText="No statistics found for the selected criteria">
+							<columns>
+								<Column width="200px">
+									<Text text="Timestamp" />
+								</Column>
+								<Column>
+									<Text text="Period" />
+								</Column>
+								<Column>
+									<Text text="Hits" />
+								</Column>
+								<Column>
+									<Text text="Misses" />
+								</Column>
+								<Column>
+									<Text text="Sets" />
+								</Column>
+								<Column>
+									<Text text="Deletes" />
+								</Column>
+								<Column>
+									<Text text="Errors" />
+								</Column>
+								<Column>
+									<Text text="Hit Ratio" />
+								</Column>
+								<Column>
+									<Text text="Avg Latency" />
+								</Column>
+								<Column>
+									<Text text="P95 Latency" />
+								</Column>
+								<Column>
+									<Text text="P99 Latency" />
+								</Column>
+								<Column>
+									<Text text="Avg Hit Latency" />
+								</Column>
+								<Column>
+									<Text text="Avg Miss Latency" />
+								</Column>
+								<Column>
+									<Text text="Avg Set Latency" />
+								</Column>
+								<Column>
+									<Text text="Avg Delete Latency" />
+								</Column>
+								<Column>
+									<Text text="Cache Efficiency" />
+								</Column>
+								<Column>
+									<Text text="Throughput" />
+								</Column>
+								<Column>
+									<Text text="Error Rate" />
+								</Column>
+								<Column>
+									<Text text="Memory Usage" />
+								</Column>
+								<Column>
+									<Text text="Item Count" />
+								</Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{formatter: 'formatter.formatDate', path: 'ui>timestamp'}" />
+										<Text text="{ui>period}" />
+										<Text text="{ui>hits}" />
+										<Text text="{ui>misses}" />
+										<Text text="{ui>sets}" />
+										<Text text="{ui>deletes}" />
+										<Text text="{ui>errors}" />
+										<Text text="{formatter: 'formatter.formatPercentage', path: 'ui>hitRatio'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>avgLatency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>p95Latency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>p99Latency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>avgHitLatency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>avgMissLatency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>avgSetLatency'}" />
+										<Text text="{formatter: 'formatter.formatLatency', path: 'ui>avgDeleteLatency'}" />
+										<Text text="{formatter: 'formatter.formatCacheEfficiency', path: 'ui>cacheEfficiency'}" />
+										<Text text="{formatter: 'formatter.formatThroughput', path: 'ui>throughput'}" />
+										<Text text="{formatter: 'formatter.formatPercentage', path: 'ui>errorRate'}" />
+										<Text text="{formatter: 'formatter.formatMemoryUsage', path: 'ui>memoryUsage'}" />
+										<Text text="{ui>itemCount}" />
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</f:content>
+					<f:layoutData>
+						<f:GridContainerItemLayoutData minRows="4" columns="36" />
+					</f:layoutData>
+				</f:Card>
+
+				<!-- Chart Section -->
+				<f:Card class="sapUiTinyMarginBottom" visible="false">
+					<f:header>
+						<card:Header title="Trends" subtitle="Performance trends over time" />
+					</f:header>
+					<f:content>
+						<l:VerticalLayout class="sapUiTinyMargin">
+							<l:HorizontalLayout class="sapUiTinyMarginBottom">
+								<Select id="chartMetric" selectedKey="{ui>/chartMetric}" change=".onChartMetricChange" class="sapUiTinyMarginEnd">
+									<core:Item key="hitRatio" text="Hit Ratio" />
+									<core:Item key="avgLatency" text="Average Latency" />
+									<core:Item key="avgHitLatency" text="Hit Latency" />
+									<core:Item key="avgMissLatency" text="Miss Latency" />
+									<core:Item key="avgSetLatency" text="Set Latency" />
+									<core:Item key="avgDeleteLatency" text="Delete Latency" />
+									<core:Item key="cacheEfficiency" text="Cache Efficiency" />
+									<core:Item key="throughput" text="Throughput" />
+									<core:Item key="errorRate" text="Error Rate" />
+									<core:Item key="memoryUsage" text="Memory Usage" />
+								</Select>
+							</l:HorizontalLayout>
+
+							<Text text="Chart visualization will be implemented here" />
+						</l:VerticalLayout>
+					</f:content>
+				</f:Card>
+
+			</f:GridContainer>
+		</content>
+	</Page>
+</mvc:View> 

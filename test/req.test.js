@@ -1,11 +1,10 @@
 const cds = require('@sap/cds');
 const { scanCachingAnnotations } = require('./../srv/util')
+const { GET, expect } = cds.test().in(__dirname + '/app')
 
 describe('CachingService', () => {
-
-    const { GET, expect } = cds.test(__dirname + '/app/')
+    
     const cachingOptions = {
-        kind: 'caching',
         impl: "cds-caching"
     }
     let cache;
@@ -20,7 +19,7 @@ describe('CachingService', () => {
         beforeAll(async () => {
             // Scan and register the caching annotations
             if (!annotationInitialized) {
-                //await scanCachingAnnotations(cds.services);
+                await scanCachingAnnotations(cds.services);
                 annotationInitialized = true;
             }
         })
@@ -99,7 +98,10 @@ describe('CachingService', () => {
                         req.reply(data);
                     })
                     this.after('manualCachedValue', async (event, req) => {
-                        console.log(req.cacheKey);
+                        // Verify cache key is set
+                        expect(req.cacheKey).to.be.a('string');
+                        expect(req.cacheKey).to.include('test-key');
+                        // console.log(req.cacheKey);
                         const cacheData = await cache.get(req.cacheKey);
                         resolve(cacheData)
                     })
@@ -145,4 +147,69 @@ describe('CachingService', () => {
 
     })
 
+        describe('req caching statistics', () => {
+
+            beforeEach(async () => {
+                cache = await cds.connect.to('caching');
+                await cache.clear();
+                await cache.setStatisticsEnabled(true);
+                // reset statistics
+                await cache.statistics.resetCurrentStats();
+            })
+
+            it('should track cache hits and misses', async () => {
+                const { data, headers } = await GET`/odata/v4/app/CachedFoo`    // miss
+                const { data: data2, headers: headers2 } = await GET`/odata/v4/app/CachedFoo`    // hit
+                const cacheData = await cache.get(headers['x-sap-cap-cache-key']); // hit
+                expect(data.value).to.deep.equal(cacheData);
+
+                const stats = await cache.getCurrentStats();
+                expect(stats.hits).to.equal(2); // Second GET + cache.get()
+                expect(stats.misses).to.equal(1); // First GET
+            })
+
+            it('should track latency metrics for hits and misses', async () => {
+                const { headers } = await GET`/odata/v4/app/CachedFoo`    // miss
+                await GET`/odata/v4/app/CachedFoo`    // hit
+                await cache.get(headers['x-sap-cap-cache-key']); // hit
+
+                const stats = await cache.getCurrentStats();
+                expect(stats.avgLatency).to.be.a('number');
+                expect(stats.avgHitLatency).to.be.a('number');
+                expect(stats.avgMissLatency).to.be.a('number');
+                expect(stats.avgLatency).to.be.greaterThan(0);
+                expect(stats.avgHitLatency).to.be.greaterThan(0);
+                expect(stats.avgMissLatency).to.be.greaterThan(0);
+                // In most cases, hit latency should be less than or equal to miss latency
+                if (stats.avgHitLatency > 0 && stats.avgMissLatency > 0) {
+                    expect(stats.avgHitLatency).to.be.at.most(stats.avgMissLatency);
+                }
+            })
+
+            it('should track percentile and min/max latency metrics', async () => {
+                const { headers } = await GET`/odata/v4/app/CachedFoo`    // miss
+                await GET`/odata/v4/app/CachedFoo`    // hit
+                await cache.get(headers['x-sap-cap-cache-key']); // hit
+
+                const stats = await cache.getCurrentStats();
+                expect(stats.p95Latency).to.be.at.least(stats.avgLatency);
+                expect(stats.p99Latency).to.be.at.least(stats.p95Latency);
+                expect(stats.maxLatency).to.be.at.least(stats.p99Latency);
+                expect(stats.minLatency).to.be.at.most(stats.avgLatency);
+                expect(stats.minLatency).to.be.greaterThan(0);
+            })
+
+            it('should track set and delete latencies', async () => {
+                const { headers } = await GET`/odata/v4/app/CachedFoo`    // miss
+                await GET`/odata/v4/app/CachedFoo`    // hit
+                await cache.get(headers['x-sap-cap-cache-key']); // hit
+                await cache.delete(headers['x-sap-cap-cache-key']); // delete
+
+                const stats = await cache.getCurrentStats();
+                expect(stats.avgSetLatency).to.be.a('number');
+                expect(stats.avgDeleteLatency).to.be.a('number');
+                expect(stats.avgSetLatency).to.be.greaterThan(0);
+                expect(stats.avgDeleteLatency).to.be.greaterThan(0);
+            })
+        })
 })

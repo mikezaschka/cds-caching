@@ -806,3 +806,254 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 ### License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Enhanced Statistics & Monitoring
+
+The plugin now includes comprehensive statistics and monitoring capabilities that provide deep insights into cache performance and help optimize cache usage.
+
+### Key Features
+
+#### 1. **Comprehensive Metrics**
+- **Basic Metrics**: Hits, misses, sets, deletes, errors
+- **Latency Analysis**: Average, P95, P99, min, max latencies
+- **Performance Metrics**: Hit ratio, throughput (requests/second), error rate
+- **Resource Usage**: Memory consumption, item count, uptime
+- **Key Access Patterns**: Top accessed keys, cold keys, unique key count
+
+#### 2. **Real-time Monitoring**
+- Live statistics available via OData service
+- Current performance metrics without database queries
+- Real-time alert generation for performance issues
+
+#### 3. **Automated Alerting**
+- **Performance Alerts**: Low hit ratio, high latency
+- **Error Alerts**: High error rates, cache failures
+- **Resource Alerts**: High memory usage
+- **Configurable Thresholds**: Customizable alert levels
+
+#### 4. **Performance Insights**
+- AI-powered recommendations for cache optimization
+- Actionable insights for improving cache performance
+- Automatic detection of performance bottlenecks
+
+#### 5. **Key Access Analysis**
+- Track most frequently accessed cache keys
+- Identify cold keys for potential cleanup
+- Monitor key distribution patterns
+
+### Configuration
+
+Enable enhanced statistics in your service configuration:
+
+```javascript
+// srv/caching-service.js
+module.exports = {
+    statistics: {
+        enabled: true,
+        persistenceInterval: 5 * 60 * 1000, // 5 minutes
+        maxLatencies: 1000,
+        maxKeyTracking: 100,
+        alertThresholds: {
+            hitRatio: 0.8,        // Alert if hit ratio < 80%
+            avgLatency: 100,      // Alert if avg latency > 100ms
+            errorRate: 0.05,      // Alert if error rate > 5%
+            memoryUsage: 0.9      // Alert if memory usage > 90%
+        },
+        enableKeyTracking: true,
+        enablePerformanceInsights: true,
+        enableAlerts: true
+    }
+}
+```
+
+### API Endpoints
+
+#### Statistics Service (`/cache-stats`)
+
+**Get Current Statistics**
+```http
+GET /cache-stats/Statistics?$filter=period eq 'current'
+```
+
+**Get Historical Statistics**
+```http
+GET /cache-stats/Statistics?$filter=period eq 'hourly' and timestamp ge '2024-01-01T00:00:00Z'
+```
+
+**Get Performance Insights**
+```http
+POST /cache-stats/getPerformanceInsights()
+```
+
+**Get Alerts**
+```http
+POST /cache-stats/getAlerts(severity='high', limit=10)
+```
+
+**Get Top Accessed Keys**
+```http
+POST /cache-stats/getTopKeys(limit=10)
+```
+
+**Get Cold Keys**
+```http
+POST /cache-stats/getColdKeys(limit=10)
+```
+
+### Database Schema
+
+The plugin creates several database tables for storing statistics:
+
+#### Statistics Table
+```sql
+CREATE TABLE plugin_cds_caching_Statistics (
+    ID VARCHAR PRIMARY KEY,
+    cache VARCHAR,
+    timestamp TIMESTAMP,
+    period VARCHAR,
+    hits INTEGER,
+    misses INTEGER,
+    sets INTEGER,
+    deletes INTEGER,
+    errors INTEGER,
+    avgLatency DOUBLE,
+    p95Latency DOUBLE,
+    p99Latency DOUBLE,
+    minLatency DOUBLE,
+    maxLatency DOUBLE,
+    memoryUsage INTEGER,
+    itemCount INTEGER,
+    hitRatio DOUBLE,
+    throughput DOUBLE,
+    errorRate DOUBLE,
+    uptimeMs INTEGER
+);
+```
+
+#### Alerts Table
+```sql
+CREATE TABLE plugin_cds_caching_Alert (
+    ID VARCHAR PRIMARY KEY,
+    cache VARCHAR,
+    type VARCHAR,
+    message VARCHAR,
+    severity VARCHAR,
+    timestamp TIMESTAMP,
+    resolved BOOLEAN,
+    resolvedAt TIMESTAMP,
+    metadata VARCHAR
+);
+```
+
+#### Key Access Table
+```sql
+CREATE TABLE plugin_cds_caching_KeyAccess (
+    ID VARCHAR,
+    cache VARCHAR,
+    keyName VARCHAR,
+    hits INTEGER,
+    misses INTEGER,
+    sets INTEGER,
+    deletes INTEGER,
+    total INTEGER,
+    lastAccess TIMESTAMP,
+    period VARCHAR,
+    PRIMARY KEY (ID, cache, keyName)
+);
+```
+
+#### Performance Insights Table
+```sql
+CREATE TABLE plugin_cds_caching_PerformanceInsight (
+    ID VARCHAR PRIMARY KEY,
+    cache VARCHAR,
+    type VARCHAR,
+    category VARCHAR,
+    message VARCHAR,
+    metric DOUBLE,
+    threshold DOUBLE,
+    timestamp TIMESTAMP,
+    actionable BOOLEAN,
+    action VARCHAR
+);
+```
+
+### Usage Examples
+
+#### 1. Monitor Cache Performance
+```javascript
+// Get current statistics
+const stats = await cds.connect.to('caching').getCurrentStats();
+console.log(`Hit Ratio: ${(stats.hitRatio * 100).toFixed(1)}%`);
+console.log(`Average Latency: ${stats.avgLatency.toFixed(2)}ms`);
+console.log(`Throughput: ${stats.throughput.toFixed(2)} req/s`);
+```
+
+#### 2. Get Performance Insights
+```javascript
+const insights = await cds.connect.to('cache-stats').getPerformanceInsights();
+insights.forEach(insight => {
+    console.log(`${insight.type.toUpperCase()}: ${insight.message}`);
+    console.log(`Suggested Action: ${insight.action}`);
+});
+```
+
+#### 3. Monitor Key Access Patterns
+```javascript
+const topKeys = await cds.connect.to('cache-stats').getTopKeys(5);
+topKeys.forEach(key => {
+    console.log(`Key: ${key.keyName}, Total Access: ${key.total}`);
+});
+```
+
+#### 4. Handle Alerts
+```javascript
+const alerts = await cds.connect.to('cache-stats').getAlerts('high', 10);
+alerts.forEach(alert => {
+    console.log(`[${alert.severity}] ${alert.message}`);
+    // Take action based on alert type
+    if (alert.type === 'performance') {
+        // Scale cache or optimize operations
+    }
+});
+```
+
+### Alert Types and Actions
+
+#### Performance Alerts
+- **Low Hit Ratio**: Consider increasing TTL or cache size
+- **High Latency**: Optimize cache operations or use faster backend
+- **High Throughput**: Scale horizontally or optimize operations
+
+#### Error Alerts
+- **High Error Rate**: Check backend connectivity and configuration
+- **Cache Failures**: Investigate storage backend issues
+
+#### Resource Alerts
+- **High Memory Usage**: Implement LRU eviction or increase limits
+- **Large Key Count**: Consider key consolidation strategies
+
+### Best Practices
+
+1. **Monitor Regularly**: Set up dashboards to monitor key metrics
+2. **Set Appropriate Thresholds**: Configure alert thresholds based on your application needs
+3. **Review Insights**: Regularly review performance insights for optimization opportunities
+4. **Track Key Patterns**: Use key access analysis to optimize cache key strategies
+5. **Scale Proactively**: Use alerts to scale cache resources before performance degrades
+
+### Integration with Monitoring Tools
+
+The statistics service can be easily integrated with external monitoring tools:
+
+```javascript
+// Example: Send metrics to external monitoring service
+const stats = await cds.connect.to('caching').getCurrentStats();
+await monitoringService.sendMetrics({
+    hitRatio: stats.hitRatio,
+    avgLatency: stats.avgLatency,
+    throughput: stats.throughput,
+    errorRate: stats.errorRate
+});
+```
+
+This enhanced statistics system provides comprehensive visibility into cache performance and helps optimize cache usage for better application performance.

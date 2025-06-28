@@ -32,27 +32,30 @@
     "release": "release-it"
   },
   "peerDependencies": {
-    "@sap/cds": ">=8"
+    "@sap/cds": ">=9"
   },
   "workspaces": [
     ".",
-    "test/**"
+    "test/app",
+    "examples/dashboard",
+    "examples/app"
   ],
   "dependencies": {
-    "@keyv/compress-gzip": "^2.0.2",
+    "@keyv/compress-gzip": "^2.0.3",
     "@keyv/compress-lz4": "^1.0.0",
-    "@keyv/redis": "^4.3.1",
-    "@keyv/sqlite": "^4.0.1",
-    "keyv": "^5.3.1"
+    "@keyv/redis": "^4.4.0",
+    "@keyv/sqlite": "^4.0.4",
+    "keyv": "^5.3.4"
   },
   "devDependencies": {
-    "eslint": "^9.21.0",
+    "@cap-js/cds-test": "^0.3.0",
+    "antlr4": "^4.13.2",
+    "eslint": "^9.29.0",
     "husky": "^9.1.7",
-    "jest": "^29.7.0",
-    "release-it": "^18.1.2",
-    "@cap-js/cds-test": "^0.2.0"
+    "jest": "^30.0.2",
+    "release-it": "^19.0.3"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   }
 }

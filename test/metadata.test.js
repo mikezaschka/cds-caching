@@ -1,9 +1,8 @@
 const cds = require('@sap/cds')
-const { GET, expect } = cds.test(__dirname + '/app/')
+const { expect } = cds.test().in(__dirname + '/app')
 
 describe('CachingService Metadata', () => {
     const cachingOptions = {
-        kind: 'caching',
         impl: "cds-caching"
     }
     let cache;

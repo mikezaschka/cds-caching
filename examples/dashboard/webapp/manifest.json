@@ -1,0 +1,127 @@
+{
+	"_version": "1.12.0",
+	"sap.app": {
+		"id": "cds.plugin.caching.dashboard",
+		"type": "application",
+		"i18n": "i18n/i18n.properties",
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"applicationVersion": {
+			"version": "${version}"
+		},
+		"sourceTemplate": {
+			"id": "generator-ui5-ts-app",
+			"version": "1.1.0"
+		},
+		"dataSources": {
+			"caching": {
+				"uri": "/odata/v4/caching/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.0"
+				}
+			}
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"icons": {},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "cds.plugin.caching.dashboard.view.App",
+			"type": "XML",
+			"id": "app"
+		},
+		"dependencies": {
+			"minUI5Version": "1.136.1",
+			"libs": {
+				"sap.ui.core": {},
+				"sap.m": {},
+				"sap.ui.layout": {},
+				"sap.viz": {},
+				"sap.ui.table": {},
+				"sap.ui.unified": {},
+				"sap.f": {},
+				"sap.tnt": {}
+			}
+		},
+		"handleValidation": true,
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "cds.plugin.caching.dashboard.i18n.i18n",
+					"supportedLocales": [
+						"en",
+						"de"
+					],
+					"fallbackLocale": "en",
+					"async": true
+				}
+			},
+			"formatter": {
+				"type": "sap.ui.model.json.JSONModel",
+				"settings": {}
+			},
+			"": {
+				"type": "sap.ui.model.odata.v4.ODataModel",
+				"settings": {
+					"serviceUrl": "/odata/v4/caching/",
+					"operationMode": "Server",
+					"autoExpandSelect": true,
+					"groupId": "$auto"
+				}
+			}
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.m.routing.Router",
+				"viewType": "XML",
+				"viewPath": "cds.plugin.caching.dashboard.view",
+				"controlId": "navContainer",
+				"controlAggregation": "pages"
+			},
+			"routes": [
+				{
+					"pattern": "",
+					"name": "main",
+					"target": "main"
+				},
+				{
+					"pattern": "keys",
+					"name": "keys",
+					"target": "keys"
+				},
+				{
+					"pattern": "statistics",
+					"name": "statistics",
+					"target": "statistics"
+				}
+			],
+			"targets": {
+				"main": {
+					"viewName": "Main",
+					"viewLevel": 1
+				},
+				"keys": {
+					"viewName": "Keys",
+					"viewLevel": 2
+				},
+				"statistics": {
+					"viewName": "Statistics",
+					"viewLevel": 2
+				}
+			}
+		}
+	}
+}

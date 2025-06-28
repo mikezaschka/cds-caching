@@ -17,7 +17,7 @@ class CachingService extends cds.Service {
 
     init() {
         super.init()
-        this.LOG = cds.log('cds-caching')
+        this.log = cds.log('cds-caching')
         this.options = this.options || {
             store: null,
             compression: null,
@@ -62,80 +62,225 @@ class CachingService extends cds.Service {
 
 
         this.cache = new Keyv(cacheOptions);
-        this.LOG._info && this.LOG.info(`Caching service initialized with namespace ${cacheOptions.namespace}`);
+        this.log.info(`Caching service ${this.name} initialized with namespace ${cacheOptions.namespace}`);
 
         this.cache.on('error', err => {
-            this.LOG._error && this.LOG.error('Cache error', err);
+            this.log.error('Cache error', err);
         });
 
-
-        this.on('SET', async (event) => {
-            this.LOG._debug && this.LOG.debug(`SET ${event.data.key}`);
+        const handleSet = async (event) => {
+            this.log.debug(`SET ${event.data.key}`);
             if (typeof event.data.value === "object") {
                 event.data.value = JSON.stringify(event.data.value);
             }
-
-            console.log(event.data);
-
             await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0))
-        });
+        }
 
-        this.on('GET', async (event) => {
+        const handleGet = async (event) => {
             const value = await this.cache.get(event.data.key);
-            this.LOG._debug && this.LOG.debug(`GET ${event.data.key}`);
+            this.log.debug(`GET ${event.data.key}`);
             if (typeof value === "string") {
                 return JSON.parse(value);
             }
             return value;
-        });
+        }
 
-        this.on('DELETE', async (event) => {
-            this.LOG._debug && this.LOG.debug(`DELETE ${event.data.key}`);
+        const handleDelete = async (event) => {
+            this.log.debug(`DELETE ${event.data.key}`);
             await this.cache.delete(event.data.key);
-        });
+        }
 
-        this.on('CLEAR', async (event) => {
-            this.LOG._debug && this.LOG.debug(`CLEAR`);
+        const handleClear = async (event) => {
+            this.log.debug(`CLEAR`);
             await this.cache.clear();
+
+            // Also clear statistics
+            if (this.statistics) {
+                await this.statistics.resetCurrentStats();
+                await this.statistics.deleteAllPersistedStats();
+            }
+        }
+
+        // Initialize cache operations
+        this.on('SET', handleSet);
+        this.on('GET', handleGet);
+        this.on('DELETE', handleDelete);
+        this.on('CLEAR', handleClear);
+
+        // Initialize statistics with runtime configuration support
+        this.statistics = new CacheStatisticsHandler({
+            cache: this.name,
+            ...(this.options.statistics ? { ...this.options.statistics } : {}),
+            enabled: false, // Start disabled, will be updated from runtime config
+            getItemCount: async () => {
+                let count = 0;
+                for await (const _ of this.iterator()) {
+                    count++;
+                }
+                return count;
+            }
         });
 
-        // Initialize statistics if enabled
-        if (this.options.statistics?.enabled) {
-            this.statistics = new CacheStatisticsHandler({
-                enabled: true,
-                ...(this.options.statistics.persistenceInterval ? { persistenceInterval: this.options.statistics.persistenceInterval } : {}),
-                ...(this.options.statistics.maxLatencies ? { maxLatencies: this.options.statistics.maxLatencies } : {}),
-                getItemCount: async () => {
-                    let count = 0;
-                    for await (const _ of this.iterator()) {
-                        count++;
-                    }
-                    return count;
-                }
-            });
+        // Load runtime configuration from database
+        this.loadRuntimeConfiguration().catch(error => {
+            this.log.warn(`Failed to load runtime configuration for cache ${this.name}:`, error);
+        });
 
-            // Enhance methods with statistics
-            this.after('GET', async (result, req) => {
-                const startTime = process.hrtime();
-                try {
-                    if (result === undefined) {
-                        this.statistics.recordMiss();
-                    } else {
-                        this.statistics.recordHit(this.getElapsedMs(startTime));
-                    }
-                } catch (error) {
-                    this.statistics.recordError();
-                    throw error;
-                }
-            });
+        // Always set up statistics hooks, but they will be controlled by the enabled flag
+        this.setupStatisticsHooks();
+    }
 
-            this.after('SET', () => this.statistics.recordSet());
-            this.after('DELETE', () => this.statistics.recordDelete());
+    /**
+     * Set up statistics hooks for all cache operations
+     */
+    setupStatisticsHooks() {
+        // Enhance methods with statistics
+        this.before('GET', (req) => {
+            req.startTime = process.hrtime();
+        });
+
+        this.after('GET', async (result, req) => {
+            // Skip statistics recording here as it's handled manually in the get method
+            return;
+        });
+
+        this.before('SET', (req) => {
+            req.startTime = process.hrtime();
+        });
+
+        this.after('SET', (result, req) => {
+            // Skip statistics recording here as it's handled manually in the set method
+            // to include tag resolution and value wrapping time
+            return;
+        });
+
+        this.before('DELETE', (req) => {
+            req.startTime = process.hrtime();
+        });
+
+        this.after('DELETE', (result, req) => {
+            // Skip statistics recording here as it's handled manually in the delete method
+            return;
+        });
+    }
+
+    /**
+     * Load runtime configuration from database
+     */
+    async loadRuntimeConfiguration() {
+        try {
+            this.log.info(`Loading runtime configuration for cache ${this.name}...`);
+
+            const cacheConfig = await SELECT.one.from("plugin_cds_caching_Caches")
+                .where({ name: this.name });
+
+            if (cacheConfig) {
+                // Update statistics configuration
+                if (this.statistics) {
+                    const oldEnabled = this.statistics.options.enabled;
+                    const oldKeyTracking = this.statistics.options.enableKeyTracking;
+
+                    this.statistics.options.enabled = cacheConfig.enableStatistics || false;
+                    this.statistics.options.enableKeyTracking = cacheConfig.enableKeyTracking || false;
+
+                    // Restart persistence interval if statistics were enabled/disabled
+                    if (oldEnabled !== this.statistics.options.enabled) {
+                        this.statistics.restartPersistenceInterval();
+                        this.log.info(`Restarted persistence interval for cache ${this.name} (enabled: ${this.statistics.options.enabled})`);
+                    }
+
+                    this.log.info(`Runtime configuration loaded for cache ${this.name}:`);
+                    this.log.info(`  - Statistics: ${oldEnabled} -> ${this.statistics.options.enabled}`);
+                    this.log.info(`  - Key Tracking: ${oldKeyTracking} -> ${this.statistics.options.enableKeyTracking}`);
+                } else {
+                    this.log.warn(`Statistics handler not initialized for cache ${this.name}`);
+                }
+            } else {
+                this.log.warn(`No cache configuration found for cache ${this.name}`);
+            }
+        } catch (error) {
+            this.log.warn(`Failed to load runtime configuration for cache ${this.name}:`, error);
+        }
+    }
+
+    /**
+     * Reload runtime configuration from database
+     */
+    async reloadRuntimeConfiguration() {
+        await this.loadRuntimeConfiguration();
+    }
+
+    /**
+     * Enable or disable statistics at runtime
+     */
+    async setStatisticsEnabled(enabled) {
+        try {
+            await UPDATE('plugin_cds_caching_Caches')
+                .set({ enableStatistics: enabled })
+                .where({ name: this.name });
+
+            if (this.statistics) {
+                const oldEnabled = this.statistics.options.enabled;
+                this.statistics.options.enabled = enabled;
+
+                // Restart persistence interval if the enabled state changed
+                if (oldEnabled !== enabled) {
+                    this.statistics.restartPersistenceInterval();
+                    this.log.info(`Restarted persistence interval for cache ${this.name} (enabled: ${enabled})`);
+                }
+            }
+
+            this.log.info(`Statistics ${enabled ? 'enabled' : 'disabled'} for cache ${this.name}`);
+            return true;
+        } catch (error) {
+            this.log.error(`Failed to update statistics configuration for cache ${this.name}:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Enable or disable key tracking at runtime
+     */
+    async setKeyTrackingEnabled(enabled) {
+        try {
+            await UPDATE('plugin_cds_caching_Caches')
+                .set({ enableKeyTracking: enabled })
+                .where({ name: this.name });
+
+            if (this.statistics) {
+                this.statistics.options.enableKeyTracking = enabled;
+            }
+
+            this.log.info(`Key tracking ${enabled ? 'enabled' : 'disabled'} for cache ${this.name}`);
+            return true;
+        } catch (error) {
+            this.log.error(`Failed to update key tracking configuration for cache ${this.name}:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Get current runtime configuration
+     */
+    async getRuntimeConfiguration() {
+        try {
+            const cacheConfig = await SELECT.one.from("plugin_cds_caching_Caches")
+                .where({ name: this.name });
+
+            return {
+                enableStatistics: cacheConfig?.enableStatistics || false,
+                enableKeyTracking: cacheConfig?.enableKeyTracking || false
+            };
+        } catch (error) {
+            this.log.warn(`Failed to get runtime configuration for cache ${this.name}:`, error);
+            return {
+                enableStatistics: false,
+                enableKeyTracking: false
+            };
         }
     }
 
     addCachableFunction(name, options, isBound = false) {
-
         this.cacheAnnotatedFunctions[isBound ? 'bound' : 'unbound'].push({ name, options });
     }
 
@@ -175,13 +320,40 @@ class CachingService extends cds.Service {
         }
 
         const key = this.createKey(arg1, options.key);
+        const startTime = process.hrtime();
 
         if (await this.has(key)) {
+            const latency = this.getElapsedMs(startTime);
+            if (this.statistics?.options.enabled) {
+                const metadata = {
+                    dataType: 'request',
+                    serviceName: service.name || '',
+                    operation: 'SEND',
+                    metadata: JSON.stringify({ method: arg1.method, url: arg1.url })
+                };
+                this.statistics.recordHit(latency, key, metadata);
+            }
             return this.get(key);
+        } else {
+            const backendStartTime = process.hrtime();
+            const response = await service.send(arg1);
+            const backendLatency = this.getElapsedMs(backendStartTime);
+            const totalLatency = this.getElapsedMs(startTime);
+
+            // Track the miss with total latency (cache lookup + backend operation)
+            if (this.statistics?.options.enabled) {
+                const metadata = {
+                    dataType: 'request',
+                    serviceName: service.name || '',
+                    operation: 'SEND',
+                    metadata: JSON.stringify({ method: arg1.method, url: arg1.url })
+                };
+                this.statistics.recordMiss(totalLatency, key, metadata);
+            }
+
+            await this.set(key, response, options);
+            return response;
         }
-        const response = await service.send(arg1);
-        await this.set(key, response, options);
-        return response;
     }
 
     // Function to extract the cache options from the request
@@ -206,6 +378,62 @@ class CachingService extends cds.Service {
         }
     }
 
+    extractMetadataFromRequest(req) {
+        if (!req) return {};
+
+        let dataType = 'custom';
+        let serviceName = '';
+        let entityName = '';
+        let operation = '';
+        let metadata = '';
+
+        if (req.event) {
+            // Function call
+            dataType = 'function';
+            serviceName = req.target?.name || req.service?.name || '';
+            operation = req.event;
+            metadata = JSON.stringify({
+                params: req.params,
+                user: req.user?.id,
+                tenant: req.tenant
+            });
+        } else if (req.query) {
+            // Query operation
+            if (req.query.SELECT) {
+                dataType = 'query';
+                operation = 'SELECT';
+            } else if (req.query.READ) {
+                dataType = 'query';
+                operation = 'READ';
+            } else if (req.query.UPDATE) {
+                dataType = 'request';
+                operation = 'UPDATE';
+            } else if (req.query.INSERT) {
+                dataType = 'request';
+                operation = 'INSERT';
+            } else if (req.query.DELETE) {
+                dataType = 'request';
+                operation = 'DELETE';
+            }
+
+            serviceName = req.target?.name || req.service?.name || '';
+            entityName = req.target?.name || '';
+            metadata = JSON.stringify({
+                query: req.query,
+                user: req.user?.id,
+                tenant: req.tenant
+            });
+        }
+
+        return {
+            dataType,
+            serviceName,
+            entityName,
+            operation,
+            metadata
+        };
+    }
+
     /**
      * Overloaded run method that caches multiple things magically in the background
      * 
@@ -222,10 +450,12 @@ class CachingService extends cds.Service {
      */
 
     async run() {
+
         const arg1 = arguments[0];
         if (typeof arg1 === "object") {
             switch (arg1.constructor.name) {
                 case "Request":
+                case "ODataRequest":
                 case "NoaRequest":
                     const req = arg1;
                     const next = arguments[1];
@@ -237,20 +467,40 @@ class CachingService extends cds.Service {
                     req.cacheOptions = req.event ? this.extractFunctionCacheOptions(req, arguments[2]) : this.extractEntityCacheOptions(req, arguments[2]);
                     req.cacheKey = this.createKey(req, req.cacheOptions.key);
                     req.res?.setHeader('x-sap-cap-cache-key', req.cacheKey);
-                    const cachedValue = await this.get(req.cacheKey);
-                    if (cachedValue) {
-                        return cachedValue;
+
+                    // Track cache operation timing
+                    const startTime = process.hrtime();
+                    const hasCachedValue = await this.has(req.cacheKey);
+                    const cacheLatency = this.getElapsedMs(startTime);
+
+                    if (hasCachedValue) {
+                        // Cache hit
+                        if (this.statistics?.options.enabled) {
+                            const metadata = this.extractMetadataFromRequest(req);
+                            this.statistics.recordHit(cacheLatency, req.cacheKey, metadata);
+                        }
+                        return this._getRaw(req.cacheKey);
+                    } else {
+                        // Cache miss - track the backend operation
+                        const backendStartTime = process.hrtime();
+                        const response = await next();
+                        const totalLatency = this.getElapsedMs(startTime);
+
+                        // Track the miss with total latency (cache lookup + backend operation)
+                        if (this.statistics?.options.enabled) {
+                            const metadata = this.extractMetadataFromRequest(req);
+                            this.statistics.recordMiss(totalLatency, req.cacheKey, metadata);
+                        }
+
+                        req.cacheOptions.tags = this.resolveTags(req.cacheOptions.tags, response, { ...req.params, user: req.user.id, tenant: req.tenant, locale: req.locale, hash: this.createKey(req, { template: '{hash}' }) });
+                        await this.set(req.cacheKey, response, req.cacheOptions);
+                        return response;
                     }
-                    const response = await next();
-                    req.cacheOptions.tags = this.resolveTags(req.cacheOptions.tags, response, { ...req.params, user: req.user.id, tenant: req.tenant, locale: req.locale, hash: this.createKey(req, { template: '{hash}' }) });
-                    await this.set(req.cacheKey, response, req.cacheOptions);
-                    return response;
                 case "cds.ql":
                     const query = arg1;
                     const srv = arguments[1];
 
                     if (query.SELECT) {
-
                         let options = {
                             ttl: 0,
                             tags: [],
@@ -258,20 +508,51 @@ class CachingService extends cds.Service {
                             ...(arguments[2] || {}),
                         };
                         query.cacheKey = this.createKey(query, options.key);
-                        if (await this.has(query.cacheKey)) {
+
+                        // Track cache operation timing
+                        const startTime = process.hrtime();
+                        const hasCachedValue = await this.has(query.cacheKey);
+                        const cacheLatency = this.getElapsedMs(startTime);
+
+                        if (hasCachedValue) {
+                            // Cache hit
+                            if (this.statistics?.options.enabled) {
+                                const metadata = {
+                                    dataType: 'query',
+                                    serviceName: srv.name || '',
+                                    operation: 'SELECT',
+                                    metadata: JSON.stringify({ query: query.SELECT })
+                                };
+                                this.statistics.recordHit(cacheLatency, query.cacheKey, metadata);
+                            }
                             return this.get(query.cacheKey);
+                        } else {
+                            // Cache miss
+                            const backendStartTime = process.hrtime();
+                            const data = await srv.run(query);
+                            const totalLatency = this.getElapsedMs(startTime);
+
+                            // Track the miss with total latency (cache lookup + backend operation)
+                            if (this.statistics?.options.enabled) {
+                                const metadata = {
+                                    dataType: 'query',
+                                    serviceName: srv.name || '',
+                                    operation: 'SELECT',
+                                    metadata: JSON.stringify({ query: query.SELECT })
+                                };
+                                this.statistics.recordMiss(totalLatency, query.cacheKey, metadata);
+                            }
+
+                            options.tags = this.resolveTags(options.tags, data, { ...query.params, hash: this.createKey(query, { template: '{hash}' }) });
+                            await this.set(query.cacheKey, data, options);
+                            return data;
                         }
-                        const data = await srv.run(query);
-                        options.tags = this.resolveTags(options.tags, data, { ...query.params, hash: this.createKey(query, { template: '{hash}' }) });
-                        await this.set(query.cacheKey, data, options);
-                        return data;
                     } else {
                         return srv.run(query);
                     }
-
             }
         }
-        return super.run(arg1);
+        return super.run(...arguments);
     }
 
     /**
@@ -285,16 +566,43 @@ class CachingService extends cds.Service {
     wrap(key, asyncFunction, options = {}) {
         const cacheKey = this.createKey(key, options.key);
         return async (...args) => {
+            const startTime = process.hrtime();
             if (await this.has(cacheKey)) {
+                const latency = this.getElapsedMs(startTime);
+                if (this.statistics?.options.enabled) {
+                    const metadata = {
+                        dataType: 'function',
+                        serviceName: this.name || '',
+                        operation: 'WRAP',
+                        metadata: JSON.stringify({ functionName: asyncFunction.name || 'anonymous', args: args.length })
+                    };
+                    this.statistics.recordHit(latency, cacheKey, metadata);
+                }
                 return this.get(cacheKey);
+            } else {
+                const backendStartTime = process.hrtime();
+                const response = await asyncFunction(...args);
+                const totalLatency = this.getElapsedMs(startTime);
+
+                // Track the miss with total latency (cache lookup + backend operation)
+                if (this.statistics?.options.enabled) {
+                    const metadata = {
+                        dataType: 'function',
+                        serviceName: this.name || '',
+                        operation: 'WRAP',
+                        metadata: JSON.stringify({ functionName: asyncFunction.name || 'anonymous', args: args.length })
+                    };
+                    this.statistics.recordMiss(totalLatency, cacheKey, metadata);
+                }
+
+                await this.set(cacheKey, response, options);
+                return response;
             }
-            const response = await asyncFunction(...args);
-            await this.set(cacheKey, response, options);
-            return response;
         }
     }
 
     async set(key, value, options = {}) {
+        const startTime = process.hrtime();
         const wrappedValue = {
             value,
             tags: this.resolveTags(options.tags, value, options.params) || [],
@@ -305,11 +613,46 @@ class CachingService extends cds.Service {
             value: wrappedValue,
             ttl: options.ttl || 0
         });
+        
+        // Record the total set latency (including tag resolution and wrapping)
+        if (this.statistics?.options.enabled) {
+            const totalLatency = this.getElapsedMs(startTime);
+            const metadata = {
+                dataType: 'operation',
+                serviceName: this.name || '',
+                operation: 'SET',
+                metadata: JSON.stringify({ key: this.createKey(key, options.key), ttl: options.ttl || 0 })
+            };
+            this.statistics.recordSet(totalLatency, this.createKey(key, options.key), metadata);
+        }
     }
 
     async get(key) {
-        const wrappedValue = await this.send('GET', { key: this.createKey(key) });
-        return wrappedValue?.value;
+        const startTime = process.hrtime();
+        try {
+            const wrappedValue = await this.send('GET', { key: this.createKey(key) });
+            // Record the total get latency
+            if (this.statistics?.options.enabled) {
+                const totalLatency = this.getElapsedMs(startTime);
+                const metadata = {
+                    dataType: 'operation',
+                    serviceName: this.name || '',
+                    operation: 'GET',
+                    metadata: JSON.stringify({ key: this.createKey(key) })
+                };
+                if (wrappedValue === undefined || wrappedValue === null) {
+                    this.statistics.recordMiss(totalLatency, this.createKey(key), metadata);
+                } else {
+                    this.statistics.recordHit(totalLatency, this.createKey(key), metadata);
+                }
+            }
+            return wrappedValue?.value;
+        } catch (error) {
+            if (this.statistics?.options.enabled) {
+                this.statistics.recordError(error);
+            }
+            throw error;
+        }
     }
 
     async has(key) {
@@ -317,7 +660,20 @@ class CachingService extends cds.Service {
     }
 
     async delete(key) {
+        const startTime = process.hrtime();
         await this.send('DELETE', { key: this.createKey(key) });
+        
+        // Record the total delete latency
+        if (this.statistics?.options.enabled) {
+            const totalLatency = this.getElapsedMs(startTime);
+            const metadata = {
+                dataType: 'operation',
+                serviceName: this.name || '',
+                operation: 'DELETE',
+                metadata: JSON.stringify({ key: this.createKey(key) })
+            };
+            this.statistics.recordDelete(totalLatency, this.createKey(key), metadata);
+        }
     }
 
     async clear() {
@@ -492,6 +848,7 @@ class CachingService extends cds.Service {
             switch (keyOrObject.constructor.name) {
                 case "Request":
                 case "NoaRequest":
+                case "ODataRequest":
 
                     return this.createCacheKey((!options.value && !options.template) ? { template: '{tenant}:{user}:{locale}:{hash}' } : options, {
                         req: keyOrObject,
@@ -575,12 +932,56 @@ class CachingService extends cds.Service {
      */
     async exec(key, asyncFunction, options = {}) {
         const cacheKey = this.createKey(key, options.key);
+        const startTime = process.hrtime();
+
         if (await this.has(cacheKey)) {
+            const latency = this.getElapsedMs(startTime);
+            if (this.statistics?.options.enabled) {
+                const metadata = {
+                    dataType: 'function',
+                    serviceName: this.name || '',
+                    operation: 'EXEC',
+                    metadata: JSON.stringify({ functionName: asyncFunction.name || 'anonymous' })
+                };
+                this.statistics.recordHit(latency, cacheKey, metadata);
+            }
             return this.get(cacheKey);
+        } else {
+            const cacheLatency = this.getElapsedMs(startTime);
+            if (this.statistics?.options.enabled) {
+                const metadata = {
+                    dataType: 'function',
+                    serviceName: this.name || '',
+                    operation: 'EXEC',
+                    metadata: JSON.stringify({ functionName: asyncFunction.name || 'anonymous' })
+                };
+                this.statistics.recordMiss(cacheLatency, cacheKey, metadata);
+            }
+
+            const backendStartTime = process.hrtime();
+            const response = await asyncFunction();
+            const backendLatency = this.getElapsedMs(backendStartTime);
+
+            // Track the backend operation as a miss with combined latency
+            if (this.statistics?.options.enabled) {
+                const metadata = {
+                    dataType: 'function',
+                    serviceName: this.name || '',
+                    operation: 'EXEC',
+                    metadata: JSON.stringify({ functionName: asyncFunction.name || 'anonymous' })
+                };
+                this.statistics.recordMiss(cacheLatency + backendLatency, cacheKey, metadata);
+            }
+
+            await this.set(cacheKey, response, options);
+            return response;
         }
-        const response = await asyncFunction();
-        await this.set(cacheKey, response, options);
-        return response;
+    }
+
+    // Fetch a cache value without recording statistics
+    async _getRaw(key) {
+        const wrappedValue = await this.send('GET', { key: this.createKey(key) });
+        return wrappedValue?.value;
     }
 
 }

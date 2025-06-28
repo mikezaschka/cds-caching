@@ -1,10 +1,9 @@
 const cds = require('@sap/cds')
+const { GET, expect } = cds.test.in(__dirname + '/app')
 
 describe('CachingService', () => {
 
-    const { GET, expect } = cds.test(__dirname + '/app/')
     const cachingOptions = {
-        kind: 'caching',
         impl: "cds-caching"
     }
     let cache;
@@ -14,7 +13,7 @@ describe('CachingService', () => {
         // berfore connect to the cache service
         beforeEach(async () => {
             cache = await cds.connect.to(cachingOptions);
-            cache.clear();
+            await cache.clear();
         })
 
         it('should set and get the caching value', async () => {
@@ -140,9 +139,9 @@ describe('CachingService', () => {
         it('should handle multiple before hooks in sequence', async () => {
             cache.before("SET", (event) => event.data.value.value.push("hook1"));
             cache.before("SET", (event) => event.data.value.value.push("hook2"));
-            
+
             await cache.set("key", ["initial"]);
-            
+
             const value = await cache.get("key");
             expect(value).to.eql(["initial", "hook1", "hook2"]);
         })

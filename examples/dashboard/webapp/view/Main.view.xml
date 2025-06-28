@@ -1,0 +1,298 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.Main" displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	xmlns:card="sap.f.cards"
+	xmlns:cssgrid="sap.ui.layout.cssgrid"
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+	xmlns:viz.data="sap.viz.ui5.data" core:require="{
+		formatter: 'cds/plugin/caching/dashboard/model/formatter'
+	}">
+
+
+	<Page visible="{= ${app>/selectedCache} !== null }" id="cachePage" showHeader="false" showNavButton="false" showFooter="false">
+		<content>
+
+			<cssgrid:CSSGrid id="mainGrid" width="100%">
+				<cssgrid:customLayout>
+					<cssgrid:ResponsiveColumnLayout />
+				</cssgrid:customLayout>
+
+				<!-- Header Section -->
+				<VBox renderType="Bare">
+					<layoutData>
+						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
+					</layoutData>
+
+					<Toolbar design="Transparent" style="Clear">
+						<Label text="Period" class="sapUiTinyMarginEnd" />
+						<ComboBox id="statisticSelector" width="400px" items="{ path: '/Statistics', sorter: [{ path: 'period', descending: true, group: true }, { path: 'timestamp', descending: true }] }" selectedKey="{view>/selectedStatistic}" change="onStatisticChange">
+							<core:Item key="{ID}" text="{= ${period} === 'hourly' ? 'Hourly: ' + ${timestamp} : 'Daily: ' + ${timestamp}}" />
+						</ComboBox>
+						<Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press="onRefresh" class="sapUiTinyMarginBegin" />
+
+					</Toolbar>
+				</VBox>
+
+				<!-- Performance Metrics Section -->
+				<VBox renderType="Bare">
+					<layoutData>
+						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
+					</layoutData>
+
+					<Title text="Performance Metrics" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+
+					<f:GridContainer id="performanceGrid" columnsChange=".onColumnsChange">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Ratio" subheader="Cache Hit Rate">
+							<TileContent unit="%">
+								<NumericContent valueColor="{formatter: 'formatter.formatHitRatioWithColor', path: 'ui>/hitRatio'}" value="{ path: 'ui>/hitRatio', formatter: 'formatter.formatPercentageValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Efficiency" subheader="Miss/Hit Latency Ratio">
+							<TileContent unit="x">
+								<NumericContent valueColor="{formatter: 'formatter.formatCacheEfficiencyWithColor', path: 'ui>/cacheEfficiency'}" value="{path: 'ui>/cacheEfficiency', formatter: 'formatter.formatNumberValue'}" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Throughput" subheader="Requests per Second">
+							<TileContent unit="req/s">
+								<NumericContent value="{ path: 'ui>/throughput', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Error Rate" subheader="Cache Errors">
+							<TileContent unit="%">
+								<NumericContent valueColor="{formatter: 'formatter.formatErrorRateWithColor', path: 'ui>/errorRate'}" value="{ path: 'ui>/errorRate', formatter: 'formatter.formatPercentageValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+					</f:GridContainer>
+				</VBox>
+
+				<!-- Latency Analysis Section -->
+				<VBox renderType="Bare">
+					<layoutData>
+						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
+					</layoutData>
+
+					<Title text="Latency Analysis" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+
+					<f:GridContainer id="latencyGrid" allowDenseFill="true" snapToRow="false" class="sapUiSmallMarginBottom">
+
+						<!-- Latency Chart -->
+						<f:Card class="sapUiTinyMargin">
+							<f:header>
+								<card:Header title="Latency Comparison" subtitle="All Latency Metrics Comparison" />
+							</f:header>
+							<f:content>
+								<l:VerticalLayout width="100%">
+									<viz:Popover id="idPopOver"></viz:Popover>
+									<viz:VizFrame id="latencyChart" vizType="bar" width="100%" height="300px">
+										<viz:dataset>
+											<viz.data:FlattenedDataset data="{ui>/latencyData}">
+												<viz.data:dimensions>
+													<viz.data:DimensionDefinition name="MetricType" value="{metricType}" />
+													<viz.data:DimensionDefinition name="Operation" value="{operation}" />
+												</viz.data:dimensions>
+												<viz.data:measures>
+													<viz.data:MeasureDefinition name="Latency" value="{latency}" />
+												</viz.data:measures>
+											</viz.data:FlattenedDataset>
+										</viz:dataset>
+										<viz:feeds>
+											<viz.feeds:FeedItem id="valueAxisFeed" uid="valueAxis" type="Measure" values="Latency" />
+											<viz.feeds:FeedItem id="categoryAxisFeed" uid="categoryAxis" type="Dimension" values="MetricType" />
+											<viz.feeds:FeedItem id="colorFeed" uid="color" type="Dimension" values="Operation" />
+										</viz:feeds>
+									</viz:VizFrame>
+								</l:VerticalLayout>
+							</f:content>
+							<f:layoutData>
+								<f:GridContainerItemLayoutData columns="12" minRows="4"/>
+							</f:layoutData>
+						</f:Card>
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Average Latency" subheader="Response Time">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgLatency'}" value="{ path: 'ui>/avgLatency', formatter: 'formatter.formatNumberValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Latency" subheader="Cache Hit Response">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgHitLatency'}" value="{ path: 'ui>/avgHitLatency', formatter: 'formatter.formatNumberValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Miss Latency" subheader="Cache Miss Response">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgMissLatency'}" value="{ path: 'ui>/avgMissLatency', formatter: 'formatter.formatNumberValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Set Latency" subheader="Write Operations">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgSetLatency'}" value="{ path: 'ui>/avgSetLatency', formatter: 'formatter.formatNumberValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Delete Latency" subheader="Delete Operations">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgDeleteLatency'}" value="{ path: 'ui>/avgDeleteLatency', formatter: 'formatter.formatNumberValue' }" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+					</f:GridContainer>
+
+
+				</VBox>
+
+				<!-- Operations Overview Section -->
+				<VBox renderType="Bare">
+					<layoutData>
+						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
+					</layoutData>
+
+					<Title text="Operations Overview" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+
+					<f:GridContainer id="operationsGrid" columnsChange=".onColumnsChange">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Total Requests" subheader="Cache Operations">
+							<TileContent unit="req">
+								<NumericContent value="{= ${ui>/hits} + ${ui>/misses}}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Hits" subheader="Successful Retrievals">
+							<TileContent unit="hits">
+								<NumericContent value="{ui>/hits}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Misses" subheader="Failed Retrievals">
+							<TileContent unit="misses">
+								<NumericContent value="{ui>/misses}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Sets" subheader="Write Operations">
+							<TileContent unit="sets">
+								<NumericContent value="{ui>/sets}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Deletes" subheader="Delete Operations">
+							<TileContent unit="deletes">
+								<NumericContent value="{ui>/deletes}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Errors" subheader="Error Count">
+							<TileContent unit="errors">
+								<NumericContent value="{ui>/errors}" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+					</f:GridContainer>
+
+				</VBox>
+
+				<!-- System Information Section -->
+				<VBox renderType="Bare">
+					<layoutData>
+						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
+					</layoutData>
+
+					<Title text="System Information" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+
+					<f:GridContainer id="systemGrid" columnsChange=".onColumnsChange">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Memory Usage" subheader="Cache Memory">
+							<TileContent unit="MB">
+								<NumericContent value="{ path: 'ui>/memoryUsage', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Item Count" subheader="Cache Items">
+							<TileContent unit="items">
+								<NumericContent value="{ path: 'ui>/itemCount', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Unique Keys" subheader="Tracked Keys">
+							<TileContent unit="keys">
+								<NumericContent value="{ path: 'ui>/uniqueKeys', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Uptime" subheader="Cache Runtime">
+							<TileContent unit="ms">
+								<NumericContent value="{ path: 'ui>/uptimeMs', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+					</f:GridContainer>
+				</VBox>
+
+			</cssgrid:CSSGrid>
+
+		</content>
+	</Page>
+
+</mvc:View>

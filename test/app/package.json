@@ -1,19 +1,21 @@
 {
-  "name": "test",
+  "name": "cds-caching-test",
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^8",
+    "@sap/cds": "^9",
     "express": "^4",
-    "@sap-cloud-sdk/http-client": "~3.25.0",
+    "@sap-cloud-sdk/http-client": "~4.0.2",
     "cds-caching": "*"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1",
-    "@cap-js/cds-types": "^0.9.0"
+    "@cap-js/sqlite": "^2.0.1",
+    "@sap/cds-foss": "^5.0.1",
+    "@cap-js/cds-types": "^0.10.0",
+    "antlr4": "^4.13.2"
   },
   "scripts": {
     "start": "cds-serve"
@@ -36,7 +38,7 @@
           }
         }
       },
-      "caching": {
+      "caching1": {
         "impl": "cds-caching",
         "namespace": "myCache",
         "store": "sqlite",
@@ -44,7 +46,7 @@
           "url": "file::memory:"
         }
       },
-      "caching-redis": {
+      "caching": {
         "impl": "cds-caching",
         "namespace": "redisCache",
         "store": "redis",
@@ -54,8 +56,12 @@
           "maxLatencies": 1000
         },
         "credentials": {
-          "host": "localhost",
-          "port": 6379
+          "socket": {
+            "host": "localhost",
+            "port": 6379,
+            "keepAlive": true,
+            "pingInterval": 1000
+          }
         }
       }
     }

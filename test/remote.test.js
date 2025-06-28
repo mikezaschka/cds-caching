@@ -1,11 +1,9 @@
 const cds = require('@sap/cds');
-const { INSERT } = require('@sap/cds/lib/ql/cds-ql');
 const { scanCachingAnnotations } = require('./../srv/util');
-const { path } = require('@sap/cds/lib/compile/parse');
 
 describe('CachingService', () => {
 
-    const { GET, expect } = cds.test(__dirname + '/app/')
+    const { GET, expect } = cds.test().in(__dirname + '/app/')
     const cachingOptions = {
         "kind": "caching",
         "impl": "cds-caching",

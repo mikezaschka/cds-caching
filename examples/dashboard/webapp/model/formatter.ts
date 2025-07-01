@@ -5,8 +5,15 @@ import { ValueColor } from "sap/m/library";
  */
 export default {
 
+	formatIntegerValue(value: number): string {
+		if (value === null || value === undefined || value === 0) {
+			return "0";
+		}
+		return `${value.toFixed(0)}`;
+	},
+
 	formatNumberValue(value: number): string {
-		if (value === null || value === undefined) {
+		if (value === null || value === undefined || value === 0) {
 			return "0";
 		}
 		return `${value.toFixed(2)}`;
@@ -32,14 +39,17 @@ export default {
 	/**
 	 * Format latency values in milliseconds
 	 */
-	formatLatency(value: number): string {
+	formatLatency(value: string): string {
 		if (value === null || value === undefined) {
 			return "0ms";
 		}
-		if (value < 1) {
-			return `${(value * 1000).toFixed(2)}μs`;
+		// Make sure value is a number
+		const numberValue = Number(value);
+
+		if (numberValue < 1) {
+			return `${(numberValue * 1000).toFixed(2)}μs`;
 		}
-		return `${value.toFixed(2)}ms`;
+		return `${numberValue.toFixed(2)}ms`;
 	},
 
 	/**
@@ -175,6 +185,28 @@ export default {
 	},
 
 	/**
+	 * Format JSON for display
+	 */
+	formatJSON(value: any): string {
+		if (!value) {
+			return "";
+		}
+		try {
+			if (typeof value === 'string') {
+				// Try to parse and format if it's a JSON string
+				const parsed = JSON.parse(value);
+				return JSON.stringify(parsed, null, 2);
+			} else {
+				// Format if it's already an object
+				return JSON.stringify(value, null, 2);
+			}
+		} catch (e) {
+			// Return as-is if it's not valid JSON
+			return value;
+		}
+	},
+
+	/**
 	 * Format key name for display (truncate if too long)
 	 */
 	formatKeyName(keyName: string, maxLength: number = 30): string {
@@ -217,16 +249,26 @@ export default {
 	 * Format cache efficiency with color indication
 	 */
 	formatCacheEfficiencyWithColor(value: number): string {
-		if (value === null || value === undefined || value === 0) {
+		if (value === null || value === undefined) {
 			return ValueColor.None;
 		}
 
-		if (value > 10) {
+		if (value > 5) {
 			return ValueColor.Good;
-		} else if (value > 5) {
+		} else if (value >= 3) {
 			return ValueColor.Critical;
 		} else {
 			return ValueColor.Error;
 		}
+	},
+
+	formatTruncatedText(value: string, maxLength: number = 50): string {
+		if (!value) {
+			return "";
+		}
+		if (value.length <= maxLength) {
+			return value;
+		}
+		return value.substring(0, maxLength) + "...";
 	}
 };

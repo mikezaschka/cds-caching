@@ -1,6 +1,6 @@
 using {db} from '../db/model';
 using {API_BUSINESS_PARTNER} from './external/API_BUSINESS_PARTNER.csn';
-using { plugin.cds_caching.Statistics } from 'cds-caching/index.cds';
+using { plugin.cds_caching.CachingApiService } from 'cds-caching/index.cds';
 
 service AppService {
 

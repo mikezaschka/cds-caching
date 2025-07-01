@@ -24,7 +24,8 @@ export default class Component extends UIComponent {
 
 		this.setModel(new JSONModel({
 			selectedCache: null,
-			selectedTab: "cache"
+			selectedTab: "main",
+			layout: "OneColumn"
 		}), "app");
 
 		// create the formatter model

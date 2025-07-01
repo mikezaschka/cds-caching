@@ -1,5 +1,6 @@
 test
 node_modules
+examples
 .git
 .gitignore
 .eslintrc.js

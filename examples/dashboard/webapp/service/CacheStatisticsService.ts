@@ -67,44 +67,51 @@ export interface HistoricalStatistics {
     cache: string;
     timestamp: string;
     period: string;
+    
+            // Read-through metrics (high value with latencies)
     hits: number;
     misses: number;
     sets: number;
     deletes: number;
     errors: number;
+    totalRequests: number;
 
-    // Overall latency metrics
-    avgLatency: number;
-    p95Latency: number;
-    p99Latency: number;
-    minLatency: number;
-    maxLatency: number;
-
-    // Hit-specific latency metrics
+            // Read-through latency metrics
     avgHitLatency: number;
     p95HitLatency: number;
     p99HitLatency: number;
     minHitLatency: number;
     maxHitLatency: number;
-
-    // Miss-specific latency metrics
     avgMissLatency: number;
     p95MissLatency: number;
     p99MissLatency: number;
     minMissLatency: number;
     maxMissLatency: number;
-
-    // Set/Delete latency metrics
     avgSetLatency: number;
     avgDeleteLatency: number;
 
-    // Performance metrics
-    memoryUsage: number;
-    itemCount: number;
+            // Read-through performance metrics
     hitRatio: number;
     throughput: number;
     errorRate: number;
     cacheEfficiency: number;
+
+    // Native function metrics (basic counts only)
+    nativeSets: number;
+    nativeGets: number;
+    nativeDeletes: number;
+    nativeClears: number;
+    nativeDeleteByTags: number;
+    nativeErrors: number;
+    totalNativeOperations: number;
+
+    // Native function performance metrics
+    nativeThroughput: number;
+    nativeErrorRate: number;
+
+    // Common metrics
+    memoryUsage: number;
+    itemCount: number;
     uptimeMs: number;
 }
 
@@ -130,11 +137,11 @@ export default class CacheStatisticsService {
     }
 
     /**
-     * Get current cache statistics using entity set
+     * Get current cache metrics using entity set
      */
-    async getCurrentStatistics(cacheName: string): Promise<CacheStatistics | null> {
+    async getCurrentMetrics(cacheName: string): Promise<CacheStatistics | null> {
         try {
-            const binding = this.model.bindList("/Statistics", undefined, undefined, undefined, {
+            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
                 $filter: `period eq 'hourly' and cache eq '${cacheName}'`,
                 $orderby: "timestamp desc"
             });
@@ -148,16 +155,16 @@ export default class CacheStatisticsService {
                 return null;
             }
         } catch (error) {
-            console.error("Error fetching current statistics:", error);
-            MessageBox.error("Failed to load current statistics");
+            console.error("Error fetching current metrics:", error);
+            MessageBox.error("Failed to load current metrics");
             return null;
         }
     }
 
     /**
-     * Get historical statistics using entity set
+     * Get historical metrics using entity set
      */
-    async getHistoricalStatistics(cacheName: string, period: string = "hourly", from?: string, to?: string): Promise<HistoricalStatistics[]> {
+    async getHistoricalMetrics(cacheName: string, period: string = "hourly", from?: string, to?: string): Promise<HistoricalStatistics[]> {
         try {
             let filter = `period eq '${period}' and cache eq '${cacheName}'`;
             if (from) {
@@ -167,7 +174,7 @@ export default class CacheStatisticsService {
                 filter += ` and timestamp le ${to}`;
             }
 
-            const binding = this.model.bindList("/Statistics", undefined, undefined, undefined, {
+            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
                 $filter: filter,
                 $orderby: "timestamp desc"
             });
@@ -175,8 +182,8 @@ export default class CacheStatisticsService {
             const data = await binding.requestContexts();
             return data.map((item: any) => item.getObject());
         } catch (error) {
-            console.error("Error fetching historical statistics:", error);
-            MessageBox.error("Failed to load historical statistics");
+            console.error("Error fetching historical metrics:", error);
+            MessageBox.error("Failed to load historical metrics");
             return [];
         }
     }
@@ -186,9 +193,9 @@ export default class CacheStatisticsService {
      */
     async getTopKeys(cacheName: string, limit: number = 10): Promise<KeyAccess[]> {
         try {
-            const binding = this.model.bindList("/KeyAccesses", undefined, undefined, undefined, {
+            const binding = this.model.bindList("/KeyMetrics", undefined, undefined, undefined, {
                 $filter: `period eq 'current' and cache eq '${cacheName}'`,
-                $orderby: "total desc"
+                $orderby: "totalRequests desc"
             });
 
             const data = await binding.requestContexts();
@@ -205,7 +212,7 @@ export default class CacheStatisticsService {
      */
     async getColdKeys(cacheName: string, limit: number = 10): Promise<KeyAccess[]> {
         try {
-            const binding = this.model.bindList("/KeyAccesses", undefined, undefined, undefined, {
+            const binding = this.model.bindList("/KeyMetrics", undefined, undefined, undefined, {
                 $filter: `period eq 'current' and cache eq '${cacheName}'`,
                 $orderby: "lastAccess asc"
             });
@@ -296,11 +303,11 @@ export default class CacheStatisticsService {
     }
 
     /**
-     * Get all available statistics for a cache
+     * Get all available metrics for a cache
      */
-    async getAvailableStatistics(cacheName: string): Promise<any[]> {
+    async getAvailableMetrics(cacheName: string): Promise<any[]> {
         try {
-            const binding = this.model.bindList("/Statistics", undefined, undefined, undefined, {
+            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
                 $filter: `cache eq '${cacheName}'`,
                 $orderby: "timestamp desc"
             });
@@ -308,19 +315,19 @@ export default class CacheStatisticsService {
             const data = await binding.requestContexts();
             return data.map((item: any) => item.getObject());
         } catch (error) {
-            console.error("Error fetching available statistics:", error);
-            MessageBox.error("Failed to load available statistics");
+            console.error("Error fetching available metrics:", error);
+            MessageBox.error("Failed to load available metrics");
             return [];
         }
     }
 
     /**
-     * Get a specific statistic by ID
+     * Get a specific metric by ID
      */
-    async getStatisticById(cacheName: string, statisticId: string): Promise<CacheStatistics | null> {
+    async getMetricById(cacheName: string, metricId: string): Promise<CacheStatistics | null> {
         try {
-            const binding = this.model.bindList("/Statistics", undefined, undefined, undefined, {
-                $filter: `ID eq '${statisticId}' and cache eq '${cacheName}'`
+            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
+                $filter: `ID eq '${metricId}' and cache eq '${cacheName}'`
             });
 
             const data = await binding.requestContexts();
@@ -332,36 +339,18 @@ export default class CacheStatisticsService {
                 return null;
             }
         } catch (error) {
-            console.error("Error fetching statistic by ID:", error);
-            MessageBox.error("Failed to load statistic");
+            console.error("Error fetching metric by ID:", error);
+            MessageBox.error("Failed to load metric");
             return null;
         }
     }
 
     /**
-     * Get runtime configuration
+     * Set metrics enabled/disabled
      */
-    async getRuntimeConfiguration(cacheName: string): Promise<{ enableStatistics: boolean; enableKeyTracking: boolean }> {
+    async setMetricsEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
         try {
-            const context = this.model.bindContext(`/Caches/${cacheName}`);
-
-            return new Promise(async (resolve, reject) => {
-                const result = await context.requestObject()
-                resolve({ enableStatistics: result.enableStatistics, enableKeyTracking: result.enableKeyTracking });
-            });
-        } catch (error) {
-            console.error("Error getting runtime configuration:", error);
-            MessageBox.error("Failed to get runtime configuration");
-            return { enableStatistics: false, enableKeyTracking: false };
-        }
-    }
-
-    /**
-     * Set statistics enabled/disabled
-     */
-    async setStatisticsEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
-        try {
-            const context = this.model.bindContext(`/setStatisticsEnabled(...)`);
+            const context = this.model.bindContext(`/setMetricsEnabled(...)`);
             context.setParameter("cache", cacheName);
             context.setParameter("enabled", enabled);
             
@@ -369,24 +358,24 @@ export default class CacheStatisticsService {
                 context.execute().then(() => {
                     resolve(true);
                 }).catch((error: any) => {
-                    console.error("Error setting statistics enabled:", error);
-                    MessageBox.error("Failed to update statistics configuration");
+                    console.error("Error setting metrics enabled:", error);
+                    MessageBox.error("Failed to update metrics configuration");
                     reject(error);
                 });
             });
         } catch (error) {
-            console.error("Error setting statistics enabled:", error);
-            MessageBox.error("Failed to update statistics configuration");
+            console.error("Error setting metrics enabled:", error);
+            MessageBox.error("Failed to update metrics configuration");
             return false;
         }
     }
 
     /**
-     * Set key tracking enabled/disabled
+     * Set key metrics enabled/disabled
      */
-    async setKeyTrackingEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
+    async setKeyMetricsEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
         try {
-            const context = this.model.bindContext(`/setKeyTrackingEnabled(...)`);
+            const context = this.model.bindContext(`/setKeyMetricsEnabled(...)`);
             context.setParameter("cache", cacheName);
             context.setParameter("enabled", enabled);
             
@@ -394,14 +383,14 @@ export default class CacheStatisticsService {
                 context.execute().then(() => {
                     resolve(true);
                 }).catch((error: any) => {
-                    console.error("Error setting key tracking enabled:", error);
-                    MessageBox.error("Failed to update key tracking configuration");
+                    console.error("Error setting key metrics enabled:", error);
+                    MessageBox.error("Failed to update key metrics configuration");
                     reject(error);
                 });
             });
         } catch (error) {
-            console.error("Error setting key tracking enabled:", error);
-            MessageBox.error("Failed to update key tracking configuration");
+            console.error("Error setting key metrics enabled:", error);
+            MessageBox.error("Failed to update key metrics configuration");
             return false;
         }
     }

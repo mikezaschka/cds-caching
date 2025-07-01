@@ -14,11 +14,6 @@ export default class App extends BaseController {
 
 
 	public onInit(): void {
-
-		// Get the OData model from the component
-		const odataModel = this.getOwnerComponent().getModel() as ODataModel;
-		this.statisticsService = new CacheStatisticsService(odataModel);
-
 		// apply content density mode to root view
 		this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 	}

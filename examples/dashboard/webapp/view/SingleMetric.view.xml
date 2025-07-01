@@ -1,4 +1,4 @@
-<mvc:View controllerName="cds.plugin.caching.dashboard.controller.SingleStatistic"
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.SingleMetric"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
@@ -14,11 +14,11 @@
 		formatter: 'cds/plugin/caching/dashboard/model/formatter'
 	}">
 
-	<f:DynamicPage title="Statistic Details" showFooter="false">
+	<f:DynamicPage title="Metric Details" showFooter="false">
 		<f:title>
 			<f:DynamicPageTitle>
 				<f:heading>
-					<Title text="Statistic: {ui>/statisticId}" />
+					<Title text="Metric: {ui>/metricId}" />
 				</f:heading>
 				<f:actions>
 					<Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press="onRefresh" />
@@ -32,7 +32,7 @@
 		</f:title>
 
 		<f:content>
-			<cssgrid:CSSGrid id="mainGrid" width="100%">
+			<cssgrid:CSSGrid id="metricMainGrid" width="100%">
 				<cssgrid:customLayout>
 					<cssgrid:ResponsiveColumnLayout />
 				</cssgrid:customLayout>
@@ -45,7 +45,7 @@
 
 					                <Title text="Read-Through Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
 
-					<f:GridContainer id="cacheThroughGrid" columnsChange=".onColumnsChange">
+					<f:GridContainer id="metricCacheThroughGrid" columnsChange=".onColumnsChange">
 						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Ratio" subheader="Cache Hit Rate">
 							<TileContent unit="%">
 								<NumericContent valueColor="{formatter: 'formatter.formatHitRatioWithColor', path: 'ui>/hitRatio'}" value="{ path: 'ui>/hitRatio', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
@@ -89,8 +89,8 @@
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
-									<viz:Popover id="cacheThroughPopOver"></viz:Popover>
-									<viz:VizFrame id="cacheThroughChart" vizType="pie" width="100%" height="300px">
+									<viz:Popover id="metricCacheThroughPopOver"></viz:Popover>
+									<viz:VizFrame id="metricCacheThroughChart" vizType="pie" width="100%" height="300px">
 										<viz:dataset>
 											<viz.data:FlattenedDataset data="{ui>/cacheThroughData}">
 												<viz.data:dimensions>
@@ -102,8 +102,8 @@
 											</viz.data:FlattenedDataset>
 										</viz:dataset>
 										<viz:feeds>
-											<viz.feeds:FeedItem id="cacheThroughValueAxisFeed" uid="size" type="Measure" values="Count" />
-											<viz.feeds:FeedItem id="cacheThroughCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
+											<viz.feeds:FeedItem id="metricCacheThroughValueAxisFeed" uid="size" type="Measure" values="Count" />
+											<viz.feeds:FeedItem id="metricCacheThroughCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
 										</viz:feeds>
 									</viz:VizFrame>
 								</l:VerticalLayout>
@@ -175,8 +175,8 @@
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
-									<viz:Popover id="latencyPopOver"></viz:Popover>
-									<viz:VizFrame id="latencyChart" vizType="bar" width="100%" height="300px">
+									<viz:Popover id="metricLatencyPopOver"></viz:Popover>
+									<viz:VizFrame id="metricLatencyChart" vizType="bar" width="100%" height="300px">
 										<viz:dataset>
 											<viz.data:FlattenedDataset data="{ui>/latencyData}">
 												<viz.data:dimensions>
@@ -188,8 +188,8 @@
 											</viz.data:FlattenedDataset>
 										</viz:dataset>
 										<viz:feeds>
-											<viz.feeds:FeedItem id="valueAxisFeed" uid="valueAxis" type="Measure" values="Latency" />
-											<viz.feeds:FeedItem id="categoryAxisFeed" uid="categoryAxis" type="Dimension" values="Operation" />
+											<viz.feeds:FeedItem id="metricValueAxisFeed" uid="valueAxis" type="Measure" values="Latency" />
+											<viz.feeds:FeedItem id="metricCategoryAxisFeed" uid="categoryAxis" type="Dimension" values="Operation" />
 										</viz:feeds>
 									</viz:VizFrame>
 								</l:VerticalLayout>
@@ -246,7 +246,7 @@
 
 					<Title text="Native Function Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
 
-					<f:GridContainer id="nativeGrid" columnsChange=".onColumnsChange">
+					<f:GridContainer id="metricNativeGrid" columnsChange=".onColumnsChange">
 						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Throughput" subheader="Operations per Second">
 							<TileContent unit="ops/s">
 								<NumericContent value="{ path: 'ui>/nativeThroughput', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
@@ -334,8 +334,8 @@
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
-									<viz:Popover id="nativePopOver"></viz:Popover>
-									<viz:VizFrame id="nativeChart" vizType="pie" width="100%" height="300px">
+									<viz:Popover id="metricNativePopOver"></viz:Popover>
+									<viz:VizFrame id="metricNativeChart" vizType="pie" width="100%" height="300px">
 										<viz:dataset>
 											<viz.data:FlattenedDataset data="{ui>/nativeData}">
 												<viz.data:dimensions>
@@ -347,8 +347,8 @@
 											</viz.data:FlattenedDataset>
 										</viz:dataset>
 										<viz:feeds>
-											<viz.feeds:FeedItem id="nativeValueAxisFeed" uid="size" type="Measure" values="Count" />
-											<viz.feeds:FeedItem id="nativeCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
+											<viz.feeds:FeedItem id="metricNativeValueAxisFeed" uid="size" type="Measure" values="Count" />
+											<viz.feeds:FeedItem id="metricNativeCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
 										</viz:feeds>
 									</viz:VizFrame>
 								</l:VerticalLayout>
@@ -364,4 +364,4 @@
 		</f:content>
 	</f:DynamicPage>
 
-</mvc:View>
+</mvc:View> 

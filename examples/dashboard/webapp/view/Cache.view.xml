@@ -1,0 +1,886 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.Cache"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.f"
+	xmlns:card="sap.f.cards"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:ui="sap.ui.table"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:semantic="sap.m.semantic"
+	xmlns:unified="sap.ui.unified"
+	xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" app:routePattern="statistics" core:require="{
+		formatter: 'cds/plugin/caching/dashboard/model/formatter'
+	}">
+
+	<f:DynamicPage title="Cache: {app>/selectedCache}" stickySubheaderProvider="cacheStickySubheaderProvider">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Cache: {app>/selectedCache}"/>
+				</f:heading>
+				<f:actions>
+					<Label text="Enable Metrics" class=""/>
+					<Switch id="cacheEnableMetrics" state="{ path: 'metricsEnabled', mode: 'sap.ui.model.BindingMode.OneWay'}" change="onEnableMetricsChange" />
+					<Label text="Enable Key Metrics" class=""/>
+					<Switch enabled="{ path: 'metricsEnabled', mode: 'sap.ui.model.BindingMode.OneWay' }" id="cacheEnableKeyMetrics" state="{ path: 'keyMetricsEnabled', mode: 'sap.ui.model.BindingMode.OneWay' }" change="onEnableKeyMetricsChange" />
+					<ToolbarSeparator />
+					<Button text="Clear Cache" type="Transparent" press="onClearCache" />
+				</f:actions>
+				<f:navigationActions>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://full-screen" press="handleFullScreen" tooltip="Enter Full Screen Mode" visible="{= ${app>/layout} === 'TwoColumnsMidExpanded' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://exit-full-screen" press="handleExitFullScreen" tooltip="Exit Full Screen Mode" visible="{= ${app>/layout} === 'MidColumnFullScreen' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="Close middle column"/>
+				</f:navigationActions>
+			</f:DynamicPageTitle>
+		</f:title>
+
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+
+		<f:content>
+			<IconTabBar id="cacheStickySubheaderProvider" stretchContentHeight="true" expandable="false" headerMode="Inline" select=".onSelectionChange" selectedKey="{ui>/selectedTab}">
+				<items>
+					<IconTabFilter text="Overview" key="main">
+						<f:GridContainer snapToRow="true" allowDenseFill="true">
+							<f:Card>
+								<f:header>
+									<card:Header title="Configuration" subtitle="Cache Configuration" />
+								</f:header>
+								<f:content>
+									<VBox width="100%">
+										<form:SimpleForm width="100%" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="2" layout="ResponsiveGridLayout">
+											<form:content>
+												<TextArea rows="10" editable="false" width="100%" value="{ path: 'config', formatter: 'formatter.formatJSON' }" />
+											</form:content>
+										</form:SimpleForm>
+									</VBox>
+								</f:content>
+								<f:layoutData>
+									<f:GridContainerItemLayoutData columns="6" minRows="3"/>
+								</f:layoutData>
+							</f:Card>
+							<f:Card>
+								<f:header>
+									<card:Header title="Create Cache Entry" subtitle="Create a new cache entry" />
+								</f:header>
+								<f:content>
+									<VBox width="100%">
+										<form:SimpleForm width="100%" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="2" layout="ResponsiveGridLayout">
+											<form:content>
+												<Label text="Key" />
+												<Input id="createKeyInput" value="{ui>/createKey}" width="100%" />
+												<Label text="Value"/>
+												<TextArea id="createValueInput" rows="10" value="{ui>/createValue}" width="100%" />
+												<Label text="TTL (seconds)"/>
+												<Input id="createTtlInput" type="Number" value="{ui>/createTtl}" width="100%" />
+											</form:content>
+										</form:SimpleForm>
+										<Button text="Set Entry" type="Emphasized" press="onSetKey" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+											<layoutData>
+												<FlexItemData alignSelf="End" />
+											</layoutData>
+										</Button>
+									</VBox>
+
+								</f:content>
+
+
+								<f:layoutData>
+									<f:GridContainerItemLayoutData columns="6" minRows="3"/>
+								</f:layoutData>
+							</f:Card>
+							<f:Card>
+								<f:header>
+									<card:Header title="Get Cache Entry" subtitle="Get a cache entry" />
+								</f:header>
+								<f:content>
+									<VBox width="100%">
+										<form:SimpleForm width="100%" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="2" layout="ResponsiveGridLayout">
+											<form:content>
+												<Label text="Key"/>
+												<Input id="getKeyInput" value="{ui>/getKey}" width="100%" />
+												<Label text="Value"/>
+												<TextArea id="getValueOutput" rows="10" editable="false" width="100%" value="{ui>/getValue}" />
+											</form:content>
+										</form:SimpleForm>
+										<Button text="Get Entry" type="Emphasized" press="onGetKey" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+											<layoutData>
+												<FlexItemData alignSelf="End" />
+											</layoutData>
+										</Button>
+									</VBox>
+
+								</f:content>
+
+
+								<f:layoutData>
+									<f:GridContainerItemLayoutData columns="6" minRows="3"/>
+								</f:layoutData>
+							</f:Card>
+							<f:Card>
+								<f:header>
+									<card:Header title="Delete Cache Entry" subtitle="Delete a cache entry" />
+								</f:header>
+								<f:content>
+									<VBox width="100%">
+										<form:SimpleForm width="100%" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="2" layout="ResponsiveGridLayout">
+											<form:content>
+												<Label text="Key" class=""/>
+												<Input id="deleteKeyInput" change="onDeleteKeyChange" width="100%" />
+											</form:content>
+										</form:SimpleForm>
+										<Button text="Delete Entry" type="Emphasized" press="onDeleteKey" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+											<layoutData>
+												<FlexItemData alignSelf="End" />
+											</layoutData>
+										</Button>
+									</VBox>
+
+								</f:content>
+
+
+								<f:layoutData>
+									<f:GridContainerItemLayoutData columns="6" minRows="3"/>
+								</f:layoutData>
+							</f:Card>
+
+						</f:GridContainer>
+
+					</IconTabFilter>
+					<IconTabSeparator />
+					<IconTabFilter text="Metrics" key="metrics">
+						<Toolbar class="sapUiTinyMarginBottom" design="Transparent" style="Clear">
+							<Title text="Aggregated Metrics by Hour" />
+							<ToolbarSpacer />
+							<Button icon="sap-icon://refresh" text="Refresh" press=".onRefresh" type="Transparent" class="sapUiTinyMarginEnd" />
+							<Button type="Critical" text="Clear Metrics" press=".onClearMetrics" class="sapUiTinyMarginEnd" />
+						</Toolbar>
+
+						<ui:Table id="metricsTable" 
+								  rows="{
+								  	path: '/Metrics',
+									sorter: {
+										path: 'timestamp',
+										descending: true
+									}
+								  }" 
+								  rowMode="Auto"
+								  selectionMode="Single"
+								  selectionBehavior="RowOnly"
+								  rowSelectionChange=".onMetricsRowSelect"
+								  enableColumnReordering="true">
+							<ui:columns>
+								<!-- Basic Information -->
+								<ui:Column width="150px" sortProperty="timestamp" filterProperty="timestamp">
+									<ui:label>
+										<Text text="Timestamp" />
+									</ui:label>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatDate', path: 'timestamp'}" />
+									</ui:template>
+								</ui:Column>
+																
+								<!-- Read-Through Operations -->
+								<ui:Column width="80px" sortProperty="hits" filterProperty="hits" headerSpan="16,1">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Hits" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'hits', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="misses" filterProperty="misses">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Misses" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'misses', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="sets" filterProperty="sets">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Sets" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'sets', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="deletes" filterProperty="deletes">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Deletes" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'deletes', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="errors" filterProperty="errors">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Errors" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'errors', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="totalRequests" filterProperty="totalRequests">
+									<ui:multiLabels>
+										<Text text="Read-Through" />
+										<Text text="Total Requests" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'totalRequests', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Performance -->
+								<ui:Column width="100px" sortProperty="hitRatio" filterProperty="hitRatio" headerSpan="4,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Hit Ratio %" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'hitRatio', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="throughput" filterProperty="throughput">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Throughput" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'throughput', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="errorRate" filterProperty="errorRate">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Error Rate %" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'errorRate', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="cacheEfficiency" filterProperty="cacheEfficiency">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Cache Efficiency" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'cacheEfficiency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Hit Latencies -->
+								<ui:Column width="120px" sortProperty="avgHitLatency" filterProperty="avgHitLatency" headerSpan="8,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Hit Avg (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'avgHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								
+								<ui:Column width="120px" sortProperty="minHitLatency" filterProperty="minHitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Hit Min (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'minHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="maxHitLatency" filterProperty="maxHitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Hit Max (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'maxHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Miss Latencies -->
+								<ui:Column width="120px" sortProperty="avgMissLatency" filterProperty="avgMissLatency" headerSpan="5,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Miss Avg (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'avgMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								
+								<ui:Column width="120px" sortProperty="minMissLatency" filterProperty="minMissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Miss Min (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'minMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="maxMissLatency" filterProperty="maxMissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Miss Max (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'maxMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}ms" />
+									</ui:template>
+								</ui:Column>
+								
+								
+								<!-- Native Function Operations -->
+								<ui:Column width="80px" sortProperty="nativeSets" filterProperty="nativeSets" headerSpan="9,1">
+									<ui:multiLabels>
+										<Text text="Native Function" />
+										<Text text="Sets" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeSets', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="nativeGets" filterProperty="nativeGets">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Gets" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeGets', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="nativeDeletes" filterProperty="nativeDeletes">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Deletes" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeDeletes', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="nativeClears" filterProperty="nativeClears">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Clears" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeClears', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="nativeDeleteByTags" filterProperty="nativeDeleteByTags">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Delete By Tags" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeDeleteByTags', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="nativeErrors" filterProperty="nativeErrors">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Errors" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeErrors', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="totalNativeOperations" filterProperty="totalNativeOperations">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Total" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'totalNativeOperations', type: 'sap.ui.model.type.Integer'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Native Function Performance -->
+								<ui:Column width="100px" sortProperty="nativeThroughput" filterProperty="nativeThroughput" headerSpan="2,1">
+									<ui:multiLabels>
+										<Text text="Native Function Performance" />
+										<Text text="Throughput" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeThroughput', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="nativeErrorRate" filterProperty="nativeErrorRate">
+									<ui:multiLabels>
+										<Text text="Native Function Performance" />
+										<Text text="Error Rate %" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{path: 'nativeErrorRate', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+									</ui:template>
+								</ui:Column>
+							</ui:columns>
+						</ui:Table>
+
+
+						<!-- Chart Section -->
+						<f:Card class="sapUiTinyMarginBottom" visible="false">
+							<f:header>
+								<card:Header title="Trends" subtitle="Performance trends over time" />
+							</f:header>
+							<f:content>
+								<l:VerticalLayout class="sapUiTinyMargin">
+									<l:HorizontalLayout class="sapUiTinyMarginBottom">
+										<Select id="cacheChartMetric" selectedKey="{ui>/chartMetric}" change=".onChartMetricChange" class="sapUiTinyMarginEnd">
+											<core:Item key="hitRatio" text="Hit Ratio" />
+											<core:Item key="avgLatency" text="Average Latency" />
+											<core:Item key="avgHitLatency" text="Hit Latency" />
+											<core:Item key="avgMissLatency" text="Miss Latency" />
+											<core:Item key="avgSetLatency" text="Set Latency" />
+											<core:Item key="avgDeleteLatency" text="Delete Latency" />
+											<core:Item key="cacheEfficiency" text="Cache Efficiency" />
+											<core:Item key="throughput" text="Throughput" />
+											<core:Item key="errorRate" text="Error Rate" />
+											<core:Item key="memoryUsage" text="Memory Usage" />
+										</Select>
+									</l:HorizontalLayout>
+
+									<Text text="Chart visualization will be implemented here" />
+								</l:VerticalLayout>
+							</f:content>
+						</f:Card>
+					</IconTabFilter>
+					<IconTabFilter text="Key Metrics" key="keymetrics">
+
+						<!-- Key Access Data Table -->
+
+						<ui:Table id="keyMetricsTable" rows="{
+							path: '/KeyMetrics'
+						}" busyIndicatorDelay="0" busy="{ui>/loading}" enableBusyIndicator="true" visibleRowCount="15" selectionMode="Single" selectionBehavior="RowOnly" rowSelectionChange=".onKeyMetricsRowSelect" enableColumnReordering="true" enableColumnFreeze="true" showColumnVisibilityMenu="true" fixedColumnCount="3">
+							<ui:extension>
+								<OverflowToolbar>
+									<Title text="Key Metrics Data" />
+									<ToolbarSpacer />
+									<Button icon="sap-icon://refresh" press=".onRefreshKeyMetricsData" tooltip="Refresh Data" />
+								</OverflowToolbar>
+							</ui:extension>
+							<ui:columns>
+								<!-- Basic Information -->
+								<ui:Column width="200px" sortProperty="keyName" filterProperty="keyName">
+									<ui:multiLabels>
+										<Text text="Key Name" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatKeyName', path: 'keyName'}" tooltip="{keyName}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="dataType" filterProperty="dataType">
+									<ui:multiLabels>
+										<Text text="Type" />
+									</ui:multiLabels>
+									<ui:template>
+										<ObjectStatus text="{dataType}" state="{= ${dataType} === 'query' ? 'Success' : ${dataType} === 'function' ? 'Information' : ${dataType} === 'request' ? 'Warning' : 'None'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="period" filterProperty="period">
+									<ui:multiLabels>
+										<Text text="Period" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{period}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Metadata -->
+								<ui:Column width="120px" sortProperty="serviceName" filterProperty="serviceName" headerSpan="4,1">
+									<ui:multiLabels>
+										<Text text="Metadata" />
+										<Text text="Service" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{serviceName}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="entityName" filterProperty="entityName">
+									<ui:multiLabels>
+										<Text text="Metadata" />
+										<Text text="Entity" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{entityName}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="operation" filterProperty="operation">
+									<ui:multiLabels>
+										<Text text="Metadata" />
+										<Text text="Operation" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{operation}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="operationType" filterProperty="operationType">
+									<ui:multiLabels>
+										<Text text="Metadata" />
+										<Text text="Operation Type" />
+									</ui:multiLabels>
+									<ui:template>
+										<ObjectStatus text="{operationType}" state="{= ${operationType} === 'read_through' ? 'Success' : ${operationType} === 'native' ? 'Information' : 'Warning'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Operations -->
+								<ui:Column width="60px" sortProperty="hits" filterProperty="hits" headerSpan="5,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Operations" />
+										<Text text="Hits" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{hits}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="misses" filterProperty="misses">
+									<ui:multiLabels>
+										<Text text="Read-Through Operations" />
+										<Text text="Misses" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{misses}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="sets" filterProperty="sets">
+									<ui:multiLabels>
+										<Text text="Read-Through Operations" />
+										<Text text="Sets" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{sets}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="deletes" filterProperty="deletes">
+									<ui:multiLabels>
+										<Text text="Read-Through Operations" />
+										<Text text="Deletes" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{deletes}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="total" filterProperty="total">
+									<ui:multiLabels>
+										<Text text="Read-Through Operations" />
+										<Text text="Total" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{total}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Performance -->
+								<ui:Column width="100px" sortProperty="hitRatio" filterProperty="hitRatio" headerSpan="2,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Hit Ratio %" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatNumberValue', path: 'hitRatio'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="cacheEfficiency" filterProperty="cacheEfficiency">
+									<ui:multiLabels>
+										<Text text="Read-Through Performance" />
+										<Text text="Cache Efficiency" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatNumberValue', path: 'cacheEfficiency'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Hit Latencies -->
+								<ui:Column width="120px" sortProperty="avgHitLatency" filterProperty="avgHitLatency" headerSpan="5,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Avg (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'avgHitLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="p95HitLatency" filterProperty="p95HitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="P95 (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'p95HitLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="p99HitLatency" filterProperty="p99HitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="P99 (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'p99HitLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="minHitLatency" filterProperty="minHitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Min (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'minHitLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="maxHitLatency" filterProperty="maxHitLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Hit Latencies" />
+										<Text text="Max (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'maxHitLatency'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Miss Latencies -->
+								<ui:Column width="120px" sortProperty="avgMissLatency" filterProperty="avgMissLatency" headerSpan="5,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Avg (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'avgMissLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="p95MissLatency" filterProperty="p95MissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="P95 (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'p95MissLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="p99MissLatency" filterProperty="p99MissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="P99 (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'p99MissLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="minMissLatency" filterProperty="minMissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Min (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'minMissLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="maxMissLatency" filterProperty="maxMissLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Miss Latencies" />
+										<Text text="Max (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'maxMissLatency'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Read-Through Other Latencies -->
+								<ui:Column width="120px" sortProperty="avgSetLatency" filterProperty="avgSetLatency" headerSpan="2,1">
+									<ui:multiLabels>
+										<Text text="Read-Through Other Latencies" />
+										<Text text="Avg Set (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'avgSetLatency'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="avgDeleteLatency" filterProperty="avgDeleteLatency">
+									<ui:multiLabels>
+										<Text text="Read-Through Other Latencies" />
+										<Text text="Avg Delete (ms)" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatLatency', path: 'avgDeleteLatency'}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Native Function Operations -->
+								<ui:Column width="60px" sortProperty="nativeHits" filterProperty="nativeHits" headerSpan="4,1">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Hits" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{nativeHits}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="nativeMisses" filterProperty="nativeMisses">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Misses" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{nativeMisses}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="nativeSets" filterProperty="nativeSets">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Sets" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{nativeSets}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="60px" sortProperty="nativeDeletes" filterProperty="nativeDeletes">
+									<ui:multiLabels>
+										<Text text="Native Function Operations" />
+										<Text text="Deletes" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{nativeDeletes}" />
+									</ui:template>
+								</ui:Column>
+								
+								<!-- Context Information -->
+								<ui:Column width="150px" sortProperty="lastAccess" filterProperty="lastAccess" headerSpan="8,1">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Last Access" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatDate', path: 'lastAccess'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="tenant" filterProperty="tenant">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Tenant" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{tenant}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="100px" sortProperty="user" filterProperty="user">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="User" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{user}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="80px" sortProperty="locale" filterProperty="locale">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Locale" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{locale}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="150px" sortProperty="timestamp" filterProperty="timestamp">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="First Access" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{formatter: 'formatter.formatDate', path: 'timestamp'}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="120px" sortProperty="functionName" filterProperty="functionName">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Function Name" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{functionName}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="200px" sortProperty="queryText" filterProperty="queryText">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Query Text" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{queryText}" tooltip="{queryText}" />
+									</ui:template>
+								</ui:Column>
+								<ui:Column width="200px" sortProperty="requestInfo" filterProperty="requestInfo">
+									<ui:multiLabels>
+										<Text text="Context Information" />
+										<Text text="Request Info" />
+									</ui:multiLabels>
+									<ui:template>
+										<Text text="{requestInfo}" tooltip="{requestInfo}" />
+									</ui:template>
+								</ui:Column>
+							</ui:columns>
+						</ui:Table>
+
+					</IconTabFilter>
+					<IconTabSeparator ></IconTabSeparator>
+					<IconTabFilter text="Browse Cache Entries" key="entries" icon="sap-icon://warning" iconColor="Critical">
+						<l:VerticalLayout width="100%">
+							<f:Card class="sapUiTinyMargin">
+								<f:header>
+									<card:Header title="Cache Entries" subtitle="Browse all cache entries (use with caution)" />
+								</f:header>
+								<f:content>
+									<l:VerticalLayout class="sapUiTinyMargin">
+										<MessageStrip text="Warning: Loading all cache entries may impact performance for large caches. Use the button below to load entries on demand." type="Warning" showIcon="true" class="sapUiTinyMarginBottom" />
+
+										<Button text="Load Cache Entries" icon="sap-icon://download" press="onLoadCacheEntries" type="Emphasized" class="sapUiTinyMarginBottom" />
+
+										<Table id="cacheEntriesTable" items="{ui>/cacheEntries}" busyIndicatorDelay="0" busy="{ui>/loadingEntries}" visible="{ui>/showEntriesTable}">
+											<columns>
+												<Column width="200px">
+													<Text text="Key" />
+												</Column>
+												<Column width="300px">
+													<Text text="Value" />
+												</Column>
+												<Column width="100px">
+													<Text text="Tags" />
+												</Column>
+												<Column width="150px">
+													<Text text="Timestamp" />
+												</Column>
+
+											</columns>
+											<items>
+												<ColumnListItem>
+													<cells>
+														<Text text="{ui>entryKey}" tooltip="{ui>entryKey}" />
+														<Text text="{ui>value}" tooltip="{ui>value}" />
+														<Text text="{ui>tags}" />
+														<Text text="{formatter: 'formatter.formatDate', path: 'ui>timestamp'}" />
+													</cells>
+												</ColumnListItem>
+											</items>
+										</Table>
+									</l:VerticalLayout>
+								</f:content>
+							</f:Card>
+						</l:VerticalLayout>
+					</IconTabFilter>
+				</items>
+
+			</IconTabBar>
+
+
+		</f:content>
+	</f:DynamicPage>
+</mvc:View> 

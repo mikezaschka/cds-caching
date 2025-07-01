@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { scanCachingAnnotations } = require('./../srv/util')
+const { scanCachingAnnotations } = require('../lib/util')
 const { GET, expect } = cds.test().in(__dirname + '/app')
 
 describe('CachingService', () => {

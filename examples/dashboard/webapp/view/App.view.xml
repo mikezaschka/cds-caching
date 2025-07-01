@@ -11,80 +11,8 @@
 	xmlns:mvc="sap.ui.core.mvc">
 
 	<App id="app">
-		<f:DynamicPage id="mainPage" headerExpanded="true" headerPinned="true" stickySubheaderProvider="stickySubheaderProvider" preserveHeaderStateOnScroll="true">
-
-			<f:title>
-				<f:DynamicPageTitle>
-					<f:heading>
-						<Title text="cds-caching – Dashboard"/>
-					</f:heading>
-					<f:content>
-						<HBox height="40px" alignItems="Center" alignContent="Center" class="sapUiTinyMarginEnd">
-							<Label text="Cache:" class="sapUiTinyMarginEnd sapUiLargeMarginBegin sapUiTinyMarginTop"/>
-							<Select width="300px" name="Name" change=".onCacheChange" selectedKey="{app>/selectedCache}" forceSelection="false" items="{
-												path: '/Caches',
-												templateShareable: true
-											}">
-								<core:Item key="{name}" text="{name}"/>
-							</Select>
-						</HBox>
-					</f:content>
-					<f:actions>
-					</f:actions>
-				</f:DynamicPageTitle>
-			</f:title>
-
-			<f:header>
-				<f:DynamicPageHeader>
-					<f:content>
-						<HBox width="100%" alignItems="Center" alignContent="Center" class="sapUiTinyMarginEnd">
-							<VBox>
-								<Title text="Statistics" class="sapUiTinyMarginBegin"/>
-
-								<form:SimpleForm width="500px" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="4" layout="ResponsiveGridLayout">
-									<form:content>
-										<Label text="Enable Statistics" class=""/>
-										<Switch id="enableStatistics" state="{app>/enableStatistics}" change="onEnableStatisticsChange" />
-										<Label text="Enable Key Tracking" class=""/>
-										<Switch id="enableKeyTracking" state="{app>/enableKeyTracking}" change="onEnableKeyTrackingChange" />
-									</form:content>
-								</form:SimpleForm>
-							</VBox>
-							<VBox>
-								<Title text="Cache" class="sapUiTinyMarginBegin"/>
-								<Button enabled="{= ${app>/selectedCache} !== null }" icon="sap-icon://synchronize" text="Clear Cache" type="Transparent" press="onClearCache" class="sapUiTinyMarginBegin" />
-								<form:SimpleForm width="600px" editable="true" labelSpanL="3" labelSpanM="3" labelSpanS="12" layout="ResponsiveGridLayout">
-									<form:content>
-										<Label text="Enable Statistics" class=""/>
-										<Input change="onEnableStatisticsChange" />
-										<Button text="Persist Statistics" type="Transparent" press="onPersistStatistics" class="sapUiTinyMarginBegin" />
-									</form:content>
-								</form:SimpleForm>
-							</VBox>
-						</HBox>
-					</f:content>
-				</f:DynamicPageHeader>
-			</f:header>
-
-			<f:content>
-				<IconTabBar id="stickySubheaderProvider" stretchContentHeight="true" expandable="false" headerMode="Inline" select=".onSelectionChange" selectedKey="{ui>/selectedTab}">
-					<items>
-						<IconTabFilter text="Overview" key="main" />
-						<IconTabFilter text="Statistics" key="statistics" />
-						<IconTabFilter text="Keys" key="keys" />
-					</items>
-					<content>
-						<NavContainer height="100%" width="100%" id="navContainer">
-
-						</NavContainer>
-					</content>
-				</IconTabBar>
-
-
-			</f:content>
-
-		</f:DynamicPage>
-
+		<f:FlexibleColumnLayout id="fcl" layout="{app>/layout}">
+		</f:FlexibleColumnLayout>
 	</App>
 
-</mvc:View>
+</mvc:View> 

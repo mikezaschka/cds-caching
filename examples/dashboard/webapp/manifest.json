@@ -76,7 +76,7 @@
 			"": {
 				"type": "sap.ui.model.odata.v4.ODataModel",
 				"settings": {
-					"serviceUrl": "/odata/v4/caching/",
+					"serviceUrl": "/odata/v4/caching-api/",
 					"operationMode": "Server",
 					"autoExpandSelect": true,
 					"groupId": "$auto"
@@ -85,41 +85,58 @@
 		},
 		"routing": {
 			"config": {
-				"routerClass": "sap.m.routing.Router",
+				"routerClass": "sap.f.routing.Router",
 				"viewType": "XML",
 				"viewPath": "cds.plugin.caching.dashboard.view",
-				"controlId": "navContainer",
+				"controlId": "fcl",
 				"controlAggregation": "pages"
 			},
 			"routes": [
 				{
 					"pattern": "",
 					"name": "main",
-					"target": "main"
-				},
-				{
-					"pattern": "keys",
-					"name": "keys",
-					"target": "keys"
-				},
-				{
-					"pattern": "statistics",
-					"name": "statistics",
-					"target": "statistics"
+					"target": "main",
+					"subroutes": [
+						{
+							"pattern": "cache/{cache}",
+							"name": "cache",
+							"target": "cache",
+							"subroutes": [
+								{
+									"pattern": "cache/{cache}/statistic/{metricId}",
+									"name": "singleMetric",
+									"target": "singleMetric"
+								},
+								{
+									"pattern": "cache/{cache}/key-metric/{keyMetricId}",
+									"name": "singleKeyMetric",
+									"target": "singleKeyMetric"
+								}
+							]
+						}
+					]
 				}
 			],
 			"targets": {
 				"main": {
 					"viewName": "Main",
-					"viewLevel": 1
+					"viewLevel": 1,
+					"controlAggregation": "beginColumnPages"
 				},
-				"keys": {
-					"viewName": "Keys",
-					"viewLevel": 2
+				"cache": {
+					"viewName": "Cache",
+					"viewLevel": 2,
+					"controlAggregation": "midColumnPages"
 				},
-				"statistics": {
-					"viewName": "Statistics",
-					"viewLevel": 2
+				"singleMetric": {
+					"viewName": "SingleMetric",
+					"viewLevel": 3,
+					"controlAggregation": "endColumnPages"
+				},
+				"singleKeyMetric": {
+					"viewName": "SingleKeyMetric",
+					"viewLevel": 3,
+					"controlAggregation": "endColumnPages"
 				}
 			}
 		}

@@ -112,7 +112,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "Products?$top=2"
-                }, northwind, { key: { value: key } });
+                }, northwind, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -125,7 +125,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "Products?$filter=Rating gt 3&$orderby=Name asc&$top=5&$select=ID,Name,Price"
-                }, northwind, { key: { value: key } });
+                }, northwind, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -138,7 +138,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "Categories?$top=3"
-                }, northwind, { key: { value: key } });
+                }, northwind, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -152,7 +152,7 @@ describe('Cache Through - Remote Operations', () => {
                     method: "GET",
                     path: "Products?$top=1"
                 }, northwind, { 
-                    key: { value: key },
+                    key,
                     ttl: 10000 // 10 seconds
                 });
 
@@ -168,7 +168,7 @@ describe('Cache Through - Remote Operations', () => {
                     method: "GET",
                     path: "Products?$top=1"
                 }, northwind, { 
-                    key: { value: key },
+                    key,
                     tags: ['products', 'test']
                 });
 
@@ -191,7 +191,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "Products"
-                }, rest, { key: { value: key } });
+                }, rest, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -209,7 +209,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "Products?$top=3&$select=ProductID,ProductName"
-                }, rest, { key: { value: key } });
+                }, rest, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -226,7 +226,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "POST",
                     path: "Products"
-                }, northwind, { key: { value: key } });
+                }, northwind, { key });
 
                 expect(result).to.be.null;
             })
@@ -239,7 +239,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.send({
                     method: "GET",
                     path: "test"
-                }, invalidService, { key: { value: key } });
+                }, invalidService, { key });
 
                 expect(result).to.be.null;
             })
@@ -252,7 +252,7 @@ describe('Cache Through - Remote Operations', () => {
                     await cache.rt.send({
                         method: "GET",
                         path: "NonExistentEntity"
-                    }, northwind, { key: { value: key } });
+                    }, northwind, { key });
                 } catch (error) {
                     // Should not cache error responses
                     const cachedData = await cache.get(key);
@@ -275,7 +275,7 @@ describe('Cache Through - Remote Operations', () => {
                 const northwind = await cds.connect.to("Northwind");
                 const { Products } = northwind.entities;
 
-                const { result } = await cache.rt.run(SELECT(Products).limit(2), northwind, { key: { value: key } });
+                const { result } = await cache.rt.run(SELECT(Products).limit(2), northwind, { key });
 
                 const cachedData = await cache.get(key);
                 expect(cachedData).to.eql(result);
@@ -289,7 +289,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.run(
                     SELECT(Products).where({ Rating: { '>': 3 } }).limit(5), 
                     northwind, 
-                    { key: { value: key } }
+                    { key }
                 );
 
                 const cachedData = await cache.get(key);
@@ -304,7 +304,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.run(
                     SELECT(Products).orderBy({ Name: 'asc' }).limit(3), 
                     northwind, 
-                    { key: { value: key } }
+                    { key }
                 );
 
                 const cachedData = await cache.get(key);
@@ -325,7 +325,7 @@ describe('Cache Through - Remote Operations', () => {
                         .orderBy({ Name: 'asc' })
                         .limit(5), 
                     northwind, 
-                    { key: { value: key } }
+                    { key }
                 );
 
                 const cachedData = await cache.get(key);
@@ -340,7 +340,7 @@ describe('Cache Through - Remote Operations', () => {
                 const { result } = await cache.rt.run(
                     SELECT.from(Products).columns('ID', 'Name', 'Price').limit(3), 
                     northwind, 
-                    { key: { value: key } }
+                    { key }
                 );
 
                 const cachedData = await cache.get(key);
@@ -360,7 +360,7 @@ describe('Cache Through - Remote Operations', () => {
                     SELECT(Products).limit(1), 
                     northwind, 
                     { 
-                        key: { value: key },
+                        key,
                         ttl: 15000 // 15 seconds
                     }
                 );
@@ -378,7 +378,7 @@ describe('Cache Through - Remote Operations', () => {
                     SELECT(Products).limit(1), 
                     northwind, 
                     { 
-                        key: { value: key },
+                        key,
                         tags: ['run-operation', 'products']
                     }
                 );
@@ -398,7 +398,7 @@ describe('Cache Through - Remote Operations', () => {
                     await cache.rt.run(
                         "INVALID QUERY", 
                         northwind, 
-                        { key: { value: key } }
+                        { key }
                     );
                 } catch (error) {
                     // Should not cache error responses
@@ -415,7 +415,7 @@ describe('Cache Through - Remote Operations', () => {
                     await cache.rt.run(
                         SELECT.from('NonExistentEntity').limit(1), 
                         northwind, 
-                        { key: { value: key } }
+                        { key }
                     );
                 } catch (error) {
                     // Should not cache error responses
@@ -466,7 +466,7 @@ describe('Cache Through - Remote Operations', () => {
                 cache.rt.send({
                     method: "GET",
                     path: "Products?$top=1"
-                }, northwind, { key: { value: key } })
+                }, northwind, { key })
             );
 
             const results = await Promise.all(promises);
@@ -490,13 +490,13 @@ describe('Cache Through - Remote Operations', () => {
             const { result: result1 } = await cache.rt.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: key } });
+            }, northwind, { key });
 
             // Second request should use cache
             const{ result:result2  } = await cache.rt.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: key } });
+            }, northwind, { key });
 
             expect(result1).to.deep.equal(result2);
         })
@@ -517,12 +517,12 @@ describe('Cache Through - Remote Operations', () => {
             const { result: result1 } = await cache.rt.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: key1 } });
+            }, northwind, { key: key1 });
 
             const { result: result2 } = await northwindCache.rt.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: key2 } });
+            }, northwind, { key: key2 });
 
             // Should be cached in different services
             const cached1 = await cache.get(key1);
@@ -540,12 +540,12 @@ describe('Cache Through - Remote Operations', () => {
             const { result: sendResult } = await cache.rt.send({
                 method: "GET",
                 path: "Products?$top=2"
-            }, northwind, { key: { value: "mixed:send" } });
+            }, northwind, { key: "mixed:send" });
 
             const { result: runResult } = await cache.rt.run(
                 SELECT(Products).limit(2), 
                 northwind, 
-                { key: { value: "mixed:run" } }
+                { key: "mixed:run" }
             );
 
             expect(sendResult).to.deep.equal(runResult);

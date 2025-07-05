@@ -141,19 +141,19 @@ Key-level metrics provide detailed performance data for individual cache keys:
 
 #### Context Information
 - **dataType**: Type of data (query, request, function, custom)
-- **serviceName**: Name of the service that used this key
-- **entityName**: Name of the entity (if applicable)
 - **operation**: Type of operation (READ, WRITE, etc.)
 - **operationType**: Operation category (read_through, native, mixed)
+- **target**: Target service name
 
 #### Enhanced Metadata
+- **metadata**: JSON string with additional metadata
 - **context**: JSON string with detailed context
-- **queryText**: CQL query text (if applicable)
-- **requestInfo**: OData request information (if applicable)
-- **functionName**: Function name (if applicable)
+- **query**: CQL query text (if applicable)
+- **subject**: JSON string with subject information
 - **tenant**: Tenant information
 - **user**: User information
 - **locale**: Locale information
+- **cacheOptions**: JSON string with cache options
 
 #### Timestamps
 - **lastAccess**: Last time this key was accessed
@@ -161,93 +161,113 @@ Key-level metrics provide detailed performance data for individual cache keys:
 
 ## Data Structures
 
-### General Metrics Response
+### General Metrics Response (Metrics Entity)
 
 ```javascript
 {
+  // Entity identification
+  ID: "daily:2024-01-15",           // Unique identifier (period:date)
+  cache: "caching",                  // Cache name
+  timestamp: "2024-01-15T10:30:00Z", // When metrics were recorded
+  period: "daily",                   // Aggregation period (hourly/daily/monthly)
+  
   // Read-through metrics
-  hits: 1500,
-  misses: 300,
-  errors: 5,
-  totalRequests: 1800,
+  hits: 1500,                        // Number of cache hits
+  misses: 300,                       // Number of cache misses
+  errors: 5,                         // Number of errors
+  totalRequests: 1800,               // Total read-through requests
   
-  // Latency metrics (milliseconds)
-  avgHitLatency: 2.5,
-  minHitLatency: 0.1,
-  maxHitLatency: 15.2,
-  avgMissLatency: 45.8,
-  minMissLatency: 12.3,
-  maxMissLatency: 120.5,
-  avgReadThroughLatency: 8.9,
+  // Read-through latency metrics (milliseconds)
+  avgHitLatency: 2.5,                // Average hit latency
+  minHitLatency: 0.1,                // Minimum hit latency
+  maxHitLatency: 15.2,               // Maximum hit latency
+  avgMissLatency: 45.8,              // Average miss latency
+  minMissLatency: 12.3,              // Minimum miss latency
+  maxMissLatency: 120.5,             // Maximum miss latency
+  avgReadThroughLatency: 8.9,        // Average read-through latency
   
-  // Performance metrics
-  hitRatio: 0.833,           // 83.3%
-  throughput: 25.5,          // requests/second
-  errorRate: 0.003,          // 0.3%
-  cacheEfficiency: 18.3,     // miss latency / hit latency
+  // Read-through performance metrics
+  hitRatio: 0.833,                   // Hit ratio as percentage (83.3%)
+  throughput: 25.5,                  // Requests per second
+  errorRate: 0.003,                  // Error rate as percentage (0.3%)
+  cacheEfficiency: 18.3,             // Miss latency / hit latency ratio
   
-  // Native operations
-  nativeSets: 200,
-  nativeGets: 800,
-  nativeDeletes: 50,
-  nativeClears: 2,
-  nativeDeleteByTags: 10,
-  nativeErrors: 1,
-  totalNativeOperations: 1063,
-  nativeThroughput: 17.7,    // operations/second
-  nativeErrorRate: 0.001,    // 0.1%
+  // Native operation metrics
+  nativeSets: 200,                   // Number of direct set operations
+  nativeGets: 800,                   // Number of direct get operations
+  nativeDeletes: 50,                 // Number of direct delete operations
+  nativeClears: 2,                   // Number of clear operations
+  nativeDeleteByTags: 10,            // Number of delete-by-tag operations
+  nativeErrors: 1,                   // Number of native operation errors
+  totalNativeOperations: 1063,       // Total native operations
+  nativeThroughput: 17.7,            // Native operations per second
+  nativeErrorRate: 0.001,            // Native operation error rate (0.1%)
   
   // System metrics
-  memoryUsage: 52428800,     // bytes
-  itemCount: 150,
-  uptimeMs: 7200000          // 2 hours
+  memoryUsage: 52428800,             // Memory usage in bytes
+  itemCount: 150,                    // Number of items in cache
+  uptimeMs: 7200000                  // Cache uptime in milliseconds
 }
 ```
 
-### Key Metrics Response
+### Key Metrics Response (KeyMetrics Entity)
 
 ```javascript
 {
-  key: "user-preferences:123",
-  hits: 45,
-  misses: 5,
-  errors: 0,
-  totalRequests: 50,
-  hitRatio: 0.9,             // 90%
+  // Entity identification
+  ID: "key:user-preferences:123",    // Unique identifier
+  cache: "caching",                  // Cache name
+  keyName: "user-preferences:123",   // Cache key name
+  lastAccess: "2024-01-15T10:30:00Z", // Last access time
+  period: "current",                 // Period type (current/hourly/daily)
+  operationType: "read_through",     // Operation category (read_through/native/mixed)
   
-  // Latency metrics
-  avgHitLatency: 1.2,
-  minHitLatency: 0.5,
-  maxHitLatency: 3.1,
-  avgMissLatency: 25.4,
-  minMissLatency: 15.2,
-  maxMissLatency: 45.8,
-  avgReadThroughLatency: 3.8,
+  // Read-through metrics
+  hits: 45,                          // Number of hits for this key
+  misses: 5,                         // Number of misses for this key
+  errors: 0,                         // Number of errors for this key
+  totalRequests: 50,                 // Total requests for this key
+  hitRatio: 0.9,                     // Hit ratio for this key (90%)
+  cacheEfficiency: 21.2,             // Cache efficiency for this key
   
-  // Performance metrics
-  throughput: 2.5,           // requests/second
-  errorRate: 0.0,            // 0%
-  cacheEfficiency: 21.2,     // miss latency / hit latency
+  // Read-through latency metrics (milliseconds)
+  avgHitLatency: 1.2,                // Average hit latency for this key
+  minHitLatency: 0.5,                // Minimum hit latency for this key
+  maxHitLatency: 3.1,                // Maximum hit latency for this key
+  avgMissLatency: 25.4,              // Average miss latency for this key
+  minMissLatency: 15.2,              // Minimum miss latency for this key
+  maxMissLatency: 45.8,              // Maximum miss latency for this key
+  avgReadThroughLatency: 3.8,        // Average read-through latency for this key
   
-  // Context information
-  dataType: "request",
-  serviceName: "UserService",
-  entityName: "UserPreferences",
-  operation: "READ",
-  operationType: "read_through",
+  // Read-through performance metrics
+  throughput: 2.5,                   // Requests per second for this key
+  errorRate: 0.0,                    // Error rate for this key (0%)
   
-  // Enhanced metadata
-  context: '{"user":"john.doe","tenant":"acme"}',
-  queryText: "SELECT * FROM UserPreferences WHERE userId = '123'",
-  requestInfo: "GET /odata/v4/UserService/UserPreferences(123)",
-  functionName: "getUserPreferences",
-  tenant: "acme",
-  user: "john.doe",
-  locale: "en-US",
+  // Native operation metrics for this key
+  nativeHits: 10,                    // Native hits for this key
+  nativeMisses: 2,                   // Native misses for this key
+  nativeSets: 5,                     // Native sets for this key
+  nativeDeletes: 1,                  // Native deletes for this key
+  nativeClears: 0,                   // Native clears for this key
+  nativeDeleteByTags: 0,             // Native delete-by-tags for this key
+  nativeErrors: 0,                   // Native errors for this key
+  totalNativeOperations: 18,         // Total native operations for this key
+  nativeThroughput: 0.5,             // Native operations per second for this key
+  nativeErrorRate: 0.0,              // Native error rate for this key
   
-  // Timestamps
-  lastAccess: "2024-01-15T10:30:00Z",
-  timestamp: "2024-01-15T09:00:00Z"
+  // Context and metadata
+  dataType: "request",               // Type of data (query/request/function/custom)
+  operation: "READ",                 // Cache operation type
+  metadata: '{"ttl":3600}',          // JSON string with additional metadata
+  context: '{"user":"john.doe","tenant":"acme"}', // JSON string with context
+  query: "SELECT * FROM UserPreferences WHERE userId = '123'", // CQL query text
+  subject: '{"entity":"UserPreferences"}', // JSON string with subject info
+  target: "UserService",             // Target service name
+  tenant: "acme",                    // Tenant information
+  user: "john.doe",                  // User information
+  locale: "en-US",                   // Locale information
+  cacheOptions: '{"ttl":3600}',      // JSON string with cache options
+  timestamp: "2024-01-15T09:00:00Z"  // When this key was first accessed
 }
 ```
 

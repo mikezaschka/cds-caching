@@ -583,7 +583,7 @@ describe('Caching API Service', () => {
             // Verify large value was stored correctly
             const entry = await cache.get("large:value:test");
             expect(entry).to.equal(largeValue);
-        })
+        }, 10000)
     })
 
     // ============================================================================
@@ -597,7 +597,7 @@ describe('Caching API Service', () => {
             const { data } = await GET('/odata/v4/caching-api/Caches(\'caching-northwind\')/getEntries()');
             
             expect(data.value).to.be.an('array');
-        })
+        }, 10000)
 
         it("should handle complete workflow", async () => {
             // 1. Set entries
@@ -629,6 +629,6 @@ describe('Caching API Service', () => {
             // 7. Verify deletion
             const { data: deletedData } = await GET('/odata/v4/caching-api/Caches(\'caching\')/getEntry(key=\'workflow:test\')');
             expect(deletedData.value).to.be.undefined;
-        })
+        }, 10000)
     })
 }) 

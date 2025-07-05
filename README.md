@@ -32,6 +32,7 @@ Please also read the introduction blog post in the SAP Community: [Boosting perf
 ### Checkout detailed information on how to use cds-caching
 
 > - [Programmatic API](docs/programmatic-api.md)
+> - [Key Management](docs/key-management.md)
 > - [Metrics Guide](docs/metrics-guide.md)
 > - [API Reference](docs/api-reference.md)
 
@@ -44,9 +45,15 @@ Installing and using cds-caching is straightforward since it's a CAP plugin. Sim
 npm install cds-caching
 ```
 
-Next, add a caching service configuration to your package.json. You can even define **multiple caching services**, which is recommended if you need to cache different types of data within your application.
+### Configuration
 
-```javascript
+The cds-caching plugin supports comprehensive configuration through `package.json`. Here are all available configuration options:
+
+#### Basic Service Configuration
+
+**Minimal setup** (in-memory cache for development):
+
+```json
 {
   "cds": {
     "requires": {
@@ -64,38 +71,26 @@ Next, add a caching service configuration to your package.json. You can even def
 }
 ```
 
-And finally add the following cds definition to your data model:
+**Advanced configuration** with all options:
 
-```
-using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
-
-// Don't forget to protect the service, e.g. 
-annotate CachingApiService with @requires: 'authenticated-user';
-```
-
-### Advanced Configuration
-
-For more control, you can specify additional options:
-
-```javascript
+```json
 {
   "cds": {
     "requires": {
       "caching": {
         "impl": "cds-caching",
-        "namespace": "my::app::caching",
-        "store": "in-memory", // "in-memory" or "sqlite" or "redis"
+        "namespace": "caching",
+        "store": "in-memory", // "in-memory", "sqlite", or "redis"
         "compression": "lz4", // "lz4" or "gzip"
-        "credentials": { // if store is redis or sqlite
-
-          // Redis specific
+        "credentials": {
+          // Redis configuration
           "host": "localhost",
           "port": 6379,
           "password": "optional",
           "url": "redis://..." // Alternative: Redis connection URI
-
-          // SQLite specific
-          "url": "sqlite://./cache.sqlite"
+          
+          // SQLite configuration
+          "url": "sqlite://./cache.sqlite",
           "table": "cache",
           "busyTimeout": 10000
         }
@@ -103,6 +98,65 @@ For more control, you can specify additional options:
     }
   }
 }
+```
+
+#### Read-Through (RT) Key Configuration
+
+Configure default key templates for read-through operations:
+
+```json
+{
+  "cds-caching": {
+    "keyManagement": {
+      "isUserAware": true,      // Include user context in cache keys
+      "isTenantAware": true,    // Include tenant context in cache keys
+      "isLocaleAware": false    // Include locale context in cache keys
+    }
+  }
+}
+```
+
+**Default behavior** (if not configured): All context elements are disabled by default.
+
+#### Environment-Specific Configuration
+
+You can override settings for different environments:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "redis",
+        "[development]": {
+          "credentials": {
+            "host": "localhost",
+            "port": 6379
+          }
+        },
+        "[production]": {
+          "credentials": {
+            "url": "redis://production-redis:6379"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+For detailed information on RT key generation and advanced configuration options, see [Read-Through Key Generation](docs/read-through-keys.md) and [Programmatic API Reference](docs/programmatic-api.md).
+
+### Service Definition
+
+Add the following cds definition to your data model:
+
+```
+using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
+
+// Don't forget to protect the service, e.g. 
+annotate CachingApiService with @requires: 'authenticated-user';
 ```
 
 ### Real-World Usage and Deployment
@@ -213,7 +267,6 @@ resources:
 >
 > The `rt.xxx` methods provide enhanced functionality including:
 > - **Read-through metadata**: Information about cache hits/misses and latency
-> - **Dynamic cache keys**: Automatically generated keys based on function arguments and query parameters
 > - **Consistent return format**: All methods return `{ result, cacheKey, metadata }` by default
 >
 > **Migration**: Simply replace `cache.method()` with `cache.rt.method()` and access the result via `.result` property if needed.
@@ -267,19 +320,17 @@ const query = SELECT.from(Foo)
 const { result } = await cache.rt.run(query, db)
 ```
 
-This will transparently cache the result of the query and return the cached result if available for all further requests.
 
 Because the cache key has been dynamically created at runtime, it will also be returned:
 
 ```javascript
-
 // Access the cacheKey for later usage
 const { result, cacheKey } = await cache.rt.run(query, db)
 ```
 
 #### 3. RemoteService Request-Level Caching
 
-Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls or even application services. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale.
+Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls or even application services. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale (if not configured otherwise).
 
 ```javascript
 // Cache the requests to an exposed external entity
@@ -397,7 +448,7 @@ The key differences between `rt.wrap()` and `rt.exec()`:
 
 #### Dynamic Key Generation
 
-All `rt.xxx` methods automatically generate cache keys based on function arguments and query parameters. This ensures that different function calls with different arguments are cached separately.
+All `rt.xxx` methods automatically generate dynamic cache keys based on function arguments (`wrap`, `exec`) and request/query parameters. This ensures that different function calls with different arguments are cached separately.
 
 ```javascript
 // Different arguments = different cache keys
@@ -431,19 +482,19 @@ The TTL can be specified for individually through all cache methods (e.g. `set`,
 await cache.set("key", "value", { ttl: 60000 })
 
 // Run with 30 seconds TTL
-const result = await cache.rt.run(query, db, { ttl: 30000 })
+const { result } = await cache.rt.run(query, db, { ttl: 30000 })
 
 // Send with 10 seconds TTL
-const result = await cache.rt.send(request, service, { ttl: 10000 })
+const { result } = await cache.rt.send(request, service, { ttl: 10000 })
 
 // Wrap with 10 seconds TTL
 const cachedOperation = cache.rt.wrap("key", expensiveOperation, { ttl: 10000 })
 
 // Exec with 10 seconds TTL
-const result = await cache.rt.exec("key", async () => {
+const { result } = await cache.rt.exec("key", async () => {
   // ... some expensive computation
   return result
-}, { 
+}, [] { 
   ttl: 10000
 })
 ```
@@ -457,6 +508,8 @@ await cache.delete("key")
 ```
 
 Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.rt.run, cache.rt.send, cache.createKey) and for the annotations.
+
+**Read-Through (RT) Methods**: All `rt.xxx` methods automatically generate dynamic cache keys and return them in the response. The generated keys include configurable context (user, tenant, locale) and a content hash. For detailed information on RT key generation, see [Read-Through Key Generation](docs/read-through-keys.md).
  
 ```javascript
 // No key override given, string will just be used as keys
@@ -471,24 +524,21 @@ cache.createKey(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
 // Override and use your own key based on a fixed value
 await cache.set(SELECT.from(Foo, 1), { key: { value: "foo:1" } })
 
-// Override and only for requests, use request context information
+// RT methods return the generated cache key
+const { result, cacheKey } = await cache.rt.run(query, db)
+console.log('Generated key:', cacheKey) // e.g., "tenant-acme:user-john:locale-en:hash-abc123"
+
+// Override RT key template for requests
 await cache.rt.run(req, remoteService, { key: { template: "mykey:{tenant}:{user}:{locale}:{hash}" } })
 
 // This requests will be cached for all users and for each locale 
 await cache.rt.run(req, remoteService, { key: { template: "mykey:{user}:{locale}:{hash}" } })
+
+// Function wrapping with custom key template
+const cachedFunction = cache.rt.wrap("user-data", expensiveOperation, {
+  key: { template: "user:{user}:{args[0]}" }
+})
 ```
-
-Overriding keys support the following configuration options:
-- `value` – generates a static value
-- `prefix` – will add this piece at the beginning
-- `suffix` - will ad this piece at the end
-- `template` - will set a value filled with placeholders, available placeholders are (only relevant for cds.Requests):
-  - `{user}`: The current user
-  - `{tenant}`: The current tenant
-  - `{locale}`: The current locale
-  - `{hash}`: The hash of the request query/params/data/path/etc.
-
-With well-structured keys, invalidating cache entries becomes a lot easier. However, for more complex scenarios tags provide an even more effective solution, as tags can automatically be created based on the cached data.
 
 #### 3. Tag-Based
 
@@ -683,7 +733,7 @@ Or via OData API:
 
 ```http
 ### Enable general metrics
-POST http://localhost:4004/odata/v4/CachingApiService/Caches('caching')/setMetricsEnabled
+POST http://localhost:4004/odata/v4/caching-api/Caches('caching')/setMetricsEnabled
 Content-Type: application/json
 
 {
@@ -691,7 +741,7 @@ Content-Type: application/json
 }
 
 ### Enable key-level metrics
-POST http://localhost:4004/odata/v4/CachingApiService/Caches('caching')/setKeyMetricsEnabled
+POST http://localhost:4004/odata/v4/caching-api/Caches('caching')/setKeyMetricsEnabled
 Content-Type: application/json
 
 {
@@ -700,6 +750,22 @@ Content-Type: application/json
 ```
 
 ### Accessing Metrics via Caching Service
+
+The caching service provides comprehensive metrics collection and persistence capabilities. Metrics are automatically collected during cache operations and can be accessed both in real-time and from historical data.
+
+#### Metrics Persistence
+
+**Transient Metrics**: Current statistics are kept in memory and provide real-time insights into cache performance:
+- Hit/miss ratios
+- Current latency statistics
+- Active cache entries
+- Key-level performance data
+
+**Persisted Metrics**: Historical data is automatically stored in the database for long-term analysis:
+- Hourly aggregated statistics
+- Key-level metrics over time
+- Performance trends and patterns
+- Cache efficiency analysis
 
 #### Current Statistics
 
@@ -756,93 +822,113 @@ await cache.clearKeyMetrics()
 
 ### Metrics Data Structure
 
-#### General Cache Statistics
+#### General Cache Statistics (Metrics Entity)
 
 ```javascript
 {
+  // Entity identification
+  ID: "daily:2024-01-15",           // Unique identifier (period:date)
+  cache: "caching",                  // Cache name
+  timestamp: "2024-01-15T10:30:00Z", // When metrics were recorded
+  period: "daily",                   // Aggregation period (hourly/daily/monthly)
+  
   // Read-through metrics
-  hits: 1500,
-  misses: 300,
-  errors: 5,
-  totalRequests: 1800,
+  hits: 1500,                        // Number of cache hits
+  misses: 300,                       // Number of cache misses
+  errors: 5,                         // Number of errors
+  totalRequests: 1800,               // Total read-through requests
   
-  // Latency metrics (milliseconds)
-  avgHitLatency: 2.5,
-  minHitLatency: 0.1,
-  maxHitLatency: 15.2,
-  avgMissLatency: 45.8,
-  minMissLatency: 12.3,
-  maxMissLatency: 120.5,
-  avgReadThroughLatency: 8.9,
+  // Read-through latency metrics (milliseconds)
+  avgHitLatency: 2.5,                // Average hit latency
+  minHitLatency: 0.1,                // Minimum hit latency
+  maxHitLatency: 15.2,               // Maximum hit latency
+  avgMissLatency: 45.8,              // Average miss latency
+  minMissLatency: 12.3,              // Minimum miss latency
+  maxMissLatency: 120.5,             // Maximum miss latency
+  avgReadThroughLatency: 8.9,        // Average read-through latency
   
-  // Performance metrics
-  hitRatio: 0.833,           // 83.3%
-  throughput: 25.5,          // requests/second
-  errorRate: 0.003,          // 0.3%
-  cacheEfficiency: 18.3,     // miss latency / hit latency
+  // Read-through performance metrics
+  hitRatio: 0.833,                   // Hit ratio as percentage (83.3%)
+  throughput: 25.5,                  // Requests per second
+  errorRate: 0.003,                  // Error rate as percentage (0.3%)
+  cacheEfficiency: 18.3,             // Miss latency / hit latency ratio
   
-  // Native operations
-  nativeSets: 200,
-  nativeGets: 800,
-  nativeDeletes: 50,
-  nativeClears: 2,
-  nativeDeleteByTags: 10,
-  nativeErrors: 1,
-  totalNativeOperations: 1063,
-  nativeThroughput: 17.7,    // operations/second
-  nativeErrorRate: 0.001,    // 0.1%
+  // Native operation metrics
+  nativeSets: 200,                   // Number of direct set operations
+  nativeGets: 800,                   // Number of direct get operations
+  nativeDeletes: 50,                 // Number of direct delete operations
+  nativeClears: 2,                   // Number of clear operations
+  nativeDeleteByTags: 10,            // Number of delete-by-tag operations
+  nativeErrors: 1,                   // Number of native operation errors
+  totalNativeOperations: 1063,       // Total native operations
+  nativeThroughput: 17.7,            // Native operations per second
+  nativeErrorRate: 0.001,            // Native operation error rate (0.1%)
   
   // System metrics
-  memoryUsage: 52428800,     // bytes
-  itemCount: 150,
-  uptimeMs: 7200000          // 2 hours
+  memoryUsage: 52428800,             // Memory usage in bytes
+  itemCount: 150,                    // Number of items in cache
+  uptimeMs: 7200000                  // Cache uptime in milliseconds
 }
 ```
 
-#### Key-level Metrics
+#### Key-level Metrics (KeyMetrics Entity)
 
 ```javascript
 {
-  key: "user-preferences:123",
-  hits: 45,
-  misses: 5,
-  errors: 0,
-  totalRequests: 50,
-  hitRatio: 0.9,             // 90%
+  // Entity identification
+  ID: "key:user-preferences:123",    // Unique identifier
+  cache: "caching",                  // Cache name
+  keyName: "user-preferences:123",   // Cache key name
+  lastAccess: "2024-01-15T10:30:00Z", // Last access time
+  period: "current",                 // Period type (current/hourly/daily)
+  operationType: "read_through",     // Operation category (read_through/native/mixed)
   
-  // Latency metrics
-  avgHitLatency: 1.2,
-  minHitLatency: 0.5,
-  maxHitLatency: 3.1,
-  avgMissLatency: 25.4,
-  minMissLatency: 15.2,
-  maxMissLatency: 45.8,
-  avgReadThroughLatency: 3.8,
+  // Read-through metrics
+  hits: 45,                          // Number of hits for this key
+  misses: 5,                         // Number of misses for this key
+  errors: 0,                         // Number of errors for this key
+  totalRequests: 50,                 // Total requests for this key
+  hitRatio: 0.9,                     // Hit ratio for this key (90%)
+  cacheEfficiency: 21.2,             // Cache efficiency for this key
   
-  // Performance metrics
-  throughput: 2.5,           // requests/second
-  errorRate: 0.0,            // 0%
-  cacheEfficiency: 21.2,     // miss latency / hit latency
+  // Read-through latency metrics (milliseconds)
+  avgHitLatency: 1.2,                // Average hit latency for this key
+  minHitLatency: 0.5,                // Minimum hit latency for this key
+  maxHitLatency: 3.1,                // Maximum hit latency for this key
+  avgMissLatency: 25.4,              // Average miss latency for this key
+  minMissLatency: 15.2,              // Minimum miss latency for this key
+  maxMissLatency: 45.8,              // Maximum miss latency for this key
+  avgReadThroughLatency: 3.8,        // Average read-through latency for this key
   
-  // Context information
-  dataType: "request",
-  serviceName: "UserService",
-  entityName: "UserPreferences",
-  operation: "READ",
-  operationType: "read_through",
+  // Read-through performance metrics
+  throughput: 2.5,                   // Requests per second for this key
+  errorRate: 0.0,                    // Error rate for this key (0%)
   
-  // Enhanced metadata
-  context: '{"user":"john.doe","tenant":"acme"}',
-  queryText: "SELECT * FROM UserPreferences WHERE userId = '123'",
-  requestInfo: "GET /odata/v4/UserService/UserPreferences(123)",
-  functionName: "getUserPreferences",
-  tenant: "acme",
-  user: "john.doe",
-  locale: "en-US",
+  // Native operation metrics for this key
+  nativeHits: 10,                    // Native hits for this key
+  nativeMisses: 2,                   // Native misses for this key
+  nativeSets: 5,                     // Native sets for this key
+  nativeDeletes: 1,                  // Native deletes for this key
+  nativeClears: 0,                   // Native clears for this key
+  nativeDeleteByTags: 0,             // Native delete-by-tags for this key
+  nativeErrors: 0,                   // Native errors for this key
+  totalNativeOperations: 18,         // Total native operations for this key
+  nativeThroughput: 0.5,             // Native operations per second for this key
+  nativeErrorRate: 0.0,              // Native error rate for this key
   
-  // Timestamps
-  lastAccess: "2024-01-15T10:30:00Z",
-  timestamp: "2024-01-15T09:00:00Z"
+  // Context and metadata
+  dataType: "request",               // Type of data (query/request/function/custom)
+  operation: "READ",                 // Cache operation type
+  metadata: '{"ttl":3600}',          // JSON string with additional metadata
+  context: '{"user":"john.doe","tenant":"acme"}', // JSON string with context
+  query: "SELECT * FROM UserPreferences WHERE userId = '123'", // CQL query text
+  subject: '{"entity":"UserPreferences"}', // JSON string with subject info
+  target: "UserService",             // Target service name
+  tenant: "acme",                    // Tenant information
+  user: "john.doe",                  // User information
+  locale: "en-US",                   // Locale information
+  cacheOptions: '{"ttl":3600}',      // JSON string with cache options
+  timestamp: "2024-01-15T09:00:00Z"  // When this key was first accessed
 }
 ```
 

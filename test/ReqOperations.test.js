@@ -57,7 +57,7 @@ describe('Read-Through Request Caching', () => {
 
         it("should respect the cache key template", async () => {
             const { headers } = await GET`/odata/v4/app/CachedFoo`
-            expect(headers['x-sap-cap-cache-key']).to.equal('801722c6930b393ff2be2b915890a1fb_anonymous');
+            expect(headers['x-sap-cap-cache-key']).to.equal('a524e82e8d19746f5b3dadda5f390cfd_anonymous');
         })
 
         it("should cache a request for an annotated entity of an ApplicationService", async () => {
@@ -78,7 +78,7 @@ describe('Read-Through Request Caching', () => {
             const cachedData = new Promise(async (resolve, reject) => {
                 AppService.prepend(function () {
                     this.on('manualCachedValue', async (req, next) => {
-                        const { result, cacheKey }  = await cache.rt.run(req, next, { key: { template: "test-key" }});
+                        const { result, cacheKey }  = await cache.rt.run(req, next, { key: "test-key"});
                         req.reply(result);
                     })
                     this.after('manualCachedValue', async (event, req) => {

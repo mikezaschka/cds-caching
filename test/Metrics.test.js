@@ -31,7 +31,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(false);
 
                 // Perform read-through operations using cache.rt.send
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:metrics:disabled" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:metrics:disabled" });
 
                 const stats = await cache.getCurrentMetrics();
                 expect(stats).to.be.null;
@@ -41,8 +41,8 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(true);
 
                 // Perform read-through operations using cache.rt.send
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:metrics:enabled" } });
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:metrics:enabled" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:metrics:enabled" });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:metrics:enabled" });
 
                 const stats = await cache.getCurrentMetrics();
                 expect(stats.hits).to.equal(1);
@@ -87,7 +87,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(false);
 
                 // Perform operations that would generate latencies
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:latency:disabled" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:latency:disabled" });
 
                 const stats = await cache.getCurrentMetrics();
                 expect(stats).to.be.null;
@@ -97,7 +97,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(true);
 
                 // Perform operations that would generate latencies
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:latency:enabled" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:latency:enabled" });
 
                 const stats = await cache.getCurrentMetrics();
                 expect(stats.avgMissLatency).to.be.a('number');
@@ -112,7 +112,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(true); // Enable main metrics
 
                 // Perform operations
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:key:disabled" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:key:disabled" });
 
                 await cache.set("test:native:key:disabled", "value");
                 await cache.get("test:native:key:disabled");
@@ -127,7 +127,7 @@ describe('Cache Metrics - Testing', () => {
 
                 // Perform operations
                 const request = new Request({ event: "getCachedValue", data: { param1: "test1" } });
-                const keyOptions = { key: { value: "test:key:enabled" } };
+                const keyOptions = { key: "test:key:enabled" };
 
 
                 await cache.rt.send(request, appService, keyOptions);
@@ -168,7 +168,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(false); // Disable main metrics
 
                 // Perform operations
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:key:independent" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:key:independent" });
 
                 await cache.set("test:native:key:independent", "value");
                 await cache.get("test:native:key:independent");
@@ -199,7 +199,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.delete("test:native:separation");
 
             // Perform read-through operations
-            await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:rt:separation" } });
+            await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:rt:separation" });
 
             const stats = await cache.getCurrentMetrics();
 
@@ -218,7 +218,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.setMetricsEnabled(true);
 
             // Perform read-through operations
-            await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:rt:latency" } });
+            await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:rt:latency" });
 
             const stats = await cache.getCurrentMetrics();
 
@@ -259,13 +259,13 @@ describe('Cache Metrics - Testing', () => {
                 await cache.setMetricsEnabled(true);
 
                 // First request (miss)
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:hit:ratio" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:hit:ratio" });
 
                 // Second request (hit)
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:hit:ratio" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:hit:ratio" });
 
                 // Third request (hit)
-                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: "test:hit:ratio" } });
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: "test:hit:ratio" });
 
                 const stats = await cache.getCurrentMetrics();
 
@@ -307,7 +307,7 @@ describe('Cache Metrics - Testing', () => {
 
                 // Perform multiple operations to get average
                 for (let i = 0; i < 3; i++) {
-                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: `test:latency:avg:${i}` } });
+                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: `test:latency:avg:${i}` });
                 }
 
                 const stats = await cache.getCurrentMetrics();
@@ -324,7 +324,7 @@ describe('Cache Metrics - Testing', () => {
 
                 // Perform multiple operations to get percentiles
                 for (let i = 0; i < 10; i++) {
-                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: `test:percentile:${i}` } });
+                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: `test:percentile:${i}` });
                 }
 
                 const stats = await cache.getCurrentMetrics();
@@ -347,7 +347,7 @@ describe('Cache Metrics - Testing', () => {
 
                 // Perform operations over time
                 for (let i = 0; i < 5; i++) {
-                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: `test:throughput:${i}` } });
+                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: `test:throughput:${i}` });
 
                     // Small delay to simulate real usage
                     await new Promise(resolve => setTimeout(resolve, 10));
@@ -370,18 +370,18 @@ describe('Cache Metrics - Testing', () => {
 
                 // Perform successful operations
                 for (let i = 0; i < 8; i++) {
-                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: { value: `test:error:rate:${i}` } });
+                    await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, { key: `test:error:rate:${i}` });
                 }
 
                 // Simulate some errors (these might not actually error, but we can test the calculation)
                 try {
-                    await cache.rt.send(new Request({ event: "NonExistentFunction" }), appService, { key: { value: "test:error:rate:error" } });
+                    await cache.rt.send(new Request({ event: "NonExistentFunction" }), appService, { key: "test:error:rate:error" });
                 } catch (error) {
                     // Expected to fail
                 }
 
                 try {
-                    await cache.rt.send(new Request({ event: "AnotherNonExistentFunction" }), appService, { key: { value: "test:error:rate:error2" } });
+                    await cache.rt.send(new Request({ event: "AnotherNonExistentFunction" }), appService, { key: "test:error:rate:error2" });
                 } catch (error) {
                     // Expected to fail
                 }
@@ -412,7 +412,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.rt.send(
                     new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                     appService,
-                    { key: { value: "test:top:key:1" } }
+                    { key: "test:top:key:1" }
                 );
             }
 
@@ -420,14 +420,14 @@ describe('Cache Metrics - Testing', () => {
                 await cache.rt.send(
                     new Request({ event: "getCachedValue", data: { param1: "test2" } }),
                     appService,
-                    { key: { value: "test:top:key:2" } }
+                    { key: "test:top:key:2" }
                 );
             }
 
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test3" } }),
                 appService,
-                { key: { value: "test:top:key:3" } }
+                { key: "test:top:key:3" }
             );
 
             const keyMetrics = await cache.getCurrentKeyMetrics();
@@ -456,13 +456,13 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: testKey } }
+                { key: testKey }
             );
 
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: testKey } }
+                { key: testKey }
             );
 
             const keyMetrics = await cache.getCurrentKeyMetrics();
@@ -485,7 +485,7 @@ describe('Cache Metrics - Testing', () => {
                 await cache.rt.send(
                     new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                     appService,
-                    { key: { value: `test:cold:key:${i}` } }
+                    { key: `test:cold:key:${i}` }
                 );
             }
 
@@ -520,7 +520,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: "test:persistence" } }
+                { key: "test:persistence" }
             );
 
             // Trigger persistence - should not throw
@@ -543,7 +543,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: "test:historical" } }
+                { key: "test:historical" }
             );
 
             await cache.persistMetrics();
@@ -569,13 +569,13 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: testKey } }
+                { key: testKey }
             );
 
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: testKey } }
+                { key: testKey }
             );
 
             await cache.persistMetrics();
@@ -612,7 +612,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: "test:clear:metrics" } }
+                { key: "test:clear:metrics" }
             );
 
             await cache.set("test:clear:native", "value");
@@ -641,7 +641,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: "test:clear:key:metrics" } }
+                { key: "test:clear:key:metrics" }
             );
 
             // Verify key metrics exist
@@ -672,7 +672,7 @@ describe('Cache Metrics - Testing', () => {
                 promises.push(cache.rt.send(
                     new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                     appService,
-                    { key: { value: `test:rapid:${i}` } }
+                    { key: `test:rapid:${i}` }
                 ));
             }
 
@@ -691,7 +691,7 @@ describe('Cache Metrics - Testing', () => {
                 promises.push(cache.rt.send(
                     new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                     appService,
-                    { key: { value: `test:concurrent:${i}` } }
+                    { key: `test:concurrent:${i}` }
                 ));
             }
 
@@ -714,7 +714,7 @@ describe('Cache Metrics - Testing', () => {
             await cache.rt.send(
                 new Request({ event: "getCachedValue", data: { param1: "test1" } }),
                 appService,
-                { key: { value: "test:high:latency" } }
+                { key: "test:high:latency" }
             );
 
             const stats = await cache.getCurrentMetrics();

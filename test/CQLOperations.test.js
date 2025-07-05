@@ -29,15 +29,15 @@ describe('Read-Through Operations', () => {
 
         it("should cache a query by using the run executor", async () => {
             const query = SELECT.from(Foo)
-            const { result, cacheKey } = await cache.rt.run(query, cds, { detailed: true })
+            const { result, cacheKey } = await cache.rt.run(query, cds)
 
             const cachedData = await cache.get(cacheKey)
             expect(cachedData).to.eql(await cache.get(cacheKey))
         })
 
-        it("should cache a query by using the run executor with a custom value key", async () => {
+        it("should cache a query by using the run executor with a custom key", async () => {
             const query = SELECT.from(Foo)
-            const { result, cacheKey } = await cache.rt.run(query, cds, { key: { value: 'customKey' } })
+            const { result, cacheKey } = await cache.rt.run(query, cds, { key: 'customKey' })
 
             const cachedData = await cache.get('customKey')
             expect(cachedData).to.eql(result)
@@ -45,8 +45,8 @@ describe('Read-Through Operations', () => {
 
         it("should cache a query by using the run executor with a custom template key", async () => {
             const query = SELECT.from(Foo)
-            const { result, cacheKey } = await cache.rt.run(query, cds, { key: { template: 'customKey_{hash}' } })
-            const key = cache.createKey(query, { template: 'customKey_{hash}' })
+            const { result, cacheKey } = await cache.rt.run(query, cds, { key: 'customKey_{hash}' })
+            const key = cache.createKey(query, {}, 'customKey_{hash}')
 
             const cachedData = await cache.get(key)
             expect(cachedData).to.eql(result)
@@ -65,7 +65,7 @@ describe('Read-Through Operations', () => {
         })
 
         it("should not cache a query if it's not a SELECT query", async () => {
-            const query = INSERT.into(Foo).entries([{ id: 1 }])
+            const query = INSERT.into(Foo).entries([{ ID: 1 }])
             expect(cache.createKey(query)).to.be.undefined  
         })
 
@@ -76,7 +76,7 @@ describe('Read-Through Operations', () => {
         })
 
         it("should cache a query run against an ApplicationService", async () => {
-            const { result, cacheKey } = await cache.rt.run(AppService.read(Foo), AppService, { detailed: true })
+            const { result, cacheKey } = await cache.rt.run(AppService.read(Foo), AppService)
             expect(result).to.eql(await AppService.read(Foo))
             expect(await cache.get(cacheKey)).to.eql(result)
         })
@@ -263,7 +263,7 @@ describe('Read-Through Operations', () => {
         it("should handle queries with custom key and TTL", async () => {
             const query = SELECT.from(Foo)
             const { result: data, cacheKey } = await cache.rt.run(query, cds, { 
-                key: { template: 'custom_query_{hash}' },
+                key: 'custom_query_{hash}',
                 ttl: 3000
             })
             
@@ -279,7 +279,7 @@ describe('Read-Through Operations', () => {
         it("should handle queries with all options combined", async () => {
             const query = SELECT.from(Foo).where({ ID: { '>': 0 } })
             const { result: data }   = await cache.rt.run(query, cds, { 
-                key: { template: 'complex_query_{hash}' },
+                key: 'complex_query_{hash}',
                 ttl: 10000,
                 tags: ["complex", "filtered", "foo"]
             })
@@ -287,7 +287,7 @@ describe('Read-Through Operations', () => {
             expect(data).to.be.an('array')
             
             // Verify custom key storage
-            const customKey = cache.createKey(query, { template: 'complex_query_{hash}' })
+            const customKey = cache.createKey(query, {}, 'complex_query_{hash}')
             expect(await cache.get(customKey)).to.eql(data)
             
             // Verify tags are stored

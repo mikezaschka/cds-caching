@@ -55,12 +55,12 @@ describe('DeprecatedMethods', () => {
             const deprecatedResult = await cache.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: "compare_send_key" } });
+            }, northwind, { key: "compare_send_key" });
 
             const rtResult = await cache.rt.send({
                 method: "GET",
                 path: "Products?$top=1"
-            }, northwind, { key: { value: "compare_send_key" } });
+            }, northwind, { key: "compare_send_key" });
             
             expect(deprecatedResult).to.eql(rtResult.result);
             expect(deprecatedResult).to.not.have.property('cacheKey');
@@ -73,8 +73,8 @@ describe('DeprecatedMethods', () => {
             const AppService = await cds.connect.to('AppService')
             const { Foo } = AppService.entities;
             
-            const deprecatedResult = await cache.run(SELECT.one.from(Foo).limit(1), AppService, { key: { value: "compare_run_key" } });
-            const rtResult = await cache.rt.run(SELECT.one.from(Foo).limit(1), AppService, { key: { value: "compare_run_key" } });
+            const deprecatedResult = await cache.run(SELECT.one.from(Foo).limit(1), AppService, { key: "compare_run_key" });
+            const rtResult = await cache.rt.run(SELECT.one.from(Foo).limit(1), AppService, { key: "compare_run_key" });
             
             expect(deprecatedResult).to.eql(rtResult.result);
             expect(deprecatedResult).to.not.have.property('cacheKey');

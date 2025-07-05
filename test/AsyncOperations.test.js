@@ -26,7 +26,7 @@ describe('AsyncOperations', () => {
             expect(result).to.eql(["expensive", "result"]);
             const cachedValue = await cache.get(cacheKey);
             expect(result).to.eql(cachedValue?.value || cachedValue);
-            expect(cacheKey).to.match(/^key:/);
+            expect(cacheKey).to.equal("key");
         })
 
         it("should return the result from the cache if the function is called again", async () => {
@@ -39,7 +39,7 @@ describe('AsyncOperations', () => {
             expect(result1).to.eql(["expensive", "result"]);
             const cachedValue1 = await cache.get(cacheKey1);
             expect(result1).to.eql(cachedValue1?.value || cachedValue1);
-            expect(cacheKey1).to.match(/^key:/);
+            expect(cacheKey1).to.equal("key");
 
             // Force manipulation of the cache
             await cache.set(cacheKey1, ["expensive", "result2"]);
@@ -48,7 +48,7 @@ describe('AsyncOperations', () => {
             expect(result2).to.eql(["expensive", "result2"]);
             const cachedValue2 = await cache.get(cacheKey2);
             expect(result2).to.eql(cachedValue2?.value || cachedValue2);
-            expect(cacheKey2).to.match(/^key:/);
+            expect(cacheKey2).to.equal("key");
         })
 
         it("should wrap an async function with args", async () => {
@@ -500,7 +500,7 @@ describe('AsyncOperations', () => {
             }
             
             const cachedOperation = cache.rt.wrap("user-profile", expensiveOperation, {
-                key: { template: "profile:{args[0]}:{args[1]}:{hash}" }
+                key: "profile:{args[0]}:{args[1]}:{hash}"
             });
             
             const { result: result1, cacheKey: cacheKey1 } = await cachedOperation("user-123", true);
@@ -522,7 +522,7 @@ describe('AsyncOperations', () => {
             }
             
             const cachedOperation = cache.rt.wrap("tenant-data", expensiveOperation, {
-                key: { template: "{tenant}:{user}:{args[0]}:{hash}" }
+                key: "{tenant}:{user}:{args[0]}:{hash}"
             });
             
             const { result: result1, cacheKey: cacheKey1 } = await cachedOperation("data-123");
@@ -709,7 +709,7 @@ describe('AsyncOperations', () => {
             }
             
             try {
-                await cache.rt.exec("key", failingOperation, [], { key: { template: "key" } });
+                await cache.rt.exec("key", failingOperation, [], { key: "key" });
                 expect.fail("Should have thrown an error");
             } catch (error) {
                 expect(error.message).to.eql("Function failed");
@@ -880,7 +880,7 @@ describe('AsyncOperations', () => {
             }
             
             try {
-                await cache.rt.exec("delayed_fail_key", delayedFailingOperation, [], { key: { template: "key" } });
+                await cache.rt.exec("delayed_fail_key", delayedFailingOperation, [], { key: "key" });
                 expect.fail("Should have thrown an error");
             } catch (error) {
                 expect(error.message).to.eql("Delayed failure");
@@ -956,13 +956,13 @@ describe('AsyncOperations', () => {
             }
             
             const { result: result1, cacheKey: cacheKey1 } = await cache.rt.exec("exec-user-profile", expensiveOperation, ["user-123", true], {
-                key: { template: "exec_profile:{args[0]}:{args[1]}:{hash}" }
+                key:  "exec_profile:{args[0]}:{args[1]}:{hash}" 
             });
             const { result: result2, cacheKey: cacheKey2 } = await cache.rt.exec("exec-user-profile", expensiveOperation, ["user-123", false], {
-                key: { template: "exec_profile:{args[0]}:{args[1]}:{hash}" }
+                key: "exec_profile:{args[0]}:{args[1]}:{hash}"
             });
             const { result: result3, cacheKey: cacheKey3 } = await cache.rt.exec("exec-user-profile", expensiveOperation, ["user-123", true], {
-                key: { template: "exec_profile:{args[0]}:{args[1]}:{hash}" }
+                key: "exec_profile:{args[0]}:{args[1]}:{hash}"
             }); // Should be cache hit
             
             expect(result1).to.eql("exec_user_user-123_true_1");
@@ -980,13 +980,13 @@ describe('AsyncOperations', () => {
             }
             
             const { result: result1, cacheKey: cacheKey1 } = await cache.rt.exec("exec-tenant-data", expensiveOperation, ["data-123"], {
-                key: { template: "{tenant}:{user}:exec:{args[0]}:{hash}" }
+                key: "{tenant}:{user}:exec:{args[0]}:{hash}"
             });
             const { result: result2, cacheKey: cacheKey2 } = await cache.rt.exec("exec-tenant-data", expensiveOperation, ["data-456"], {
-                key: { template: "{tenant}:{user}:exec:{args[0]}:{hash}" }
+                key: "{tenant}:{user}:exec:{args[0]}:{hash}"
             });
             const { result: result3, cacheKey: cacheKey3 } = await cache.rt.exec("exec-tenant-data", expensiveOperation, ["data-123"], {
-                key: { template: "{tenant}:{user}:exec:{args[0]}:{hash}" }
+                key: "{tenant}:{user}:exec:{args[0]}:{hash}"
             }); // Should be cache hit
             
             expect(result1).to.eql("exec_tenant_data_data-123_1");
@@ -1159,8 +1159,7 @@ describe('AsyncOperations', () => {
             }
             
             const cachedOperation = cache.rt.wrap("template-test", expensiveOperation, {
-                key: { template: "template:{args[0]}:{args[1]}:{hash}" },
-                detailed: true
+                key: "template:{args[0]}:{args[1]}:{hash}"
             });
             
             const detailedResult = await cachedOperation("user-123", true);

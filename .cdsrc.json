@@ -1,15 +1,5 @@
 {
     "requires": {
-        "API_BUSINESS_PARTNER": {
-            "kind": "odata-v2",
-            "model": "test/app/srv/external/API_BUSINESS_PARTNER",
-            "credentials": {
-                "url": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_BUSINESS_PARTNER/",
-                "headers": {
-                    "APIKey": "FILL IN YOUR API KEY"
-                }
-            }
-        },
         "caching": {
             "impl": "cds-caching",
             "namespace": "myCache"

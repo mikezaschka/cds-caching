@@ -16,6 +16,7 @@ export default class Main extends BaseController {
 	public onRouteMatched(event: Route$PatternMatchedEvent): void {
 		// Set layout to one column for main view
 		(<any>this.getModel("app")).setProperty("/layout", "OneColumn");
+		this.getView().byId("cachesList").getBinding("items").refresh();
 	}
 
 	public onCacheSelect(event: ListBase$ItemPressEvent): void {
@@ -23,23 +24,8 @@ export default class Main extends BaseController {
 		this.getRouter().navTo("cache", { cache: cache });
 	}
 
-	public onRefreshAllCaches(): void {
-		// Refresh the caches list
-		const model = this.getModel() as ODataModel;
-		model.refresh();
-		MessageBox.success("Cache list refreshed");
+	public onRefresh(): void {
+		this.getView().byId("cachesList").getBinding("items").refresh();
 	}
 
-	public onClearAllCaches(): void {
-		MessageBox.confirm("Are you sure you want to clear all caches? This action cannot be undone.", {
-			actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-			emphasizedAction: MessageBox.Action.OK,
-			onClose: (action: string) => {
-				if (action === MessageBox.Action.OK) {
-					// TODO: Implement clear all caches functionality
-					MessageBox.success("All caches cleared");
-				}
-			}
-		});
-	}
 }

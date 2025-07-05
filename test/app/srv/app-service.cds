@@ -1,37 +1,57 @@
-using {db} from '../db/model';
-using {API_BUSINESS_PARTNER} from './external/API_BUSINESS_PARTNER.csn';
-using { plugin.cds_caching.Statistics } from 'cds-caching/index.cds';
+using {Northwind} from './external/Northwind.csn';
+using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
 service AppService {
+    entity Foo {
+        key ID   : Integer;
+            name : String;
+            bar  : Association to Bar
+                       on bar.foo = $self;
+            products : Association to Northwind.Products;
+    } actions {
+        @cache: {
+            service: 'caching',
+            ttl    : 0
+        }
+        function getBoundCachedValue(param1 : String) returns String;
+    };
 
-    entity Foo              as projection on db.Foo
-        actions {
-            @cache: {
-                service: 'caching',
-                ttl    : 0
-            }
-            function getBoundCachedValue(param1 : String) returns String;
-        };
 
-    entity ManualCachedFoo  as projection on db.Foo;
+    entity Bar {
+        key ID   : Integer;
+            name : String;
+            foo  : Association to Foo;
+    };
 
-    @cache: {
+
+    entity ManualCachedFoo as projection on Foo;
+
+    @cache                 : {
         service: 'caching',
         ttl    : 5000,
-        key    : { template: '{hash}_{user}' },
-        tags: [ { template: 'user-{user}' }, { value: 'user-1' }, { data: 'name', prefix: 'name-' } ]
+        key    : {template: '{hash}_{user}'},
+        tags   : [
+            {template: 'user-{user}'},
+            {value: 'user-1'},
+            {
+                data  : 'name',
+                prefix: 'name-'
+            }
+        ]
     }
-    entity CachedFoo        as projection on db.Foo;
+    @cds.redirection.target: Bar
+    entity CachedFoo       as projection on Foo;
 
     @cache: {
-        service: 'caching-bp',
-        ttl    : 0
+        service: 'caching-northwind',
+        ttl    : 5000
     }
     @readonly
-    entity BusinessPartners as projection on API_BUSINESS_PARTNER.A_BusinessPartner;
+    entity Products        as projection on Northwind.Products;
 
     @cache: {
         service: 'caching',
+        tags   : ['getCachedValue'],
         ttl    : 0
     }
     function getCachedValue(param1 : String)    returns String;

@@ -1,17 +1,19 @@
-const { expect } = require('@cap-js/cds-test');
-const CachingService = require('../srv/CachingService');
+const TagResolver = require('../lib/support/TagResolver');
+const { expect } = require('chai');
 
-describe('CachingService Tag Resolution', () => {
-    let cachingService;
+describe('TagResolver', () => {
 
-    beforeEach(() => {
-        cachingService = new CachingService();
-    });
+    let tagResolver;
+
+    // berfore connect to the cache service
+    beforeEach(async () => {
+        tagResolver = new TagResolver();
+    })
 
     describe('Static Tags', () => {
         it('should resolve static tag values', () => {
             const tags = [{ value: 'static-tag' }];
-            const result = cachingService.resolveTags(tags);
+            const result = tagResolver.resolveTags(tags);
             expect(result).to.deep.equal(['static-tag']);
         });
 
@@ -20,7 +22,7 @@ describe('CachingService Tag Resolution', () => {
                 { value: 'tag1' },
                 { value: 'tag2' }
             ];
-            const result = cachingService.resolveTags(tags);
+            const result = tagResolver.resolveTags(tags);
             expect(result).to.deep.equal(['tag1', 'tag2']);
         });
     });
@@ -33,7 +35,7 @@ describe('CachingService Tag Resolution', () => {
 
         it('should resolve single data tag', () => {
             const tags = [{ data: 'BusinessPartner' }];
-            const result = cachingService.resolveTags(tags, testData);
+            const result = tagResolver.resolveTags(tags, testData);
             expect(result).to.deep.equal(['12345']);
         });
 
@@ -43,7 +45,7 @@ describe('CachingService Tag Resolution', () => {
                 prefix: 'bp-',
                 suffix: '-tag'
             }];
-            const result = cachingService.resolveTags(tags, testData);
+            const result = tagResolver.resolveTags(tags, testData);
             expect(result).to.deep.equal(['bp-12345-tag']);
         });
 
@@ -52,7 +54,7 @@ describe('CachingService Tag Resolution', () => {
                 data: ['BusinessPartner', 'Name'],
                 separator: '|'
             }];
-            const result = cachingService.resolveTags(tags, testData);
+            const result = tagResolver.resolveTags(tags, testData);
             expect(result).to.deep.equal(['12345|John Doe']);
         });
 
@@ -62,7 +64,7 @@ describe('CachingService Tag Resolution', () => {
                 { BusinessPartner: '67890', Name: 'Jane' }
             ];
             const tags = [{ data: 'BusinessPartner' }];
-            const result = cachingService.resolveTags(tags, arrayData);
+            const result = tagResolver.resolveTags(tags, arrayData);
             expect(result).to.deep.equal(['12345', '67890']);
         });
     });
@@ -76,7 +78,7 @@ describe('CachingService Tag Resolution', () => {
 
         it('should resolve single parameter tag', () => {
             const tags = [{ param: 'userId' }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['user123']);
         });
 
@@ -86,7 +88,7 @@ describe('CachingService Tag Resolution', () => {
                 prefix: 'user-',
                 suffix: '-tag'
             }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['user-user123-tag']);
         });
 
@@ -95,7 +97,7 @@ describe('CachingService Tag Resolution', () => {
                 param: ['role', 'department'],
                 separator: ':'
             }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['admin:IT']);
         });
     });
@@ -109,37 +111,37 @@ describe('CachingService Tag Resolution', () => {
 
         it('should resolve template tag with single placeholder', () => {
             const tags = [{ template: 'tenant-{tenant}' }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['tenant-tenant123']);
         });
 
         it('should resolve template tag with multiple placeholders', () => {
             const tags = [{ template: '{tenant}-{user}-{locale}' }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['tenant123-user456-en-US']);
         });
 
         it('should handle template with hash placeholder', () => {
             const data = { id: 123, name: 'Test' };
             const tags = [{ template: 'data-{hash}' }];
-            const result = cachingService.resolveTags(tags, data);
+            const result = tagResolver.resolveTags(tags, data);
             // We can't predict the exact hash, but we can check the format
             expect(result[0]).to.match(/^data-[0-9a-f]{32}$/);
         });
 
         it('should handle template with prefix and suffix', () => {
-            const tags = [{ 
+            const tags = [{
                 template: '{tenant}-{user}',
                 prefix: 'tag-',
                 suffix: '-v1'
             }];
-            const result = cachingService.resolveTags(tags, null, testParams);
+            const result = tagResolver.resolveTags(tags, null, testParams);
             expect(result).to.deep.equal(['tag-tenant123-user456-v1']);
         });
 
         it('should use default values for missing placeholders', () => {
             const tags = [{ template: '{tenant}-{user}-{locale}' }];
-            const result = cachingService.resolveTags(tags, null, {});
+            const result = tagResolver.resolveTags(tags, null, {});
             expect(result).to.deep.equal(['global-anonymous-en']);
         });
     });
@@ -153,7 +155,7 @@ describe('CachingService Tag Resolution', () => {
                 { value: 'static' },
                 { data: 'BusinessPartner' }
             ];
-            const result = cachingService.resolveTags(tags, testData);
+            const result = tagResolver.resolveTags(tags, testData);
             expect(result).to.deep.equal(['static', '12345']);
         });
 
@@ -163,7 +165,7 @@ describe('CachingService Tag Resolution', () => {
                 { data: 'BusinessPartner', prefix: 'bp-' },
                 { param: 'userId', prefix: 'user-' }
             ];
-            const result = cachingService.resolveTags(tags, testData, testParams);
+            const result = tagResolver.resolveTags(tags, testData, testParams);
             expect(result).to.deep.equal(['static-tag', 'bp-12345', 'user-user123']);
         });
 
@@ -174,26 +176,26 @@ describe('CachingService Tag Resolution', () => {
                 { data: 'BusinessPartner' },
                 { data: 'BusinessPartner' }
             ];
-            const result = cachingService.resolveTags(tags, testData);
+            const result = tagResolver.resolveTags(tags, testData);
             expect(result).to.deep.equal(['tag1', '12345']);
         });
     });
 
     describe('Array Data Scenarios', () => {
         const arrayData = [
-            { 
+            {
                 BusinessPartner: '12345',
                 Name: 'John Doe',
                 Department: 'Sales',
                 Roles: ['admin', 'user']
             },
-            { 
+            {
                 BusinessPartner: '67890',
                 Name: 'Jane Smith',
                 Department: 'IT',
                 Roles: ['developer']
             },
-            { 
+            {
                 BusinessPartner: '11111',
                 Name: 'Bob Wilson',
                 Department: 'HR',
@@ -202,11 +204,11 @@ describe('CachingService Tag Resolution', () => {
         ];
 
         it('should generate tags for each object in array with single data', () => {
-            const tags = [{ 
+            const tags = [{
                 data: 'BusinessPartner',
                 prefix: 'bp-'
             }];
-            const result = cachingService.resolveTags(tags, arrayData);
+            const result = tagResolver.resolveTags(tags, arrayData);
             expect(result).to.deep.equal(['bp-12345', 'bp-67890', 'bp-11111']);
         });
 
@@ -216,7 +218,7 @@ describe('CachingService Tag Resolution', () => {
                 separator: '|',
                 prefix: 'employee-'
             }];
-            const result = cachingService.resolveTags(tags, arrayData);
+            const result = tagResolver.resolveTags(tags, arrayData);
             expect(result).to.deep.equal([
                 'employee-12345|Sales',
                 'employee-67890|IT',
@@ -230,7 +232,7 @@ describe('CachingService Tag Resolution', () => {
                 { data: 'BusinessPartner', prefix: 'bp-' },
                 { data: ['Name', 'Department'], separator: ':', prefix: 'emp-' }
             ];
-            const result = cachingService.resolveTags(tags, arrayData);
+            const result = tagResolver.resolveTags(tags, arrayData);
             expect(result).to.deep.equal([
                 'static-tag',
                 'bp-12345', 'bp-67890', 'bp-11111',
@@ -245,7 +247,7 @@ describe('CachingService Tag Resolution', () => {
                 { param: 'tenant', prefix: 'tenant-' },
                 { data: ['BusinessPartner', 'Department'], separator: '|' }
             ];
-            const result = cachingService.resolveTags(tags, arrayData, params);
+            const result = tagResolver.resolveTags(tags, arrayData, params);
             expect(result).to.deep.equal([
                 'global-tag',
                 'tenant-tenant1',
@@ -266,7 +268,7 @@ describe('CachingService Tag Resolution', () => {
                 { data: 'BusinessPartner' },
                 { data: 'Role', prefix: 'role-' }
             ];
-            const result = cachingService.resolveTags(tags, duplicateData);
+            const result = tagResolver.resolveTags(tags, duplicateData);
             expect(result).to.deep.equal([
                 '12345', '67890',
                 'role-admin', 'role-user'
@@ -276,27 +278,27 @@ describe('CachingService Tag Resolution', () => {
 
     describe('Edge Cases', () => {
         it('should handle empty tag configurations', () => {
-            const result = cachingService.resolveTags([]);
+            const result = tagResolver.resolveTags([]);
             expect(result).to.deep.equal([]);
         });
 
         it('should handle undefined/null data and params', () => {
             const tags = [{ value: 'static' }];
-            const result = cachingService.resolveTags(tags, null, null);
+            const result = tagResolver.resolveTags(tags, null, null);
             expect(result).to.deep.equal(['static']);
         });
 
         it('should handle missing datas gracefully', () => {
             const tags = [{ data: 'NonExistentdata' }];
             const data = { BusinessPartner: '12345' };
-            const result = cachingService.resolveTags(tags, data);
+            const result = tagResolver.resolveTags(tags, data);
             expect(result).to.deep.equal([]);
         });
 
         it('should handle missing parameters gracefully', () => {
             const tags = [{ param: 'nonExistentParam' }];
             const params = { userId: 'user123' };
-            const result = cachingService.resolveTags(tags, null, params);
+            const result = tagResolver.resolveTags(tags, null, params);
             expect(result).to.deep.equal([]);
         });
 
@@ -307,14 +309,14 @@ describe('CachingService Tag Resolution', () => {
                 { data: 'BusinessPartner' }  // Valid config
             ];
             const data = { BusinessPartner: '12345' };
-            const result = cachingService.resolveTags(tags, data);
+            const result = tagResolver.resolveTags(tags, data);
             expect(result).to.deep.equal(['12345']);
         });
 
         it("should handle string data", () => {
-                const tags = [{ value: 'static' }, { data: 'not-available-data' }];
-            const result = cachingService.resolveTags(tags, 'test');
+            const tags = [{ value: 'static' }, { data: 'not-available-data' }];
+            const result = tagResolver.resolveTags(tags, 'test');
             expect(result).to.deep.equal(['static']);
         });
     });
-}); 
+});

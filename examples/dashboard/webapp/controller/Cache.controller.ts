@@ -6,6 +6,12 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Table, { Table$RowSelectionChangeEvent } from "sap/ui/table/Table";
 import MessageToast from "sap/m/MessageToast";
 import Context from "sap/ui/model/odata/v4/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import { Button$PressEvent } from "sap/m/Button";
+import Fragment from "sap/ui/core/Fragment";
+import Popover from "sap/m/Popover";
 
 /**
  * @namespace cds.plugin.caching.dashboard.controller
@@ -51,7 +57,7 @@ export default class Cache extends BaseController {
     public onRouteMatched(event: Route$PatternMatchedEvent): void {
         const { cache } = event.getParameter("arguments") as { cache: string };
         (<JSONModel>this.getModel("app")).setProperty("/selectedCache", cache);
-        (<JSONModel>this.getModel("app")).setProperty("/layout", "MidColumnFullScreen");
+        (<JSONModel>this.getModel("app")).setProperty("/layout", "TwoColumnsMidExpanded");
 
         this.getView().bindElement({
             path: "/Caches('" + cache + "')",
@@ -61,6 +67,8 @@ export default class Cache extends BaseController {
                     if (context) {
                         const cache = context.getProperty("configuration");
                         this.uiModel.setProperty("/config", cache);
+                        this.loadStatistics();
+                        this.loadKeyMetricsData();
                     }
                 }
             }
@@ -70,17 +78,33 @@ export default class Cache extends BaseController {
     /**
      * Load statistics based on current filters
      */
-    private async loadStatistics(): Promise<void> {
-        const statistisTable = this.getView().byId("metricsTable") as Table;
-        statistisTable.getBinding("rows").refresh();
+    private async loadStatistics(refresh: boolean = false): Promise<void> {
+        const table = this.getView().byId("metricsTable") as Table;
+        const filter = new Filter("cache", FilterOperator.EQ, (<JSONModel>this.getModel("app")).getProperty("/selectedCache"));
+        if (table.getBinding("rows").isSuspended()) {
+            table.getBinding("rows").resume();
+        }
+        if (refresh) {
+            (<ODataListBinding>table.getBinding("rows")).refresh();
+        } else {
+            (<ODataListBinding>table.getBinding("rows")).filter(filter);
+        }
     }
 
     /**
      * Load key tracking data
      */
-    async loadKeyMetricsData(): Promise<void> {
+    async loadKeyMetricsData(refresh: boolean = false): Promise<void> {
         const table = this.getView().byId("keyMetricsTable") as Table;
-        table.getBinding("rows").refresh();
+        const filter = new Filter("cache", FilterOperator.EQ, (<JSONModel>this.getModel("app")).getProperty("/selectedCache"));
+        if (table.getBinding("rows").isSuspended()) {
+            table.getBinding("rows").resume();
+        }
+        if (refresh) {
+            (<ODataListBinding>table.getBinding("rows")).refresh();
+        } else {
+            (<ODataListBinding>table.getBinding("rows")).filter(filter);
+        }
     }
 
 
@@ -261,7 +285,7 @@ export default class Cache extends BaseController {
             context.setParameter("enabled", enabled);
             await context.invoke();
 
-            MessageBox.success(`Key metrics ${enabled ? 'enabled' : 'disabled'} successfully`);
+            MessageToast.show(`Key metrics ${enabled ? 'enabled' : 'disabled'} successfully`);
 
         } catch (error) {
             console.error("Error setting key metrics enabled:", error);
@@ -301,9 +325,11 @@ export default class Cache extends BaseController {
     /**
      * Handle refresh button press
      */
-    public onRefresh(): void {
-        this.loadStatistics();
-        this.loadKeyMetricsData();
+    public async onRefresh(): Promise<void> {
+        if (this.getView().getElementBinding().getBoundContext()) {
+            await this.loadStatistics(true);
+            await this.loadKeyMetricsData(true);
+        }
     }
 
     public handleClose(): void {
@@ -342,8 +368,70 @@ export default class Cache extends BaseController {
     /**
      * Refresh key data
      */
-    public onRefreshKeyMetricsData(): void {
-        this.loadKeyMetricsData();
+    public async onRefreshKeyMetricsData(): Promise<void> {
+        await this.loadKeyMetricsData(true);
+    }
+
+    public onRefreshMetricsData(): void {
+        this.loadStatistics(true);
+    }
+
+    public async onShowKeyMetricsMetadata(event: Button$PressEvent): Promise<void> {
+        const context = event.getSource().getBindingContext() as Context;
+
+        const saveJson = (json: string) => {
+            try {
+                return JSON.stringify(JSON.parse(json), null, 2)
+            } catch (error) {
+                return json
+            }
+        }
+
+        const localData = new JSONModel({
+            metadata: saveJson(context.getProperty("metadata")),
+            subject: saveJson(context.getProperty("subject")),
+            query: saveJson(context.getProperty("query")),
+            cacheOptions: saveJson(context.getProperty("cacheOptions")),
+            keyName: context.getProperty("keyName"),
+        });
+
+        const fragment = await Fragment.load({
+            definition: `<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form">
+                <Popover title="{localData>/keyName}" placement="Bottom" contentWidth="30rem">
+                    <content>
+                        <IconTabBar>
+                            <items>
+                                <IconTabFilter text="Metadata">
+                                    <content>
+                                        <TextArea value="{localData>/metadata}" rows="20" width="100%" editable="false" />
+                                    </content>
+                                </IconTabFilter>
+                                <IconTabFilter text="Subject" >
+                                    <content>
+                                        <TextArea value="{localData>/subject}" rows="20" width="100%" editable="false" />
+                                    </content>
+                                </IconTabFilter>
+                                <IconTabFilter text="Query" >
+                                    <content>
+                                        <TextArea value="{localData>/query}" rows="20" width="100%" editable="false" />
+                                    </content>
+                                </IconTabFilter>
+                                <IconTabFilter text="Cache Options" >
+                                    <content>
+                                        <TextArea value="{localData>/cacheOptions}" rows="20" width="100%" editable="false" />
+                                    </content>
+                                </IconTabFilter>
+                                </items>
+                        </IconTabBar>
+                    </content>
+                </Popover>
+            </core:FragmentDefinition>`,
+            controller: this,
+        });
+
+        const popover = fragment as Popover;
+        popover.setModel(localData, "localData");
+        popover.openBy(event.getSource());
     }
 
     /**
@@ -363,7 +451,7 @@ export default class Cache extends BaseController {
             MessageToast.show("Metrics cleared successfully");
 
             // Refresh the data
-            this.loadStatistics();
+            this.loadStatistics(true);
 
         } catch (error) {
             console.error("Error clearing metrics:", error);

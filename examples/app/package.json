@@ -28,30 +28,15 @@
           "file": "db.sqlite"
         }
       },
-      "API_BUSINESS_PARTNER": {
-        "kind": "odata-v2",
-        "model": "test/app/srv/external/API_BUSINESS_PARTNER",
-        "credentials": {
-          "url": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_BUSINESS_PARTNER/",
-          "headers": {
-            "APIKey": "FILL IN YOUR API KEY"
-          }
-        }
-      },
-      "cachings": {
-        "kind": "service",
-        "impl": "cds-caching",
-        "namespace": "myCache",
-        "store": "sqlite",
-        "credentials": {
-          "url": "file::memory:"
-        }
-      },
       "caching": {
-        "kind": "service",
         "impl": "cds-caching",
         "namespace": "redisCache",
         "store": "redis",
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 10000,
+          "maxLatencies": 1000
+        },
         "credentials": {
           "socket": {
             "host": "localhost",
@@ -60,7 +45,23 @@
             "pingInterval": 1000
           }
         }
+      },
+      "caching-northwind": {
+        "impl": "cds-caching",
+        "namespace": "northwind",
+        "store": "sqlite",
+        "credentials": {
+          "url": "file::memory:"
+        }
+      },
+      "Northwind": {
+        "kind": "odata",
+        "model": "srv/external/Northwind",
+        "credentials": {
+          "url": "https://services.odata.org/Experimental/OData/OData.svc/"
+        }
       }
+
     }
   }
 }

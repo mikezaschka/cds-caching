@@ -37,13 +37,13 @@
 					<cssgrid:ResponsiveColumnLayout />
 				</cssgrid:customLayout>
 
-				        <!-- Read-Through Performance Section -->
+				<!-- Read-Through Performance Section -->
 				<VBox renderType="Bare">
 					<layoutData>
 						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
 					</layoutData>
 
-					                <Title text="Read-Through Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+					<Title text="Read-Through Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
 
 					<f:GridContainer id="metricCacheThroughGrid" columnsChange=".onColumnsChange">
 						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Ratio" subheader="Cache Hit Rate">
@@ -82,37 +82,6 @@
 							</layoutData>
 						</GenericTile>
 
-						        <!-- Read-Through Distribution Chart -->
-						<f:Card class="sapUiTinyMargin">
-							<f:header>
-								                <card:Header title="Read-Through Operations" subtitle="Hit/Miss/Error Distribution" />
-							</f:header>
-							<f:content>
-								<l:VerticalLayout width="100%">
-									<viz:Popover id="metricCacheThroughPopOver"></viz:Popover>
-									<viz:VizFrame id="metricCacheThroughChart" vizType="pie" width="100%" height="300px">
-										<viz:dataset>
-											<viz.data:FlattenedDataset data="{ui>/cacheThroughData}">
-												<viz.data:dimensions>
-													<viz.data:DimensionDefinition name="Operation" value="{operation}" />
-												</viz.data:dimensions>
-												<viz.data:measures>
-													<viz.data:MeasureDefinition name="Count" value="{count}" />
-												</viz.data:measures>
-											</viz.data:FlattenedDataset>
-										</viz:dataset>
-										<viz:feeds>
-											<viz.feeds:FeedItem id="metricCacheThroughValueAxisFeed" uid="size" type="Measure" values="Count" />
-											<viz.feeds:FeedItem id="metricCacheThroughCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
-										</viz:feeds>
-									</viz:VizFrame>
-								</l:VerticalLayout>
-							</f:content>
-							<f:layoutData>
-								<f:GridContainerItemLayoutData columns="4" minRows="4"/>
-							</f:layoutData>
-						</f:Card>
-
 						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Total Requests" subheader="Cache Operations">
 							<TileContent unit="req">
 								<NumericContent value="{= ${ui>/hits} + ${ui>/misses}}" withMargin="false" />
@@ -140,23 +109,6 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Sets" subheader="Write Operations">
-							<TileContent unit="sets">
-								<NumericContent value="{ui>/sets}" withMargin="false" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
-
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Deletes" subheader="Delete Operations">
-							<TileContent unit="deletes">
-								<NumericContent value="{ui>/deletes}" withMargin="false" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
 
 						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Errors" subheader="Error Count">
 							<TileContent unit="errors">
@@ -168,10 +120,62 @@
 						</GenericTile>
 
 
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Latency" subheader="Cache Hit Response">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgHitLatency'}" value="{ path: 'ui>/avgHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Miss Latency" subheader="Cache Miss Response">
+							<TileContent unit="ms">
+								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgMissLatency'}" value="{ path: 'ui>/avgMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+							</TileContent>
+							<layoutData>
+								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+							</layoutData>
+						</GenericTile>
+
+						<!-- Read-Through Distribution Chart -->
+						<f:Card class="sapUiTinyMargin">
+							<f:header>
+								<card:Header title="Read-Through Operations" subtitle="Hit/Miss/Error Distribution" />
+							</f:header>
+							<f:content>
+								<l:VerticalLayout width="100%">
+									<viz:Popover id="metricCacheThroughPopOver"></viz:Popover>
+									<viz:VizFrame id="metricCacheThroughChart" vizType="pie" width="100%" height="300px">
+										<viz:dataset>
+											<viz.data:FlattenedDataset data="{ui>/cacheThroughData}">
+												<viz.data:dimensions>
+													<viz.data:DimensionDefinition name="Operation" value="{operation}" />
+												</viz.data:dimensions>
+												<viz.data:measures>
+													<viz.data:MeasureDefinition name="Count" value="{count}" />
+												</viz.data:measures>
+											</viz.data:FlattenedDataset>
+										</viz:dataset>
+										<viz:feeds>
+											<viz.feeds:FeedItem id="metricCacheThroughValueAxisFeed" uid="size" type="Measure" values="Count" />
+											<viz.feeds:FeedItem id="metricCacheThroughCategoryAxisFeed" uid="color" type="Dimension" values="Operation" />
+										</viz:feeds>
+									</viz:VizFrame>
+								</l:VerticalLayout>
+							</f:content>
+							<f:layoutData>
+								<f:GridContainerItemLayoutData columns="4" minRows="4"/>
+							</f:layoutData>
+						</f:Card>
+
+
+
+
 						<!-- Latency Chart -->
 						<f:Card class="sapUiTinyMargin">
 							<f:header>
-								                <card:Header title="Latency Comparison" subtitle="Read-Through Latency Metrics" />
+								<card:Header title="Latency Comparison" subtitle="Read-Through Latency Metrics" />
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
@@ -199,41 +203,7 @@
 							</f:layoutData>
 						</f:Card>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Latency" subheader="Cache Hit Response">
-							<TileContent unit="ms">
-								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgHitLatency'}" value="{ path: 'ui>/avgHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Miss Latency" subheader="Cache Miss Response">
-							<TileContent unit="ms">
-								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgMissLatency'}" value="{ path: 'ui>/avgMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
-
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Set Latency" subheader="Write Operations">
-							<TileContent unit="ms">
-								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgSetLatency'}" value="{ path: 'ui>/avgSetLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
-
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Delete Latency" subheader="Delete Operations">
-							<TileContent unit="ms">
-								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgDeleteLatency'}" value="{ path: 'ui>/avgDeleteLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
-							</TileContent>
-							<layoutData>
-								<f:GridContainerItemLayoutData columns="2" minRows="2"/>
-							</layoutData>
-						</GenericTile>
 
 					</f:GridContainer>
 				</VBox>

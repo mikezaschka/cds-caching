@@ -3,37 +3,38 @@
 ## Overview
 
 This plugin for the [SAP Cloud Application Programming Model (CAP)](https://cap.cloud.sap/docs/) provides a caching service to improve performance in CAP applications.
+
 While CAP in general performs well for most use cases, caching can help with:
 - Slow remote service calls
-- Complex calculations
-- Heavy queries
-- External API integration 
+- Complex operations
+- Slow queries
+- Other performance bottle necks
 
-While caching can help with these, it also adds complexity and should be used judiciously.
+While cds-caching can be a big helper, an additional caching layer also adds complexity and should be used judiciously.
 
 Please also read the introduction blog post in the SAP Community: [Boosting performance in SAP Cloud Application Programming Model (CAP) applications with cds-caching](https://community.sap.com/t5/technology-blogs-by-members/boosting-performance-in-sap-cloud-application-programming-model-cap/ba-p/14002015).
 
-### Caching vs. Replication
-
-It's important to understand the difference between **caching** and **data replication**:
-
-* **Caching** temporarily stores data to reduce latency and improve response times. It's ideal for read-heavy workloads but does not maintain data integrity or understand data semantics.
-
-* **Replication** creates full, persistent copies of remote data within your application to ensure availability and enable seamless data sharing across systems. It focuses on resilience rather than performance optimization.
-
-cds-caching is specifically designed for efficient caching, not data replication.
 
 ### Key Features
 
 * **Flexible Key-Value Store** – Store and retrieve data using simple key-based access.
 * **CachingService** – A cds.Service implementation with an intuitive API for seamless integration into CAP.
-* **Event Handling** – Monitor and react to cache events, such as before/after storage and retrieval.
+* **Read-Through Capabilities** – Let the caching service handle the cache set and get operatios for you 
 * **CAP-specific Caching** – Effortlessly cache CQN queries or CAP cds.Requests using code or the @cache annotation.
 * **TTL Support** – Automatically manage data expiration with configurable time-to-live (TTL) settings.
 * **Tag Support** – Use dynamic tags for flexible cache invalidation options.
 * **Pluggable Storage Options** – Choose between in-memory caching, SQLite or Redis.
 * **Compression** – Compress cached data to save memory using LZ4 or GZIP.
-* **Integrated Statistics** – Monitor cache performance with hit rates, latencies, and more.
+* **Integrated Metrics** – Monitor cache performance with hit rates, latencies, and more.
+* **API** – Access basic cache operations and metrics via API
+* **Event Handling** – Monitor and react to cache events, such as before/after storage and retrieval.
+
+### Checkout detailed information on how to use cds-caching
+
+> - [Programmatic API](docs/programmatic-api.md)
+> - [Metrics Guide](docs/metrics-guide.md)
+> - [API Reference](docs/api-reference.md)
+
 
 ### Installation
 
@@ -51,16 +52,25 @@ Next, add a caching service configuration to your package.json. You can even def
     "requires": {
       "caching": {
         "impl": "cds-caching",
-        "namespace": "my::app::caching"
+        "namespace": "caching"
       },
-      // Optional: Define a specific caching service for Business Partner API
+      // Recommended: Define a specific caching service for different caching requirements
       "bp-caching": {
         "impl": "cds-caching",
-        "namespace": "my::app::bp-caching"
+        "namespace": "bp-caching"
       }
     }
   }
 }
+```
+
+And finally add the following cds definition to your data model:
+
+```
+using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
+
+// Don't forget to protect the service, e.g. 
+annotate CachingApiService with @requires: 'authenticated-user';
 ```
 
 ### Advanced Configuration
@@ -88,11 +98,6 @@ For more control, you can specify additional options:
           "url": "sqlite://./cache.sqlite"
           "table": "cache",
           "busyTimeout": 10000
-        },
-        "statistics": {
-          "enabled": true,
-          "persistenceInterval": 60000, // Optional: Interval for statistics persistence
-          "maxLatencies": 1000 // Optional: Maximum number of latencies to track
         }
       }
     }
@@ -200,8 +205,21 @@ resources:
 
 ### Usage Patterns
 
-The caching service provides a flexible API for caching data in CAP applications. Here are the key usage patterns:
-#### 1. Low-Level Key-Value API
+> ⚠️ **Deprecation Notice**: The following methods are deprecated since version 1.0 and will be removed in a future version:
+> - `cache.run()` - use `cache.rt.run()` instead
+> - `cache.exec()` - use `cache.rt.exec()` instead  
+> - `cache.wrap()` - use `cache.rt.wrap()` instead
+> - `cache.send()` - use `cache.rt.send()` instead
+>
+> The `rt.xxx` methods provide enhanced functionality including:
+> - **Read-through metadata**: Information about cache hits/misses and latency
+> - **Dynamic cache keys**: Automatically generated keys based on function arguments and query parameters
+> - **Consistent return format**: All methods return `{ result, cacheKey, metadata }` by default
+>
+> **Migration**: Simply replace `cache.method()` with `cache.rt.method()` and access the result via `.result` property if needed.
+
+The caching service provides a flexible API for caching data in CAP applications ([full API](docs/programmatic-api.md)). Here are the key usage patterns:
+#### 1. Low-Level Key-Value API for Read-Aside Caching
 
 The most basic way to use cds-caching is through its key-value API:
 
@@ -240,16 +258,24 @@ await cache.set(query, result)
 // Retrieve from cache using the same query
 const cachedResult = await cache.get(query)
 ```
-Handling the cache manually via read-aside pattern is possible, but the caching service provides a more convenient way to cache and retrieve CQN queries. By using the `run` method, the caching service will transparently cache the result of the query and return the cached result if available for all further requests.
+Handling the cache manually via read-aside pattern is possible, but the caching service provides a more convenient way to cache and retrieve CQN queries. By using the `rt.run` method, the caching service will transparently cache the result of the query and return the cached result if available for all further requests.
 
 ```javascript
 const query = SELECT.from(Foo)
 
 // Runs the query internally and caches the result
-const result = await cache.run(query, db)
+const { result } = await cache.rt.run(query, db)
 ```
 
 This will transparently cache the result of the query and return the cached result if available for all further requests.
+
+Because the cache key has been dynamically created at runtime, it will also be returned:
+
+```javascript
+
+// Access the cacheKey for later usage
+const { result, cacheKey } = await cache.rt.run(query, db)
+```
 
 #### 3. RemoteService Request-Level Caching
 
@@ -262,18 +288,19 @@ this.on('READ', BusinessPartners, async (req, next) => {
   let value = await cache.get(req)
   if(!value) {
     value = await bupa.run(req)
-    await cache.set(req, value, { ttl: 3600 })
+    await cache.set(req, value, { ttl: 30000 })
   }
   return value
 })
 ```
 
-Alternatively use read-through caching via the `run` method to let the caching service handle the caching transparently:
+Alternatively use read-through caching via the `rt.run` method to let the caching service handle the caching transparently:
 
 ```javascript
 this.on('READ', BusinessPartners, async (req, next) => {
   const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-  return await cache.run(req, bupa)
+  const { result } = await cache.rt.run(req, bupa)
+  return result
 })
 
 ```
@@ -283,7 +310,7 @@ This will transparently cache the result of the request and return the cached re
 ### 4. ApplicationService Request-Level Caching
 
 
-> Caching an entire entity should be used with caution, as it will cache all permutations of requests ($filter, $expand, $orderby, etc.) on the entity, which will lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.
+> Caching an entire entity should be used with caution, as it will cache all permutations of requests ($select, $filter, $expand, $orderby, etc.) on the entity, which may lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.
 
 
 But not only external services can be cached, it's also possible to cache requests against an ApplicationService.
@@ -299,7 +326,8 @@ class MyService extends cds.ApplicationService {
       const { MyEntity } = this.entities;
       this.on('READ', MyEntity, async (req, next) => {
         const cache = cds.connect.to("caching");
-        return cache.run(req, next);
+        const { result } = await cache.rt.run(req, next)
+        return result;
       });
     });
     return super.init()
@@ -314,7 +342,7 @@ Alternatively to doing this via code, you can use annotations to enable caching 
 ```
 service MyService {
   @cache: {     
-    ttl: 3600
+    ttl: 10000 // 10 seconds
   }
   entity BusinessPartners as projection on BusinessPartner {
     // ... entity definition
@@ -322,7 +350,7 @@ service MyService {
 
 
   @cache: {
-    ttl: 1800,
+    ttl: 100000, // 10 seconds
     tags: [{
       template: 'user-{user}'
     }]
@@ -337,35 +365,55 @@ While not directly related to CAP functionality, the caching service provides tw
 
 ```javascript
 // Using wrap() to create a cached version of a function
-const expensiveOperation = async (value) => {
+const expensiveOperation = async (param1, param2) => {
   // ... some expensive computation
   return result
 }
 
-// Creates a cached version of the function
-const cachedOperation = cache.wrap("key", expensiveOperation, { 
+// Creates a cached version of the function.
+const cachedOperation = cache.rt.wrap("key", expensiveOperation { 
   ttl: 3600,
   tags: ['computation']
 })
 
 // Each call checks cache first, only executes if cache miss
-const result = await cachedOperation("input")
+const result = await cachedOperation("value1", "value2")
 
 // Using exec() for immediate execution with caching
-const result = await cache.exec("key", async () => {
+const result = await cache.rt.exec("key", async (param1) => {
   // ... some expensive computation
-  return result
-}, { 
+  return param1 + " world"
+}, ["hello"] { 
   ttl: 3600,
   tags: ['computation']
 })
 ```
 
-The key differences between `wrap()` and `exec()`:
-- `wrap()` returns a new function that includes caching logic
-- `exec()` immediately executes the function and caches the result
-- Use `wrap()` when you need to reuse the cached function multiple times
-- Use `exec()` for one-off executions with caching
+The key differences between `rt.wrap()` and `rt.exec()`:
+- `rt.wrap()` returns a new function that includes caching logic
+- `rt.exec()` immediately executes the function and caches the result
+- Use `rt.wrap()` when you need to reuse the cached function multiple times
+- Use `rt.exec()` for one-off executions with caching
+
+#### Dynamic Key Generation
+
+All `rt.xxx` methods automatically generate cache keys based on function arguments and query parameters. This ensures that different function calls with different arguments are cached separately.
+
+```javascript
+// Different arguments = different cache keys
+const result1 = await cachedOperation("user1", "data1")  // Cache key: "key:user1:data1"
+const result2 = await cachedOperation("user2", "data2")  // Cache key: "key:user2:data2"
+```
+
+You can override this behavior by providing a custom key template:
+
+```javascript
+const cachedOperation = cache.rt.wrap("user-profile", expensiveOperation, {
+  key: { template: "profile:{args[0]}:{args[1]}" }
+})
+```
+
+For detailed information on how read-through keys are generated and configured, see [Read-Through Key Generation](docs/read-through-keys.md).
 
 ### Cache Invalidation Strategies
 
@@ -383,16 +431,16 @@ The TTL can be specified for individually through all cache methods (e.g. `set`,
 await cache.set("key", "value", { ttl: 60000 })
 
 // Run with 30 seconds TTL
-const result = await cache.run(query, db, { ttl: 30000 })
+const result = await cache.rt.run(query, db, { ttl: 30000 })
 
 // Send with 10 seconds TTL
-const result = await cache.send(request, service, { ttl: 10000 })
+const result = await cache.rt.send(request, service, { ttl: 10000 })
 
 // Wrap with 10 seconds TTL
-const cachedOperation = cache.wrap("key", expensiveOperation, { ttl: 10000 })
+const cachedOperation = cache.rt.wrap("key", expensiveOperation, { ttl: 10000 })
 
 // Exec with 10 seconds TTL
-const result = await cache.exec("key", async () => {
+const result = await cache.rt.exec("key", async () => {
   // ... some expensive computation
   return result
 }, { 
@@ -408,7 +456,7 @@ Key-based invalidation is a way to invalidate cache entries based on a specific 
 await cache.delete("key")
 ```
 
-Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.run, cache.send, cache.createKey) and for the annotations.
+Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.rt.run, cache.rt.send, cache.createKey) and for the annotations.
  
 ```javascript
 // No key override given, string will just be used as keys
@@ -424,10 +472,10 @@ cache.createKey(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
 await cache.set(SELECT.from(Foo, 1), { key: { value: "foo:1" } })
 
 // Override and only for requests, use request context information
-await cache.run(req, remoteService, { key: { template: "mykey:{tenant}:{user}:{locale}:{hash}" } })
+await cache.rt.run(req, remoteService, { key: { template: "mykey:{tenant}:{user}:{locale}:{hash}" } })
 
 // This requests will be cached for all users and for each locale 
-await cache.set(req, remoteService, { key: { template: "mykey:{user}:{locale}:{hash}" } })
+await cache.rt.run(req, remoteService, { key: { template: "mykey:{user}:{locale}:{hash}" } })
 ```
 
 Overriding keys support the following configuration options:
@@ -444,7 +492,7 @@ With well-structured keys, invalidating cache entries becomes a lot easier. Howe
 
 #### 3. Tag-Based
 
-Tags are a way to invalidate cache entries based on a specific tag. Tags need to be provided explicitly when storing a value in the cache and are supported for all cache methods (e.g. `set`, `run`, `send`, `wrap`, `exec`).
+Tags are a way to invalidate cache entries based on a specific tag. Tags need to be provided explicitly when storing a value in the cache and are supported for all cache methods (e.g. `set`, `rt.run`, `rt.send`, `rt.wrap`, `rt.exec`).
 Tags can be provided as an array of strings or as an array of objects with the following properties:
 - `value`: The value to use for the tag.
 - `data`: A field from the value to use for the tag. This is working for objects and arrays of objects.
@@ -513,10 +561,10 @@ await cache.deleteByTag('bp-1')
 await cache.deleteByTag('bp-2')
 ```
 
-This is really usefull for caching results with multiple rows where you can't predict the tags beforehand or when you want to invalidate cache entries based on the data itself. This is also possible for the `run` method.
+This is really usefull for caching results with multiple rows where you can't predict the tags beforehand or when you want to invalidate cache entries based on the data itself. This is also possible for the `rt.run` method.
 
 ```javascript
-const result = await cache.run(query, db, { 
+const result = await cache.rt.run(query, db, { 
   tags: [{ data: 'businessPartner', prefix: 'bp-' }]
 })
 ```
@@ -582,222 +630,278 @@ Instead of caching entire OData service responses, focus on:
 3. **Multi-Tenant**: Use appropriate namespacing and key strategies
 4. **Redis Setup**: Ensure proper configuration for production use
 
-## Full API
+## Enhanced Statistics & Monitoring
+
+The plugin now includes comprehensive statistics and monitoring capabilities that provide deep insights into cache performance and help optimize cache usage.
 
-### `cache.createKey(key: any)` : `string`
+[See the full Metrics Guide →](docs/metrics-guide.md)
+
+### Key Features
 
-Creates a key from a string or an object. This method is used internally when passing keys to the cache methods, so you don't need to call it directly other then to retrieve the dynamic generated key for a given object.
+- **Real-time Metrics**: Monitor cache performance with detailed hit rates, latencies, and throughput
+- **Key-level Tracking**: Track performance metrics for individual cache keys
+- **Historical Data**: Store and analyze metrics over time (hourly/daily periods)
+- **Performance Analytics**: Calculate cache efficiency, error rates, and response times
+- **Runtime Configuration**: Enable/disable metrics at runtime without restart
+- **API Access**: Access metrics programmatically or via OData service
 
-#### `key: any`
+### Metrics Overview
 
-The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using MD5. cds.Requests are handled explicitly as the dynamic generated key includes the user, tenant and locale and query hash.
+cds-caching provides two types of metrics:
+
+#### 1. General Cache Metrics
+Track overall cache performance including:
+- **Hit/Miss Statistics**: Total hits, misses, and hit ratios
+- **Latency Metrics**: Average, min, max, and percentile latencies for hits and misses
+- **Performance Metrics**: Throughput (requests/second), error rates, cache efficiency
+- **Memory Usage**: Current memory consumption and item count
+- **Native Operations**: Counts of direct cache operations (set, get, delete, etc.)
 
-#### Returns
-
-A string key.
-
----
-
-### `await cache.set(key: any, value: any[, options: object])`
-
-Sets a value in the cache.
-
-#### `key: any`
-
-The key to store the value under. The key handling is the same as for the `≈` method.
-
-#### `value: any`
-
-The value to store in the cache. The value will be serialized to a string using `JSON.stringify` (unless the value is already a string).
-
-#### `options: object`
-
-Object literal containing cache options.
-
-The following properties are accepted:
-
-| Property      | Description   | Example  |
-| ------------- | ------------- | ----------
-| ttl           | Time-to-live in milliseconds. | `1000`
-| key           | Key override for the cache for full control over the key management (see chapter Cache Invalidation Strategies) | `{template: 'user-{user}', value: '123'}`
-| tags          | Array of tags to associate with the value. Tags can be dynamic based on the stored cache data (see chapter Cache Invalidation Strategies) | `[{template: 'user-{user}', value: '123'}]`
-
----
-
-### `await cache.get(key: any)`
-
-Gets a value from the cache.
-
-#### `key: any`
-
-The key to retrieve the value from. The key handling is the same as for the `createKey` method.
-
-#### Returns
-
-The deserialized value from the cache or `undefined` if the value does not exist.
-
----
-
-### `await cache.has(key: any)`
-
-Checks if a value exists in the cache.
-
-#### `key: any`
-
-The key to check for existence. The key handling is the same as for the `createKey` method.
-
-#### Returns
-
-`true` if the value exists in the cache, `false` otherwise.
-
----
-
-### `await cache.delete(key: any)`
-
-Deletes a value from the cache. 
-
-#### `key: any`
-
-The key to delete the value from. The key handling is the same as for the `createKey` method.
-
---- 
-
-### `await cache.clear()`
-
-Clears the whole cache.
-
----
-
-### `await cache.deleteByTag(tag: string)`
-
-Deletes all values from the cache that are associated with the given tag.
-
-#### `tag: string`
-
-The tag to delete the values from.
-
---- 
-
-### `await cache.run(query: cds.CQN , service: cds.Service)`
-
-Runs a query against the provided service and caches the result for all further requests. This method is useful for read-through caching. (see Usage Patterns and [CAP docs](https://cap.cloud.sap/docs/node.js/core-services#srv-run-query) for more information)
-
-#### `object: cds.CQN`
-
-The CQN query to run.
-
-#### `service: cds.Service`
-
-The service to run the query on.
-
-#### Returns
-
-The result of the query, either from the cache or the service.
-
----
-
-### `await cache.send(request: cds.Request, service: cds.Service)`
-
-Sends a request to a cds.Service and caches the result. In contrast to the `run` method, this method is useful for caching full cds.Requests.
-
-#### `request: cds.Request`
-
-The request to send.  
-
-#### `service: cds.Service  `
-
-The service to send the request to.
-
-#### Returns
-
-The result of the request, either from the cache or the service.
-
----
-
-### `await cache.wrap(key: any, fn: async function, options: object)`
-
-Wraps a function in a cache.
-
-#### `key: any` 
-
-The key to store the cached function under. The key handling is the same as for the `createKey` method. 
-
-#### `fn: async function`
-
-The async function to wrap in a cache.
-
-#### `options: object`
-
-The options to use for the cache.
-
-#### Returns
-
-A cached version of the function. The cached function will check the cache first and only execute the function if the cache miss.
-
----
-
-### `await cache.exec(key: any, fn: async function, options: object)`
-
-Executes a function and caches the result. This method is useful for one-off executions with caching.
-
-#### `key: any`
-
-The key to store the cached function under. The key handling is the same as for the `createKey` method. 
-
-#### `fn: async function`
-
-The async function to execute.
-
-#### `options: object`
-
-The options to use for the cache. 
-
-#### Returns
-
-The result of the function.
-
---- 
-
-### `await cache.iterator() : AsyncIterator<{ key: string, value: { value: any, tags: string[], timestamp: number } }>`
-
-Returns an iterator over all cache entries.
-
-#### Returns  
-
-An iterator over all cache entries.
-
----
-
-### `await cache.tags(key: any) : string[]`
-
-Returns the tags for a given key.
-
-#### `key: any`
-
-The key to get the tags for. The key handling is the same as for the `createKey` method.
-
-#### Returns
-
-An array of tags. If the key does not exist, an empty array is returned.
-
----   
-
-### `await cache.metadata(key: any) : { tags: string[], timestamp: number } | undefined`
-
-Returns the metadata for a given key.
-
-#### `key: any`
-
-The key to get the metadata for. The key handling is the same as for the `createKey` method.
-
-#### Returns
-
-An object containing the metadata for the given key or `undefined` if the key does not exist. The metadata object contains the following properties:
-
-- `tags`: An array of tags.
-- `timestamp`: The timestamp of the cache entry.  
-
----
+#### 2. Key-level Metrics
+Track performance for individual cache keys including:
+- **Key-specific Statistics**: Hits, misses, and hit ratios per key
+- **Context Information**: Data type, service name, entity name, operation type
+- **Enhanced Metadata**: Query text, request info, function names, user/tenant context
+- **Performance Tracking**: Latency and throughput metrics per key
+
+### Enabling Metrics
+
+Metrics are disabled by default to minimize performance impact. They can only be enabled/disabled via the programmatic API or OData API at runtime, not through package.json configuration.
+
+To enable metrics programmatically:
+
+```javascript
+// Connect to the caching service
+const cache = await cds.connect.to("caching")
+
+// Enable metrics at runtime
+await cache.setMetricsEnabled(true)
+await cache.setKeyMetricsEnabled(true)
+```
+
+Or via OData API:
+
+```http
+### Enable general metrics
+POST http://localhost:4004/odata/v4/CachingApiService/Caches('caching')/setMetricsEnabled
+Content-Type: application/json
+
+{
+  "enabled": true
+}
+
+### Enable key-level metrics
+POST http://localhost:4004/odata/v4/CachingApiService/Caches('caching')/setKeyMetricsEnabled
+Content-Type: application/json
+
+{
+  "enabled": true
+}
+```
+
+### Accessing Metrics via Caching Service
+
+#### Current Statistics
+
+```javascript
+// Connect to the caching service
+const cache = await cds.connect.to("caching")
+
+// Get current statistics
+const stats = await cache.getCurrentStats()
+console.log('Hit ratio:', stats.hitRatio)
+console.log('Average hit latency:', stats.avgHitLatency)
+console.log('Throughput:', stats.throughput)
+
+// Get current key metrics
+const keyMetrics = await cache.getCurrentKeyMetrics()
+for (const [key, metrics] of keyMetrics) {
+    console.log(`Key ${key}:`, {
+        hits: metrics.hits,
+        misses: metrics.misses,
+        hitRatio: metrics.hitRatio,
+        avgHitLatency: metrics.avgHitLatency
+    })
+}
+```
+
+#### Historical Metrics
+
+```javascript
+// Get metrics for a specific time period
+const from = new Date('2024-01-01')
+const to = new Date('2024-01-31')
+const historicalStats = await cache.getMetrics(from, to)
+
+// Get key-specific metrics
+const keyStats = await cache.getKeyMetrics('my-cache-key', from, to)
+```
+
+#### Runtime Configuration
+
+```javascript
+// Enable/disable metrics at runtime
+await cache.setMetricsEnabled(true)
+await cache.setKeyMetricsEnabled(true)
+
+// Get current configuration
+const config = await cache.getRuntimeConfiguration()
+console.log('Metrics enabled:', config.metricsEnabled)
+console.log('Key metrics enabled:', config.keyMetricsEnabled)
+
+// Clear metrics
+await cache.clearMetrics()
+await cache.clearKeyMetrics()
+```
+
+### Metrics Data Structure
+
+#### General Cache Statistics
+
+```javascript
+{
+  // Read-through metrics
+  hits: 1500,
+  misses: 300,
+  errors: 5,
+  totalRequests: 1800,
+  
+  // Latency metrics (milliseconds)
+  avgHitLatency: 2.5,
+  minHitLatency: 0.1,
+  maxHitLatency: 15.2,
+  avgMissLatency: 45.8,
+  minMissLatency: 12.3,
+  maxMissLatency: 120.5,
+  avgReadThroughLatency: 8.9,
+  
+  // Performance metrics
+  hitRatio: 0.833,           // 83.3%
+  throughput: 25.5,          // requests/second
+  errorRate: 0.003,          // 0.3%
+  cacheEfficiency: 18.3,     // miss latency / hit latency
+  
+  // Native operations
+  nativeSets: 200,
+  nativeGets: 800,
+  nativeDeletes: 50,
+  nativeClears: 2,
+  nativeDeleteByTags: 10,
+  nativeErrors: 1,
+  totalNativeOperations: 1063,
+  nativeThroughput: 17.7,    // operations/second
+  nativeErrorRate: 0.001,    // 0.1%
+  
+  // System metrics
+  memoryUsage: 52428800,     // bytes
+  itemCount: 150,
+  uptimeMs: 7200000          // 2 hours
+}
+```
+
+#### Key-level Metrics
+
+```javascript
+{
+  key: "user-preferences:123",
+  hits: 45,
+  misses: 5,
+  errors: 0,
+  totalRequests: 50,
+  hitRatio: 0.9,             // 90%
+  
+  // Latency metrics
+  avgHitLatency: 1.2,
+  minHitLatency: 0.5,
+  maxHitLatency: 3.1,
+  avgMissLatency: 25.4,
+  minMissLatency: 15.2,
+  maxMissLatency: 45.8,
+  avgReadThroughLatency: 3.8,
+  
+  // Performance metrics
+  throughput: 2.5,           // requests/second
+  errorRate: 0.0,            // 0%
+  cacheEfficiency: 21.2,     // miss latency / hit latency
+  
+  // Context information
+  dataType: "request",
+  serviceName: "UserService",
+  entityName: "UserPreferences",
+  operation: "READ",
+  operationType: "read_through",
+  
+  // Enhanced metadata
+  context: '{"user":"john.doe","tenant":"acme"}',
+  queryText: "SELECT * FROM UserPreferences WHERE userId = '123'",
+  requestInfo: "GET /odata/v4/UserService/UserPreferences(123)",
+  functionName: "getUserPreferences",
+  tenant: "acme",
+  user: "john.doe",
+  locale: "en-US",
+  
+  // Timestamps
+  lastAccess: "2024-01-15T10:30:00Z",
+  timestamp: "2024-01-15T09:00:00Z"
+}
+```
+
+### Best Practices for Metrics
+
+1. **Enable Selectively**: Only enable metrics when needed for monitoring or debugging
+2. **Monitor Memory Usage**: Key metrics can consume significant memory for large caches
+3. **Set Appropriate Intervals**: Balance persistence frequency with performance impact
+4. **Use Historical Data**: Analyze trends over time to optimize cache configuration
+5. **Monitor Error Rates**: High error rates may indicate configuration issues
+6. **Track Cache Efficiency**: Aim for high cache efficiency (miss latency >> hit latency)
+
+## API Reference
+
+The cds-caching plugin provides two APIs for managing cache operations:
+
+- **Programmatic API** - JavaScript methods for use within your CAP application code
+- **OData API** - REST endpoints for external applications and monitoring tools
+
+### Programmatic API
+
+The programmatic API provides methods for direct cache operations within your CAP application:
+
+```javascript
+// Connect to the caching service
+const cache = await cds.connect.to("caching")
+
+// Basic operations
+await cache.set("key", "value")
+const value = await cache.get("key")
+await cache.delete("key")
+
+// Read-through operations
+const result = await cache.rt.run(query, db)
+const result = await cache.rt.send(request, service)
+
+// Metrics and statistics
+const stats = await cache.getCurrentStats()
+const keyMetrics = await cache.getCurrentKeyMetrics()
+```
+
+[See the full Programmatic API Reference →](docs/programmatic-api.md)
+
+### OData API
+
+The OData API provides REST endpoints for external applications, monitoring tools, and administrative interfaces:
+
+```http
+### Get cache statistics
+GET /odata/v4/caching-api/Metrics?$filter=cache eq 'mycache'
+
+### Get cache entries
+GET /odata/v4/caching-api/Caches('mycache')/getEntries()
+
+### Clear cache
+POST /odata/v4/caching-api/Caches('mycache')/clear()
+```
+
+[See the full OData API Reference →](docs/api-reference.md)
 
 ### Contributing
 
@@ -807,253 +911,4 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Enhanced Statistics & Monitoring
 
-The plugin now includes comprehensive statistics and monitoring capabilities that provide deep insights into cache performance and help optimize cache usage.
-
-### Key Features
-
-#### 1. **Comprehensive Metrics**
-- **Basic Metrics**: Hits, misses, sets, deletes, errors
-- **Latency Analysis**: Average, P95, P99, min, max latencies
-- **Performance Metrics**: Hit ratio, throughput (requests/second), error rate
-- **Resource Usage**: Memory consumption, item count, uptime
-- **Key Access Patterns**: Top accessed keys, cold keys, unique key count
-
-#### 2. **Real-time Monitoring**
-- Live statistics available via OData service
-- Current performance metrics without database queries
-- Real-time alert generation for performance issues
-
-#### 3. **Automated Alerting**
-- **Performance Alerts**: Low hit ratio, high latency
-- **Error Alerts**: High error rates, cache failures
-- **Resource Alerts**: High memory usage
-- **Configurable Thresholds**: Customizable alert levels
-
-#### 4. **Performance Insights**
-- AI-powered recommendations for cache optimization
-- Actionable insights for improving cache performance
-- Automatic detection of performance bottlenecks
-
-#### 5. **Key Access Analysis**
-- Track most frequently accessed cache keys
-- Identify cold keys for potential cleanup
-- Monitor key distribution patterns
-
-### Configuration
-
-Enable enhanced statistics in your service configuration:
-
-```javascript
-// srv/caching-service.js
-module.exports = {
-    statistics: {
-        enabled: true,
-        persistenceInterval: 5 * 60 * 1000, // 5 minutes
-        maxLatencies: 1000,
-        maxKeyTracking: 100,
-        alertThresholds: {
-            hitRatio: 0.8,        // Alert if hit ratio < 80%
-            avgLatency: 100,      // Alert if avg latency > 100ms
-            errorRate: 0.05,      // Alert if error rate > 5%
-            memoryUsage: 0.9      // Alert if memory usage > 90%
-        },
-        enableKeyTracking: true,
-        enablePerformanceInsights: true,
-        enableAlerts: true
-    }
-}
-```
-
-### API Endpoints
-
-#### Statistics Service (`/cache-stats`)
-
-**Get Current Statistics**
-```http
-GET /cache-stats/Statistics?$filter=period eq 'current'
-```
-
-**Get Historical Statistics**
-```http
-GET /cache-stats/Statistics?$filter=period eq 'hourly' and timestamp ge '2024-01-01T00:00:00Z'
-```
-
-**Get Performance Insights**
-```http
-POST /cache-stats/getPerformanceInsights()
-```
-
-**Get Alerts**
-```http
-POST /cache-stats/getAlerts(severity='high', limit=10)
-```
-
-**Get Top Accessed Keys**
-```http
-POST /cache-stats/getTopKeys(limit=10)
-```
-
-**Get Cold Keys**
-```http
-POST /cache-stats/getColdKeys(limit=10)
-```
-
-### Database Schema
-
-The plugin creates several database tables for storing statistics:
-
-#### Statistics Table
-```sql
-CREATE TABLE plugin_cds_caching_Statistics (
-    ID VARCHAR PRIMARY KEY,
-    cache VARCHAR,
-    timestamp TIMESTAMP,
-    period VARCHAR,
-    hits INTEGER,
-    misses INTEGER,
-    sets INTEGER,
-    deletes INTEGER,
-    errors INTEGER,
-    avgLatency DOUBLE,
-    p95Latency DOUBLE,
-    p99Latency DOUBLE,
-    minLatency DOUBLE,
-    maxLatency DOUBLE,
-    memoryUsage INTEGER,
-    itemCount INTEGER,
-    hitRatio DOUBLE,
-    throughput DOUBLE,
-    errorRate DOUBLE,
-    uptimeMs INTEGER
-);
-```
-
-#### Alerts Table
-```sql
-CREATE TABLE plugin_cds_caching_Alert (
-    ID VARCHAR PRIMARY KEY,
-    cache VARCHAR,
-    type VARCHAR,
-    message VARCHAR,
-    severity VARCHAR,
-    timestamp TIMESTAMP,
-    resolved BOOLEAN,
-    resolvedAt TIMESTAMP,
-    metadata VARCHAR
-);
-```
-
-#### Key Access Table
-```sql
-CREATE TABLE plugin_cds_caching_KeyAccess (
-    ID VARCHAR,
-    cache VARCHAR,
-    keyName VARCHAR,
-    hits INTEGER,
-    misses INTEGER,
-    sets INTEGER,
-    deletes INTEGER,
-    total INTEGER,
-    lastAccess TIMESTAMP,
-    period VARCHAR,
-    PRIMARY KEY (ID, cache, keyName)
-);
-```
-
-#### Performance Insights Table
-```sql
-CREATE TABLE plugin_cds_caching_PerformanceInsight (
-    ID VARCHAR PRIMARY KEY,
-    cache VARCHAR,
-    type VARCHAR,
-    category VARCHAR,
-    message VARCHAR,
-    metric DOUBLE,
-    threshold DOUBLE,
-    timestamp TIMESTAMP,
-    actionable BOOLEAN,
-    action VARCHAR
-);
-```
-
-### Usage Examples
-
-#### 1. Monitor Cache Performance
-```javascript
-// Get current statistics
-const stats = await cds.connect.to('caching').getCurrentStats();
-console.log(`Hit Ratio: ${(stats.hitRatio * 100).toFixed(1)}%`);
-console.log(`Average Latency: ${stats.avgLatency.toFixed(2)}ms`);
-console.log(`Throughput: ${stats.throughput.toFixed(2)} req/s`);
-```
-
-#### 2. Get Performance Insights
-```javascript
-const insights = await cds.connect.to('cache-stats').getPerformanceInsights();
-insights.forEach(insight => {
-    console.log(`${insight.type.toUpperCase()}: ${insight.message}`);
-    console.log(`Suggested Action: ${insight.action}`);
-});
-```
-
-#### 3. Monitor Key Access Patterns
-```javascript
-const topKeys = await cds.connect.to('cache-stats').getTopKeys(5);
-topKeys.forEach(key => {
-    console.log(`Key: ${key.keyName}, Total Access: ${key.total}`);
-});
-```
-
-#### 4. Handle Alerts
-```javascript
-const alerts = await cds.connect.to('cache-stats').getAlerts('high', 10);
-alerts.forEach(alert => {
-    console.log(`[${alert.severity}] ${alert.message}`);
-    // Take action based on alert type
-    if (alert.type === 'performance') {
-        // Scale cache or optimize operations
-    }
-});
-```
-
-### Alert Types and Actions
-
-#### Performance Alerts
-- **Low Hit Ratio**: Consider increasing TTL or cache size
-- **High Latency**: Optimize cache operations or use faster backend
-- **High Throughput**: Scale horizontally or optimize operations
-
-#### Error Alerts
-- **High Error Rate**: Check backend connectivity and configuration
-- **Cache Failures**: Investigate storage backend issues
-
-#### Resource Alerts
-- **High Memory Usage**: Implement LRU eviction or increase limits
-- **Large Key Count**: Consider key consolidation strategies
-
-### Best Practices
-
-1. **Monitor Regularly**: Set up dashboards to monitor key metrics
-2. **Set Appropriate Thresholds**: Configure alert thresholds based on your application needs
-3. **Review Insights**: Regularly review performance insights for optimization opportunities
-4. **Track Key Patterns**: Use key access analysis to optimize cache key strategies
-5. **Scale Proactively**: Use alerts to scale cache resources before performance degrades
-
-### Integration with Monitoring Tools
-
-The statistics service can be easily integrated with external monitoring tools:
-
-```javascript
-// Example: Send metrics to external monitoring service
-const stats = await cds.connect.to('caching').getCurrentStats();
-await monitoringService.sendMetrics({
-    hitRatio: stats.hitRatio,
-    avgLatency: stats.avgLatency,
-    throughput: stats.throughput,
-    errorRate: stats.errorRate
-});
-```
-
-This enhanced statistics system provides comprehensive visibility into cache performance and helps optimize cache usage for better application performance.

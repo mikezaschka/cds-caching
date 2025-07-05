@@ -21,26 +21,18 @@ context plugin.cds_caching {
                 monthly;
             }; // Granularity
 
-            // Read-through metrics (high value with latencies)
+            // Read-through metrics (hits and misses only)
             hits                  : Integer default 0;
             misses                : Integer default 0;
-            sets                  : Integer default 0;
-            deletes               : Integer default 0;
             errors                : Integer default 0;
             totalRequests         : Integer default 0;
             // Read-through latency metrics
             avgHitLatency         : Double; // average hit latency in milliseconds
-            p95HitLatency         : Double; // 95th percentile hit latency
-            p99HitLatency         : Double; // 99th percentile hit latency
             minHitLatency         : Double; // minimum hit latency
             maxHitLatency         : Double; // maximum hit latency
             avgMissLatency        : Double; // average miss latency in milliseconds
-            p95MissLatency        : Double; // 95th percentile miss latency
-            p99MissLatency        : Double; // 99th percentile miss latency
             minMissLatency        : Double; // minimum miss latency
             maxMissLatency        : Double; // maximum miss latency
-            avgSetLatency         : Double; // average set latency in milliseconds
-            avgDeleteLatency      : Double; // average delete latency in milliseconds
             avgReadThroughLatency : Double; // average read through latency in milliseconds
 
             // Read-through performance metrics
@@ -85,11 +77,9 @@ context plugin.cds_caching {
                 mixed;
             };
 
-            // Read-through metrics (with latencies)
+            // Read-through metrics (hits and misses only)
             hits                  : Integer default 0;
             misses                : Integer default 0;
-            sets                  : Integer default 0;
-            deletes               : Integer default 0;
             errors                : Integer default 0;
             totalRequests         : Integer default 0;
             hitRatio              : Double; // hit ratio as percentage
@@ -97,17 +87,11 @@ context plugin.cds_caching {
 
             // Read-through latency metrics
             avgHitLatency         : Double; // average hit latency in milliseconds
-            p95HitLatency         : Double; // 95th percentile hit latency
-            p99HitLatency         : Double; // 99th percentile hit latency
             minHitLatency         : Double; // minimum hit latency
             maxHitLatency         : Double; // maximum hit latency
             avgMissLatency        : Double; // average miss latency in milliseconds
-            p95MissLatency        : Double; // 95th percentile miss latency
-            p99MissLatency        : Double; // 99th percentile miss latency
             minMissLatency        : Double; // minimum miss latency
             maxMissLatency        : Double; // maximum miss latency
-            avgSetLatency         : Double; // average set latency in milliseconds
-            avgDeleteLatency      : Double; // average delete latency in milliseconds
             avgReadThroughLatency : Double; // average read through latency in milliseconds
 
             // Read-through performance metrics
@@ -128,25 +112,19 @@ context plugin.cds_caching {
             nativeErrorRate       : Double; // native operation error rate
 
             // Metadata fields
-            dataType              : String enum {
-                query;
-                request;
-                function;
-                custom;
-            };
-            serviceName           : String;
-            entityName            : String;
+            dataType              : String;
             operation             : String; // concatenated cache service operations (e.g., SET, GET, WRAP, RUN...)
-            metadata              : String; // JSON string for additional metadata
+            metadata              : LargeString; // JSON string for additional metadata
             // Enhanced context information
             context               : String; // JSON string with detailed context
-            queryText             : String; // CQL query text if applicable
-            requestInfo           : String; // OData request information if applicable
-            functionName          : String; // Function name if applicable
+            query                 : LargeString; // CQL query text if applicable
+            subject               : LargeString; // JSON string with subject information
+            target                : String; // Target information
             tenant                : String; // Tenant information
             user                  : String; // User information
             locale                : String; // Locale information
             timestamp             : DateTime; // When this key was first accessed
+            cacheOptions          : String; // JSON string with cache options
     }
 
 
@@ -171,9 +149,9 @@ context plugin.cds_caching {
 
                 action   setEntry(key : String, value : String, ttl : Integer) returns Boolean;
                 action   deleteEntry(key : String)                             returns Boolean;
-                action   clear();
-                action   clearMetrics();
-                action   clearKeyMetrics();
+                action   clear()                                               returns Boolean;
+                action   clearMetrics()                                        returns Boolean;
+                action   clearKeyMetrics()                                     returns Boolean;
                 action   setMetricsEnabled(enabled : Boolean)                  returns Boolean;
                 action   setKeyMetricsEnabled(enabled : Boolean)               returns Boolean;
             };

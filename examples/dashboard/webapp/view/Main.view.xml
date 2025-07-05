@@ -19,12 +19,15 @@
 				<f:heading>
 					<Title text="cds-caching – Dashboard" />
 				</f:heading>
+				<f:actions>
+					<Button type="Transparent" icon="sap-icon://refresh" text="Refresh" press="onRefresh" />
+				</f:actions>
 			</f:DynamicPageTitle>
 		</f:title>
 
 		<f:content>
 
-			<Table headerText="Caching Services" mode="SingleSelectMaster" items="{path: '/Caches'}" itemPress="onCacheSelect" noDataText="No caches available">
+			<Table id="cachesList" headerText="Caching Services" mode="SingleSelectMaster" items="{path: '/Caches'}" itemPress="onCacheSelect" noDataText="No caches available">
 				<columns>
 					<Column>
 						<Text text="Name" />

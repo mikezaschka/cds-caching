@@ -25,8 +25,6 @@ export default class SingleMetric extends BaseController {
             avgLatency: 0,
             avgHitLatency: 0,
             avgMissLatency: 0,
-            avgSetLatency: 0,
-            avgDeleteLatency: 0,
             // Operation counts
             hits: 0,
             misses: 0,
@@ -64,7 +62,7 @@ export default class SingleMetric extends BaseController {
         this.uiModel.setProperty("/metricId", metricId);
 
         // Set layout to three columns
-        (<JSONModel>this.getModel("app")).setProperty("/layout", "EndColumnFullScreen");
+        (<JSONModel>this.getModel("app")).setProperty("/layout", "ThreeColumnsEndExpanded");
 
         // Load the specific metric
         this.loadMetric(cache, metricId);
@@ -94,8 +92,6 @@ export default class SingleMetric extends BaseController {
                 this.uiModel.setProperty("/avgLatency", metric.avgLatency || 0);
                 this.uiModel.setProperty("/avgHitLatency", metric.avgHitLatency || 0);
                 this.uiModel.setProperty("/avgMissLatency", metric.avgMissLatency || 0);
-                this.uiModel.setProperty("/avgSetLatency", metric.avgSetLatency || 0);
-                this.uiModel.setProperty("/avgDeleteLatency", metric.avgDeleteLatency || 0);
 
                 // Operation counts
                 this.uiModel.setProperty("/hits", metric.hits || 0);

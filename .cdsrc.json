@@ -1,26 +1,3 @@
 {
-    "requires": {
-        "caching": {
-            "impl": "cds-caching",
-            "namespace": "myCache"
-        },
-        "caching-redis": {
-            "impl": "cds-caching",
-            "namespace": "myCache",
-            "store": "redis",
-            "credentials": {
-                "host": "localhost",
-                "port": 6379
-            }
-        },
-        "caching-bp": {
-            "impl": "cds-caching",
-            "namespace": "bpCache",
-            "store": "redis",
-            "credentials": {
-                "host": "localhost",
-                "port": 6379
-            }
-        }
-    }
+    
 }

@@ -132,7 +132,7 @@
 										<form:SimpleForm width="100%" editable="true" labelSpanL="2" labelSpanM="2" labelSpanS="2" layout="ResponsiveGridLayout">
 											<form:content>
 												<Label text="Key" class=""/>
-												<Input id="deleteKeyInput" change="onDeleteKeyChange" width="100%" />
+												<Input id="deleteKeyInput" value="{ui>/deleteKey}" width="100%" />
 											</form:content>
 										</form:SimpleForm>
 										<Button text="Delete Entry" type="Emphasized" press="onDeleteKey" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">

@@ -7,9 +7,11 @@ This document provides a comprehensive reference for the cds-caching programmati
 1. [Overview](#overview)
 2. [Core Cache Operations](#core-cache-operations)
 3. [Read-Through Operations](#read-through-operations)
-4. [Utility Methods](#utility-methods)
-5. [Metrics and Statistics](#metrics-and-statistics)
-6. [Configuration Methods](#configuration-methods)
+4. [Key Management](#key-management)
+5. [Deprecated Methods](#deprecated-methods)
+6. [Utility Methods](#utility-methods)
+7. [Metrics and Statistics](#metrics-and-statistics)
+8. [Configuration Methods](#configuration-methods)
 
 ## Overview
 
@@ -77,7 +79,7 @@ Sets a value in the cache.
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
 | `ttl` | number | Time-to-live in milliseconds | `1000` |
-| `key` | object | Key override for full control over key management | `{template: 'user-{user}', value: '123'}` |
+| `key` | string | Key template override for full control over key management | `"user:{user}:{hash}"` |
 | `tags` | array | Array of tags to associate with the value | `[{template: 'user-{user}', value: '123'}]` |
 
 #### Examples
@@ -89,9 +91,9 @@ await cache.set("user:123", { name: "John Doe", email: "john@example.com" })
 // Set with TTL
 await cache.set("user:123", userData, { ttl: 3600000 }) // 1 hour
 
-// Set with custom key
+// Set with custom key template
 await cache.set(query, result, { 
-  key: { template: "query:{user}:{hash}" },
+  key: "query:{user}:{hash}",
   ttl: 1800000 
 })
 
@@ -222,37 +224,68 @@ await cache.deleteByTag("products")
 
 ## Read-Through Operations
 
-The read-through operations provide convenient methods for caching the results of service operations.
+The read-through operations provide convenient methods for caching the results of service operations with enhanced functionality including automatic key generation and detailed metadata.
 
-### `await cache.rt.run(query: cds.CQN, service: cds.Service, options: object)`
+### Return Format
 
-Runs a query against the provided service and caches the result for all further requests. This method is useful for read-through caching.
+All read-through `rt.xxx` methods return an object with the following structure:
+
+```javascript
+{
+  result: any,           // The actual result from the operation
+  cacheKey: string,      // The dynamically generated cache key
+  metadata: object       // Cache metadata (hit/miss, latency, etc.)
+}
+```
+
+### `await cache.rt.run(query: cds.CQN | cds.Request, service: cds.Service, options: object)`
+
+Runs a query against the provided service and caches the result for all further requests. This method is the primary read-through method for CAP applications, handling CQN queries and ODataRequests.
 
 #### Parameters
 
-- `query: cds.CQN` - The CQN query to run.
+- `query: cds.ql | cds.Request` - The CQN query or CAP request to run.
 - `service: cds.Service` - The service to run the query on.
 - `options: object` (optional) - The options to use for the cache.
 
+#### Key Generation
+
+**For CQN queries:**
+- Key components hashed as md5: Query structure (SELECT, FROM, WHERE, ORDER BY, LIMIT, etc.) and query parameters
+- Global context (user, tenant, locale based on configuration) is prepended
+
+**For CAP requests:**
+- Key components hashed as md5: Request params and data, target entity, query parameters ($filter, $select, $expand, $orderby, etc.)
+- Global context (user, tenant, locale based on configuration) is available
+
 #### Returns
 
-The result of the query, either from the cache or the service.
+An object containing:
+- `result: any` - The result of the query, either from the cache or the service
+- `cacheKey: string` - The dynamically generated cache key
+- `metadata: object` - Cache metadata including `hit` (boolean) and `latency` (number)
 
 #### Examples
 
 ```javascript
 // Cache database query
 const query = SELECT.from('Users').where({ active: true })
-const users = await cache.rt.run(query, db, { ttl: 3600000 })
+const { result, cacheKey, metadata } = await cache.rt.run(query, db, { ttl: 3600000 })
 
-// Cache with custom key
-const result = await cache.rt.run(query, db, { 
-  key: { template: "active-users:{tenant}" },
+// Cache with custom key template
+const { result, cacheKey, metadata } = await cache.rt.run(query, db, { 
+  key: "active-users:{tenant}:{hash}",
   ttl: 1800000 
 })
 
+// Cache CAP request in service handler
+this.on('READ', Users, async (req, next) => {
+  const { result, cacheKey, metadata } = await cache.rt.run(req, next)
+  return result
+})
+
 // Cache with tags
-const result = await cache.rt.run(query, db, { 
+const { result, cacheKey, metadata } = await cache.rt.run(query, db, { 
   tags: [{ value: "active-users" }],
   ttl: 3600000 
 })
@@ -260,37 +293,54 @@ const result = await cache.rt.run(query, db, {
 
 ---
 
-### `await cache.rt.send(request: cds.Request, service: cds.Service, options: object)`
+### `await cache.rt.send(request: object, service: cds.Service, options: object)`
 
-Sends a request to a cds.Service and caches the result. In contrast to the `run` method, this method is useful for caching full cds.Requests.
+Sends a request to a cds.Service and caches the result. This method is useful for caching remote service requests.
 
 #### Parameters
 
-- `request: cds.Request` - The request to send.
+- `request: object` - The request object with method and path.
 - `service: cds.Service` - The service to send the request to.
 - `options: object` (optional) - The options to use for the cache.
 
+#### Key Generation
+
+**Key components:**
+- HTTP method
+- Request path with query parameters
+- Global context (user, tenant, locale based on configuration)
+- Hash: MD5 hash of the request structure
+
 #### Returns
 
-The result of the request, either from the cache or the service.
+An object containing:
+- `result: any` - The result of the request, either from the cache or the service
+- `cacheKey: string` - The dynamically generated cache key
+- `metadata: object` - Cache metadata including `hit` (boolean) and `latency` (number)
 
 #### Examples
 
 ```javascript
 // Cache remote service request
-const request = new Request({ event: 'READ', target: 'BusinessPartners' })
-const partners = await cache.rt.send(request, remoteService, { ttl: 3600000 })
+const request = { method: "GET", path: "Products?$top=10" }
+const { result, cacheKey, metadata } = await cache.rt.send(request, remoteService, { ttl: 3600000 })
 
-// Cache with user-specific key
-const result = await cache.rt.send(request, remoteService, { 
-  key: { template: "bp:{user}:{hash}" },
+// Cache with user-specific key template
+const { result, cacheKey, metadata } = await cache.rt.send(request, remoteService, { 
+  key: "bp:{user}:{hash}",
   ttl: 1800000 
+})
+
+// Cache with context-aware key
+const { result, cacheKey, metadata } = await cache.rt.send(request, remoteService, { 
+  key: "{tenant}:{user}:{hash}",
+  ttl: 3600000 
 })
 ```
 
 ---
 
-### `await cache.rt.wrap(key: any, fn: async function, options: object)`
+### `cache.rt.wrap(key: any, fn: async function, options: object)`
 
 Wraps a function in a cache. Returns a cached version of the function that checks the cache first and only executes if there's a cache miss. **The cache key is automatically generated based on function arguments to ensure parameter-specific caching.**
 
@@ -299,19 +349,18 @@ Wraps a function in a cache. Returns a cached version of the function that check
 - `key: any` - The base key to store the cached function under. The actual cache key will include function arguments.
 - `fn: async function` - The async function to wrap in a cache.
 - `options: object` (optional) - The options to use for the cache.
-  - `detailed: boolean` (optional) - If `true`, returns an object with `{ result, cacheKey, metadata }` instead of just the result.
 
 #### Key Generation
 
 The cache key is automatically generated to include function arguments, ensuring that different parameter combinations are cached separately:
 
-- **Automatic**: By default, the key format is `{baseKey}:{arg0}:{arg1}:...:{hash}`
-- **Template-based**: You can provide a custom template using `options.key.template`
-- **Context-aware**: Keys can include user, tenant, and locale context
+- **Default template:** `{baseKey}:{args[0]}:{args[1]}:...:{args[n]}` (if no global context enabled)
+- **Template-based:** You can provide a custom template using `options.key` (string)
+- **Context-aware:** Keys can include user, tenant, and locale context
 
 #### Returns
 
-By default, returns the function result. If `options.detailed` is `true`, returns an object with:
+A function that returns an object containing:
 - `result: any` - The function result
 - `cacheKey: string` - The generated cache key
 - `metadata: object` - Additional metadata including `hit` (boolean) and `latency` (number)
@@ -331,32 +380,29 @@ const cachedOperation = cache.rt.wrap("expensive-op", expensiveOperation, {
 })
 
 // Use the cached function - each parameter combination gets its own cache entry
-const result1 = await cachedOperation("user-123", "active")
-const result2 = await cachedOperation("user-456", "inactive") // Different cache entry
-const result3 = await cachedOperation("user-123", "active")   // Cache hit
+const { result, cacheKey, metadata } = await cachedOperation("user-123", "active")
+const { result: result2, cacheKey: key2, metadata: metadata2 } = await cachedOperation("user-456", "inactive") // Different cache entry
+const { result: result3, cacheKey: key3, metadata: metadata3 } = await cachedOperation("user-123", "active")   // Cache hit
 
-// Detailed mode - get cache key and metadata
-const cachedOperationDetailed = cache.rt.wrap("expensive-op", expensiveOperation, { 
-  ttl: 3600000,
-  tags: ['computation'],
-  detailed: true
-})
-
-const { result, cacheKey, metadata } = await cachedOperationDetailed("user-123", "active")
 console.log('Cache key:', cacheKey) // e.g., "expensive-op:user-123:active:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
 
 // Custom template-based key generation
 const cachedOperation2 = cache.rt.wrap("user-data", expensiveOperation, {
-  key: { template: "user:{args[0]}:{args[1]}:{hash}" },
+  key: "user:{args[0]}:{args[1]}:{hash}",
   ttl: 1800000
 })
 
 // Context-aware key generation
 const cachedOperation3 = cache.rt.wrap("tenant-data", expensiveOperation, {
-  key: { template: "{tenant}:{user}:{args[0]}:{hash}" },
+  key: "{tenant}:{user}:{args[0]}:{hash}",
   ttl: 3600000
+})
+
+// Override global configuration for specific operations
+const cachedOperation4 = cache.rt.wrap("public-data", expensiveOperation, {
+  key: "{baseKey}:{args[0]}" // No user context, even if globally enabled
 })
 ```
 
@@ -372,19 +418,18 @@ Executes a function and caches the result. This method is useful for one-off exe
 - `fn: async function` - The async function to execute.
 - `args: Array` - The arguments to pass to the function.
 - `options: object` (optional) - The options to use for the cache.
-  - `detailed: boolean` (optional) - If `true`, returns an object with `{ result, cacheKey, metadata }` instead of just the result.
 
 #### Key Generation
 
 The cache key is automatically generated to include function arguments, ensuring that different parameter combinations are cached separately:
 
-- **Automatic**: By default, the key format is `{baseKey}:{arg0}:{arg1}:...:{hash}`
-- **Template-based**: You can provide a custom template using `options.key.template`
-- **Context-aware**: Keys can include user, tenant, and locale context
+- **Default template:** `{baseKey}:{args[0]}:{args[1]}:...:{args[n]}` (if no global context enabled)
+- **Template-based:** You can provide a custom template using `options.key` (string)
+- **Context-aware:** Keys can include user, tenant, and locale context
 
 #### Returns
 
-By default, returns the function result. If `options.detailed` is `true`, returns an object with:
+An object containing:
 - `result: any` - The function result
 - `cacheKey: string` - The generated cache key
 - `metadata: object` - Additional metadata including `hit` (boolean) and `latency` (number)
@@ -393,7 +438,7 @@ By default, returns the function result. If `options.detailed` is `true`, return
 
 ```javascript
 // Basic usage - automatic argument-based key generation
-const result = await cache.rt.exec("data-processing", async (param1, param2) => {
+const { result, cacheKey, metadata } = await cache.rt.exec("data-processing", async (param1, param2) => {
   // ... data processing
   return processedData
 }, ["value1", "value2"], { 
@@ -401,38 +446,189 @@ const result = await cache.rt.exec("data-processing", async (param1, param2) => 
   tags: ['processing']
 })
 
-// Detailed mode - get cache key and metadata
-const { result, cacheKey, metadata } = await cache.rt.exec("data-processing", async (param1, param2) => {
-  // ... data processing
-  return processedData
-}, ["value1", "value2"], { 
-  ttl: 1800000,
-  tags: ['processing'],
-  detailed: true
-})
-
 console.log('Cache key:', cacheKey) // e.g., "data-processing:value1:value2:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
 
 // Custom template-based key generation
-const result2 = await cache.rt.exec("user-profile", async (userId, includeDetails) => {
+const { result, cacheKey, metadata } = await cache.rt.exec("user-profile", async (userId, includeDetails) => {
   // ... fetch user profile
   return profile
 }, ["user-123", true], {
-  key: { template: "profile:{args[0]}:{args[1]}:{hash}" },
+  key: "profile:{args[0]}:{args[1]}:{hash}",
   ttl: 3600000
 })
 
 // Context-aware key generation
-const result3 = await cache.rt.exec("tenant-data", async (dataId) => {
+const { result, cacheKey, metadata } = await cache.rt.exec("tenant-data", async (dataId) => {
   // ... fetch tenant-specific data
   return data
 }, ["data-456"], {
-  key: { template: "{tenant}:{user}:{args[0]}:{hash}" },
+  key: "{tenant}:{user}:{args[0]}:{hash}",
   ttl: 1800000
 })
 ```
+
+## Key Management
+
+The cds-caching library provides automatic key generation for all cache operations, with support for context awareness and custom templates.
+
+### Global Configuration
+
+Configure key management behavior in your `package.json`:
+
+```json
+{
+  "cds-caching": {
+    "keyManagement": {
+      "isUserAware": true,
+      "isTenantAware": true,
+      "isLocaleAware": false
+    }
+  }
+}
+```
+
+**Default behavior** (if not configured):
+- `isUserAware`: `false` - Include the logged in user in cache keys
+- `isTenantAware`: `false` - Include tenant context in cache keys  
+- `isLocaleAware`: `false` - Include locale context in cache keys
+
+### Key Template Variables
+
+The following variables are available in key templates:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{hash}` | MD5 hash of the content being cached | `"a1b2c3d4..."` |
+| `{user}` | Current user ID | `"john.doe"` |
+| `{tenant}` | Current tenant | `"acme"` |
+| `{locale}` | Current locale | `"en-US"` |
+| `{baseKey}` | The base key provided to the method | `"user-data"` |
+| `{args[0]}`, `{args[1]}`, etc. | Function arguments | `"user1"`, `"true"` |
+
+### Generated Default Templates
+
+Based on the global configuration, the system generates default templates:
+
+```javascript
+// Configuration: { isUserAware: false, isTenantAware: false, isLocaleAware: false }
+// Default applied template: "{hash}"
+// Result: "a1b2c3d4..." (hash only)
+
+// Configuration: { isUserAware: true, isTenantAware: false, isLocaleAware: false }
+// Default applied template: "{user}:{hash}"
+// Result: "john.doe:a1b2c3d4..."
+
+// Configuration: { isUserAware: true, isTenantAware: true, isLocaleAware: false }
+// Default applied template: "{tenant}:{user}:{hash}"
+// Result: "acme:john.doe:a1b2c3d4..."
+
+// Configuration: { isUserAware: true, isTenantAware: true, isLocaleAware: true }
+// Default applied template: "{tenant}:{user}:{locale}:{hash}"
+// Result: "acme:john.doe:en-US:a1b2c3d4..."
+```
+
+### Content Hash Generation
+
+The hash is generated only from the **content being cached**, not from the context:
+
+- **Queries**: Hash includes only the query structure (SELECT, FROM, WHERE, etc.)
+- **Requests**: Hash includes only the request information (method, path, parameters)
+- **Functions**: No hash needed since all context is available in the template
+
+This ensures that:
+- Same query/request from different users gets different keys (via global context)
+- But the hash remains consistent for the same content
+- Cache invalidation works properly (same query = same hash)
+
+### Custom Key Templates
+
+You can override the default key generation by providing a custom template:
+
+```javascript
+// User-specific caching
+const cachedOperation = cache.rt.wrap("user-data", expensiveOperation, {
+  key: "user:{user}:{args[0]}"
+})
+
+// Tenant-aware caching
+const cachedOperation = cache.rt.wrap("tenant-data", expensiveOperation, {
+  key: "tenant:{tenant}:{args[0]}"
+})
+
+// Complex template
+const cachedOperation = cache.rt.wrap("complex", expensiveOperation, {
+  key: "{baseKey}:{user}:{tenant}:{args[0]}:{args[1]}"
+})
+
+// Override global configuration for specific operations
+const cachedOperation = cache.rt.wrap("public-data", expensiveOperation, {
+  key: "{baseKey}:{args[0]}" // No user context, even if globally enabled
+})
+```
+
+## Deprecated Methods
+
+The following methods are deprecated and will be removed in future versions. Use the new read-through API instead.
+
+### Deprecated send() Method
+
+**⚠️ Deprecated:** Use `cache.rt.send()` instead.
+
+```javascript
+// ❌ Deprecated
+const result = await cache.send(request, service)
+
+// ✅ Recommended
+const { result, cacheKey, metadata } = await cache.rt.send(request, service)
+```
+
+The `rt.send()` method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
+
+### Deprecated run() Method
+
+**⚠️ Deprecated:** Use `cache.rt.run()` instead.
+
+```javascript
+// ❌ Deprecated
+const result = await cache.run(query, db)
+
+// ✅ Recommended
+const { result, cacheKey, metadata } = await cache.rt.run(query, db)
+```
+
+The `rt.run()` method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
+
+### Deprecated wrap() Method
+
+**⚠️ Deprecated:** Use `cache.rt.wrap()` instead.
+
+```javascript
+// ❌ Deprecated
+const cachedFunction = cache.wrap("key", expensiveOperation)
+const result = await cachedFunction("param1", "param2")
+
+// ✅ Recommended
+const cachedFunction = cache.rt.wrap("key", expensiveOperation)
+const { result, cacheKey, metadata } = await cachedFunction("param1", "param2")
+```
+
+The `rt.wrap()` method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
+
+### Deprecated exec() Method
+
+**⚠️ Deprecated:** Use `cache.rt.exec()` instead.
+
+```javascript
+// ❌ Deprecated
+const result = await cache.exec("key", expensiveOperation, ["param1", "param2"])
+
+// ✅ Recommended
+const { result, cacheKey, metadata } = await cache.rt.exec("key", expensiveOperation, ["param1", "param2"])
+```
+
+The `rt.exec()` method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
 
 ## Utility Methods
 
@@ -533,7 +729,7 @@ if (metadata) {
 
 ## Metrics and Statistics
 
-### `await cache.getCurrentStats()`
+### `await cache.getCurrentMetrics()`
 
 Gets the current statistics for the cache.
 
@@ -545,7 +741,7 @@ An object containing current cache statistics or `null` if metrics are disabled.
 
 ```javascript
 // Get current statistics
-const stats = await cache.getCurrentStats()
+const stats = await cache.getCurrentMetrics()
 
 if (stats) {
   console.log(`Hit ratio: ${stats.hitRatio}`)
@@ -721,15 +917,4 @@ Clears all key-level metrics data.
 await cache.clearKeyMetrics()
 ```
 
----
 
-### `await cache.reloadRuntimeConfiguration()`
-
-Reloads the runtime configuration from the database.
-
-#### Examples
-
-```javascript
-// Reload configuration
-await cache.reloadRuntimeConfiguration()
-```

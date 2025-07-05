@@ -313,6 +313,9 @@ export default class Cache extends BaseController {
 
                         MessageBox.success("Cache cleared successfully");
 
+                        // Refresh the data
+                        await this.onRefresh();
+
                     } catch (error) {
                         console.error("Error clearing cache:", error);
                         MessageBox.error("Failed to clear cache");
@@ -372,8 +375,8 @@ export default class Cache extends BaseController {
         await this.loadKeyMetricsData(true);
     }
 
-    public onRefreshMetricsData(): void {
-        this.loadStatistics(true);
+    public async onRefreshMetricsData(): Promise<void> {
+        await this.loadStatistics(true);
     }
 
     public async onShowKeyMetricsMetadata(event: Button$PressEvent): Promise<void> {
@@ -451,7 +454,7 @@ export default class Cache extends BaseController {
             MessageToast.show("Metrics cleared successfully");
 
             // Refresh the data
-            this.loadStatistics(true);
+            await this.onRefreshMetricsData();
 
         } catch (error) {
             console.error("Error clearing metrics:", error);
@@ -474,6 +477,9 @@ export default class Cache extends BaseController {
             await action.invoke();
 
             MessageToast.show("Key metrics cleared successfully");
+
+            // Refresh the data
+            await this.onRefreshKeyMetricsData();
 
         } catch (error) {
             console.error("Error clearing key metrics:", error);

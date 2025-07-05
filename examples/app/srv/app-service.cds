@@ -1,8 +1,6 @@
 using {Northwind} from './external/Northwind.csn';
 using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
-annotate CachingApiService with @requires: 'authenticated-user';
-
 service AppService {
     entity Foo {
         key ID   : Integer;
@@ -31,7 +29,7 @@ service AppService {
     @cache                 : {
         service: 'caching',
         ttl    : 5000,
-        key    : {template: '{hash}_{user}'},
+        key    : '{hash}_{user}',
         tags   : [
             {template: 'user-{user}'},
             {value: 'user-1'},

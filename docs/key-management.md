@@ -74,7 +74,7 @@ Use when your data is user-specific or you apply row-based access rules.
 ```javascript
 // Example: User-specific data
 const myAccessibleData = await cache.rt.run(
-  SELECT.from('MyObjects').where({ user: cds.context.user.id }), 
+  SELECT.from('BusinessPartners').where({ salesOrganization: cds.context.user.salesOrg }), 
   db,
   { key: "{user}:{hash}"}
 )
@@ -87,9 +87,9 @@ Use in multi-tenant applications, where the same functionaltiy has to be cached 
 ```javascript
 // Example: Tenant-specific data
 const tenantConfig = await cache.rt.run(
-  SELECT.from('MySharedObject'), 
+  SELECT.from('SalesOrganizations'), 
   db,
-  { key: "{tentant}:{hash}" }
+  { key: "{tenant}:{hash}" }
 )
 // Cache key includes tenant ID to prevent cross-tenant data sharing
 
@@ -101,7 +101,7 @@ Use for internationalized applications with localized data.
 ```javascript
 // Example: Localized content
 const localizedContent = await cache.rt.run(
-  SELECT.from('LocalizedContent').where({ locale: cds.context.locale }), 
+  SELECT.from('ProductDescriptions').where({ locale: cds.context.locale }), 
   db,
   { key: "{locale}:{hash}" }
 )
@@ -190,16 +190,16 @@ const { result } = await cache.rt.send(request, service)
 For wrapped functions, the cache key is generated based on function arguments and global context:
 
 ```javascript
-const expensiveOperation = async (userId, includeDetails) => {
-  // ... expensive computation
-  return result
+const fetchBusinessPartnerData = async (businessPartnerId, includeAddresses) => {
+  // ... expensive computation to fetch BP data
+  return businessPartnerData
 }
 
-const cachedOperation = cache.rt.wrap("user-data", expensiveOperation)
+const cachedOperation = cache.rt.wrap("bp-data", fetchBusinessPartnerData)
 
 // Different calls generate different keys
-await cachedOperation("user1", true)   // Key: "user-data:user1:true" (if no global context)
-await cachedOperation("user2", false)  // Key: "user-data:user2:false" (if no global context)
+await cachedOperation("1000001", true)   // Key: "bp-data:1000001:true" (if no global context)
+await cachedOperation("1000002", false)  // Key: "bp-data:1000002:false" (if no global context)
 ```
 
 **Default template:** `{baseKey}:{args[0]}:{args[1]}:...:{args[n]}` (if no global context enabled)
@@ -211,8 +211,8 @@ await cachedOperation("user2", false)  // Key: "user-data:user2:false" (if no gl
 Similar to `rt.wrap()`, but for immediate execution:
 
 ```javascript
-const result = await cache.rt.exec("user-data", expensiveOperation, ["user1", true])
-// Cache key: "user-data:user1:true" (if no global context)
+const result = await cache.rt.exec("bp-data", fetchBusinessPartnerData, ["1000001", true])
+// Cache key: "bp-data:1000001:true" (if no global context)
 ```
 
 **Note:** Same key generation as `rt.wrap()`.
@@ -252,59 +252,59 @@ The following variables are available in key templates:
 #### Custom Function Key Template
 
 ```javascript
-const cachedOperation = cache.rt.wrap("user-profile", expensiveOperation, {
+const cachedOperation = cache.rt.wrap("bp-profile", fetchBusinessPartnerData, {
   key: "profile:{args[0]}:{args[1]}"
 })
 
-await cachedOperation("user1", true)
-// Cache key: "profile:user1:true"
+await cachedOperation("1000001", true)
+// Cache key: "profile:1000001:true"
 ```
 
 #### User-Specific Caching
 
 ```javascript
-const cachedOperation = cache.rt.wrap("user-data", expensiveOperation, {
+const cachedOperation = cache.rt.wrap("bp-data", fetchBusinessPartnerData, {
   key: "user:{user}:{args[0]}"
 })
 
 // Different users get different cache keys
-// User "john" -> "user:john:data1"
-// User "jane" -> "user:jane:data1"
+// User "john" -> "user:john:1000001"
+// User "jane" -> "user:jane:1000001"
 ```
 
 #### Tenant-Aware Caching
 
 ```javascript
-const cachedOperation = cache.rt.wrap("tenant-data", expensiveOperation, {
+const cachedOperation = cache.rt.wrap("sales-org-data", fetchSalesOrganizationData, {
   key: "tenant:{tenant}:{args[0]}"
 })
 
 // Different tenants get different cache keys
-// Tenant "acme" -> "tenant:acme:data1"
-// Tenant "corp" -> "tenant:corp:data1"
+// Tenant "acme" -> "tenant:acme:1000"
+// Tenant "corp" -> "tenant:corp:2000"
 ```
 
 #### Complex Template
 
 ```javascript
-const cachedOperation = cache.rt.wrap("complex", expensiveOperation, {
+const cachedOperation = cache.rt.wrap("complex", fetchProductData, {
   key: "{baseKey}:{user}:{tenant}:{args[0]}:{args[1]}"
 })
 
-await cachedOperation("param1", "param2")
-// Cache key: "complex:john.doe:acme:param1:param2"
+await cachedOperation("1000001", "pricing")
+// Cache key: "complex:john.doe:acme:1000001:pricing"
 ```
 
 #### Override Global Configuration for Specific Operations
 
 ```javascript
 // Even if global config has user awareness enabled, you can override for specific operations
-const cachedOperation = cache.rt.wrap("public-data", expensiveOperation, {
+const cachedOperation = cache.rt.wrap("public-product-data", fetchProductData, {
   key: "{baseKey}:{args[0]}" // No user context, even if globally enabled
 })
 
-await cachedOperation("param1")
-// Cache key: "public-data:param1" (no user context)
+await cachedOperation("1000001")
+// Cache key: "public-product-data:1000001" (no user context)
 ```
 
 ## Key Generation Process
@@ -336,7 +336,7 @@ await cachedOperation("param1")
 
 ```javascript
 // Good
-cache.rt.wrap("user-profile-data", expensiveOperation)
+cache.rt.wrap("bp-profile-data", fetchBusinessPartnerData)
 
 // Avoid
 cache.rt.wrap("key", expensiveOperation)
@@ -346,12 +346,12 @@ cache.rt.wrap("key", expensiveOperation)
 
 ```javascript
 // For public data that shouldn't be user-specific
-cache.rt.wrap("public-data", expensiveOperation, {
+cache.rt.wrap("public-product-data", fetchProductData, {
   key: "{baseKey}:{args[0]}" // Override global user awareness
 })
 
 // For highly specific caching
-cache.rt.wrap("user-data", expensiveOperation, {
+cache.rt.wrap("bp-data", fetchBusinessPartnerData, {
   key: "user:{user}:{tenant}:{args[0]}" // Explicit template
 })
 ```
@@ -371,7 +371,7 @@ key: "{baseKey}:{user}:{tenant}:{locale}:{args[0]}:{args[1]}:{args[2]}"
 You can verify key generation by inspecting the returned `cacheKey`:
 
 ```javascript
-const { result, cacheKey, metadata } = await cache.rt.exec("test", expensiveOperation, ["param1"])
+const { result, cacheKey, metadata } = await cache.rt.exec("test", fetchBusinessPartnerData, ["1000001"])
 
 console.log("Generated cache key:", cacheKey)
 ```

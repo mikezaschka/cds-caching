@@ -14,7 +14,6 @@ While cds-caching can be a big helper, an additional caching layer also adds com
 
 Please also read the introduction blog post in the SAP Community: [Boosting performance in SAP Cloud Application Programming Model (CAP) applications with cds-caching](https://community.sap.com/t5/technology-blogs-by-members/boosting-performance-in-sap-cloud-application-programming-model-cap/ba-p/14002015).
 
-
 ### Key Features
 
 * **Flexible Key-Value Store** – Store and retrieve data using simple key-based access.
@@ -36,6 +35,104 @@ Please also read the introduction blog post in the SAP Community: [Boosting perf
 > - [Metrics Guide](docs/metrics-guide.md)
 > - [OData API Reference](docs/odata-api.md)
 
+## 🚨 Breaking Changes: Migrating from cds-caching 0.x
+
+> **⚠️ Important:** Version 1.x contains breaking changes. Please review the migration guide below.
+
+### 🔄 API Changes for read-through methods
+
+| **Old Method** | **New Method** | **Key Differences** |
+|----------------|----------------|---------------------|
+| `cache.run()` | `cache.rt.run()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
+| `cache.send()` | `cache.rt.send()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
+| `cache.wrap()` | `cache.rt.wrap()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
+| `cache.exec()` | `cache.rt.exec()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
+
+### 🔑 Key Template Changes
+
+**Before (0.x):**
+```javascript
+// Old syntax - object with template property
+await cache.set(query, result, { 
+  key: { template: "user:{user}:{hash}" }
+})
+```
+
+**After (1.x):**
+```javascript
+// New syntax - direct string template
+await cache.set(query, result, { 
+  key: "user:{user}:{hash}"
+})
+```
+
+### 🌍 Context Awareness Changes
+
+**Default Behavior Changed:**
+- **0.x:** Context (user, tenant, locale) was automatically included in some cache keys (ODataRequests)
+- **1.x:** Context is **disabled by default** and can be enabled for **ALL** keys (unless overwritten)
+
+**To Enable Context Awareness:**
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        ...
+        "keyManagement": {
+          "isUserAware": true,      // Include user context in cache keys
+          "isTenantAware": true,    // Include tenant context in cache keys
+          "isLocaleAware": false    // Include locale context in cache keys
+        }
+      }
+    }
+  }
+} 
+```
+
+### 📚 Migration Examples
+
+**Example 1: Basic Caching**
+```javascript
+// ❌ Old way (deprecated)
+const result = await cache.run(query, db)
+
+// ✅ New way
+const { result, cacheKey, metadata } = await cache.rt.run(query, db)
+```
+
+**Example 2: Function Wrapping**
+```javascript
+// ❌ Old way (deprecated)
+const cachedFn = cache.wrap("key", expensiveOperation)
+const result = await cachedFn("param1", "param2")
+
+// ✅ New way
+const cachedFn = cache.rt.wrap("key", expensiveOperation)
+const { result, cacheKey, metadata } = await cachedFn("param1", "param2")
+```
+
+**Example 3: Custom Key Templates**
+```javascript
+// ❌ Old way (deprecated)
+await cache.set(data, value, { 
+  key: { template: "user:{user}:{hash}" }
+})
+
+// ✅ New way
+await cache.set(data, value, { 
+  key: "user:{user}:{hash}"
+})
+```
+
+### 🔍 What's New
+
+- **Enhanced Metadata:** All read-through operations now return cache keys and performance metadata
+- **Better Performance:** Context awareness is opt-in, reducing unnecessary key complexity
+- **Improved Debugging:** Access to generated cache keys for troubleshooting
+- **Flexible Configuration:** Global and per-operation key template control
+
+For detailed API documentation, see [Programmatic API Reference](docs/programmatic-api.md). 
 
 ### Installation
 
@@ -106,14 +203,19 @@ Configure default key templates for read-through operations:
 
 ```json
 {
-  "cds-caching": {
-    "keyManagement": {
-      "isUserAware": true,      // Include user context in cache keys
-      "isTenantAware": true,    // Include tenant context in cache keys
-      "isLocaleAware": false    // Include locale context in cache keys
+  "cds": {
+    "requires": {
+      "caching": {
+        ...
+        "keyManagement": {
+          "isUserAware": true,      // Include user context in cache keys
+          "isTenantAware": true,    // Include tenant context in cache keys
+          "isLocaleAware": false    // Include locale context in cache keys
+        }
+      }
     }
   }
-}
+}  
 ```
 
 **Default behavior** (if not configured): All context elements are disabled by default.
@@ -146,7 +248,7 @@ You can override settings for different environments:
 }
 ```
 
-For detailed information on RT key generation and advanced configuration options, see [Read-Through Key Generation](docs/read-through-keys.md) and [Programmatic API Reference](docs/programmatic-api.md).
+For detailed information on RT key generation and advanced configuration options, see [Key Management](docs/key-management.md) and [Programmatic API Reference](docs/programmatic-api.md).
 
 ### Service Definition
 
@@ -281,16 +383,16 @@ The most basic way to use cds-caching is through its key-value API:
 const cache = await cds.connect.to("caching")
 
 // Store a value (can be any object)
-await cache.set("key", "value")
+await cache.set("bp:1000001", businessPartnerData)
 
 // Retrieve the value
-await cache.get("key") // => value
+await cache.get("bp:1000001") // => businessPartnerData
 
 // Check if the key exists
-await cache.has("key") // => true/false
+await cache.has("bp:1000001") // => true/false
 
 // Delete the key
-await cache.delete("key")
+await cache.delete("bp:1000001")
 
 // Clear the whole cache
 await cache.clear()
@@ -302,7 +404,7 @@ For more advanced CAP integration, cache CAP's CQN queries directly. By passing 
 
 ```javascript
 // Create and execute a CQN query
-const query = SELECT.from(Foo)
+const query = SELECT.from(BusinessPartners).where({ businessPartnerType: '2' })
 const result = await db.run(query)
 
 // Cache the result
@@ -314,7 +416,7 @@ const cachedResult = await cache.get(query)
 Handling the cache manually via read-aside pattern is possible, but the caching service provides a more convenient way to cache and retrieve CQN queries. By using the `rt.run` method, the caching service will transparently cache the result of the query and return the cached result if available for all further requests.
 
 ```javascript
-const query = SELECT.from(Foo)
+const query = SELECT.from(BusinessPartners).where({ businessPartnerType: '2' })
 
 // Runs the query internally and caches the result
 const { result } = await cache.rt.run(query, db)
@@ -416,27 +518,27 @@ While not directly related to CAP functionality, the caching service provides tw
 
 ```javascript
 // Using wrap() to create a cached version of a function
-const expensiveOperation = async (param1, param2) => {
-  // ... some expensive computation
-  return result
+const fetchBusinessPartnerData = async (businessPartnerId, includeAddresses) => {
+  // ... some expensive computation to fetch BP data
+  return businessPartnerData
 }
 
 // Creates a cached version of the function.
-const cachedOperation = cache.rt.wrap("key", expensiveOperation { 
+const cachedBpOperation = cache.rt.wrap("bp-data", fetchBusinessPartnerData, { 
   ttl: 3600,
-  tags: ['computation']
+  tags: ['business-partner']
 })
 
 // Each call checks cache first, only executes if cache miss
-const result = await cachedOperation("value1", "value2")
+const result = await cachedBpOperation("1000001", true)
 
 // Using exec() for immediate execution with caching
-const result = await cache.rt.exec("key", async (param1) => {
-  // ... some expensive computation
-  return param1 + " world"
-}, ["hello"] { 
+const result = await cache.rt.exec("product-data", async (productId) => {
+  // ... some expensive computation to fetch product data
+  return productData
+}, ["1000001"], { 
   ttl: 3600,
-  tags: ['computation']
+  tags: ['product']
 })
 ```
 
@@ -452,19 +554,19 @@ All `rt.xxx` methods automatically generate dynamic cache keys based on function
 
 ```javascript
 // Different arguments = different cache keys
-const result1 = await cachedOperation("user1", "data1")  // Cache key: "key:user1:data1"
-const result2 = await cachedOperation("user2", "data2")  // Cache key: "key:user2:data2"
+const result1 = await cachedBpOperation("1000001", true)  // Cache key: "bp-data:1000001:true"
+const result2 = await cachedBpOperation("1000002", false)  // Cache key: "bp-data:1000002:false"
 ```
 
 You can override this behavior by providing a custom key template:
 
 ```javascript
-const cachedOperation = cache.rt.wrap("user-profile", expensiveOperation, {
-  key: { template: "profile:{args[0]}:{args[1]}" }
+const cachedOperation = cache.rt.wrap("bp-profile", fetchBusinessPartnerData, {
+  key: "profile:{args[0]}:{args[1]}"
 })
 ```
 
-For detailed information on how read-through keys are generated and configured, see [Read-Through Key Generation](docs/read-through-keys.md).
+For detailed information on how read-through keys are generated and configured, see [Key Management](docs/key-management.md).
 
 ### Cache Invalidation Strategies
 
@@ -509,20 +611,20 @@ await cache.delete("key")
 
 Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.rt.run, cache.rt.send, cache.createKey) and for the annotations.
 
-**Read-Through (RT) Methods**: All `rt.xxx` methods automatically generate dynamic cache keys and return them in the response. The generated keys include configurable context (user, tenant, locale) and a content hash. For detailed information on RT key generation, see [Read-Through Key Generation](docs/read-through-keys.md).
+**Read-Through (RT) Methods**: All `rt.xxx` methods automatically generate dynamic cache keys and return them in the response. The generated keys include configurable context (user, tenant, locale) and a content hash. For detailed information on RT key generation, see [Key Management](docs/key-management.md).
  
 ```javascript
 // No key override given, string will just be used as keys
-await cache.set('key', 'value') // key: key 
+await cache.set('bp:1000001', businessPartnerData) // key: bp:1000001
 
 // No key override given, objects will be smartly hashed 
-await cache.set(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
+await cache.set(SELECT.from(BusinessPartners)) // key: bd3f3690d3e96a569bd89d9e207a89af
 
 // Automatically build the key for retrieval/deletion
-cache.createKey(SELECT.from(Foo)) // key: bd3f3690d3e96a569bd89d9e207a89af
+cache.createKey(SELECT.from(BusinessPartners)) // key: bd3f3690d3e96a569bd89d9e207a89af
 
 // Override and use your own key based on a fixed value
-await cache.set(SELECT.from(Foo, 1), { key: { value: "foo:1" } })
+await cache.set(SELECT.from(BusinessPartners, 1000001), { key: "bp:1000001" })
 
 // RT methods return the generated cache key
 const { result, cacheKey } = await cache.rt.run(query, db)
@@ -559,22 +661,22 @@ Templates support the following properties:
 
 ```javascript
 // Store with static tag
-await cache.set("key", "value", { 
-  tags: [{ value: "user-123" }] 
+await cache.set("bp:1000001", businessPartnerData, { 
+  tags: [{ value: "bp-1000001" }] 
 })
 
 // Store with template tag (will generate a tag like "tenant-global-user-anonymous")
-await cache.set("key", "value", { 
+await cache.set("bp:1000001", businessPartnerData, { 
   tags: [{ template: "tenant-{tenant}-user-{user}" }] 
 })
 
 // Store with data-based tag
-await cache.set("key", { id: 123, name: "Product" }, { 
-  tags: [{ data: "id", prefix: "product-" }] 
+await cache.set("product:1000001", { productId: 1000001, name: "Laptop Computer" }, { 
+  tags: [{ data: "productId", prefix: "product-" }] 
 })
 
 // Invalidate by tag
-await cache.deleteByTag('user-123')
+await cache.deleteByTag('bp-1000001')
 ```
 This is really useful for invalidating cache entries based on a specific attribute or context.
 
@@ -586,17 +688,17 @@ Dynamic tags using data `data` property are a way to invalidate cache entries ba
 
 const businessPartners = [
   {
-    businessPartner: 1,
-    name: 'John Doe'
+    businessPartner: 1000001,
+    name: 'Acme Corporation'
   },
   {
-    businessPartner: 2,
-    name: 'Jane Doe'
+    businessPartner: 1000002,
+    name: 'Tech Solutions Ltd'
   }
 ]
 
 // Store with dynamic tags
-await cache.set("key", businessPartners, { 
+await cache.set("bp-list", businessPartners, { 
   tags: [
     { data: 'businessPartner', prefix: 'bp-' },
     { value: "businessPartner" }
@@ -604,11 +706,11 @@ await cache.set("key", businessPartners, {
 })
 
 // Introspect the tags
-const tags = await cache.tags("key") // => ["bp-1", "bp-2", "businessPartner"]
+const tags = await cache.tags("bp-list") // => ["bp-1000001", "bp-1000002", "businessPartner"]
 
 // Invalidate by tag
-await cache.deleteByTag('bp-1')
-await cache.deleteByTag('bp-2')
+await cache.deleteByTag('bp-1000001')
+await cache.deleteByTag('bp-1000002')
 ```
 
 This is really usefull for caching results with multiple rows where you can't predict the tags beforehand or when you want to invalidate cache entries based on the data itself. This is also possible for the `rt.run` method.
@@ -987,7 +1089,7 @@ GET /odata/v4/caching-api/Caches('mycache')/getEntries()
 POST /odata/v4/caching-api/Caches('mycache')/clear()
 ```
 
-[See the full OData API Reference →](docs/api-reference.md)
+[See the full OData API Reference →](docs/odata-api.md)
 
 ### Contributing
 

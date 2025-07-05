@@ -79,10 +79,10 @@ Retrieves all cache entries for a specific cache instance. A word of warning, th
 {
   "value": [
     {
-      "entryKey": "user:123",
-      "value": "{\"name\":\"John Doe\",\"email\":\"john@example.com\"}",
+      "entryKey": "bp:1000001",
+      "value": "{\"businessPartner\":\"1000001\",\"name\":\"Acme Corporation\",\"type\":\"2\"}",
       "timestamp": "2024-01-15T10:30:00Z",
-      "tags": ["user-123", "user-john.doe"]
+      "tags": ["bp-1000001", "bp-acme"]
     }
   ]
 }
@@ -111,11 +111,12 @@ Retrieves a specific cache entry by key.
 ```json
 {
   "value": {
-    "name": "John Doe",
-    "email": "john@example.com"
+    "businessPartner": "1000001",
+    "name": "Acme Corporation",
+    "type": "2"
   },
   "timestamp": "2024-01-15T10:30:00Z",
-  "tags": ["user-123", "user-john.doe"]
+  "tags": ["bp-1000001", "bp-acme"]
 }
 ```
 
@@ -123,7 +124,7 @@ Retrieves a specific cache entry by key.
 
 ```http
 ### Get specific cache entry
-GET /odata/v4/caching-api/Caches('caching')/getEntry(key='user:123')
+GET /odata/v4/caching-api/Caches('caching')/getEntry(key='bp:1000001')
 ```
 
 ### Create/Update Cache Entry
@@ -136,8 +137,8 @@ Creates a new cache entry or updates an existing one.
 
 ```json
 {
-  "key": "user:123",
-  "value": "{\"name\":\"John Doe\",\"email\":\"john@example.com\"}",
+  "key": "bp:1000001",
+  "value": "{\"businessPartner\":\"1000001\",\"name\":\"Acme Corporation\",\"type\":\"2\"}",
   "ttl": 3600000
 }
 ```
@@ -158,8 +159,8 @@ POST /odata/v4/caching-api/Caches('caching')/setEntry
 Content-Type: application/json
 
 {
-  "key": "user:123",
-  "value": "{\"name\":\"John Doe\",\"email\":\"john@example.com\"}",
+  "key": "bp:1000001",
+  "value": "{\"businessPartner\":\"1000001\",\"name\":\"Acme Corporation\",\"type\":\"2\"}",
   "ttl": 3600000
 }
 ```
@@ -174,7 +175,7 @@ Deletes a specific cache entry.
 
 ```json
 {
-  "key": "user:123"
+  "key": "bp:1000001"
 }
 ```
 
@@ -194,7 +195,7 @@ POST /odata/v4/caching-api/Caches('caching')/deleteEntry
 Content-Type: application/json
 
 {
-  "key": "user:123"
+  "key": "bp:1000001"
 }
 ```
 
@@ -638,9 +639,9 @@ Retrieves key-level performance metrics with optional filtering.
   "@odata.context": "$metadata#KeyMetrics",
   "value": [
     {
-      "ID": "current:user:123",
+      "ID": "current:bp:1000001",
       "cache": "caching",
-      "keyName": "user:123",
+      "keyName": "bp:1000001",
       "lastAccess": "2024-01-15T10:30:00Z",
       "period": "current",
       "operationType": "read_through",
@@ -655,8 +656,8 @@ Retrieves key-level performance metrics with optional filtering.
       "errorRate": 0.0,
       "cacheEfficiency": 21.2,
       "dataType": "request",
-      "serviceName": "UserService",
-      "entityName": "UserPreferences",
+      "serviceName": "BusinessPartnerService",
+      "entityName": "BusinessPartners",
       "operation": "READ",
       "timestamp": "2024-01-15T09:00:00Z"
     }
@@ -714,8 +715,8 @@ const response = await axios.get('/odata/v4/caching-api/Caches(\'caching\')/getE
 
 // Set cache entry
 await axios.post('/odata/v4/caching-api/Caches(\'caching\')/setEntry', {
-  key: 'user:123',
-  value: JSON.stringify({ name: 'John Doe' }),
+  key: 'bp:1000001',
+  value: JSON.stringify({ businessPartner: '1000001', name: 'Acme Corporation' }),
   ttl: 3600000
 });
 
@@ -751,7 +752,7 @@ curl -X GET "http://localhost:4004/odata/v4/caching-api/Caches('caching')/getEnt
 # Set cache entry
 curl -X POST "http://localhost:4004/odata/v4/caching-api/Caches('caching')/setEntry" \
   -H "Content-Type: application/json" \
-  -d '{"key": "user:123", "value": "{\"name\":\"John Doe\"}", "ttl": 3600000}'
+  -d '{"key": "bp:1000001", "value": "{\"businessPartner\":\"1000001\",\"name\":\"Acme Corporation\"}", "ttl": 3600000}'
 
 # Get metrics
 curl -X GET "http://localhost:4004/odata/v4/caching-api/Metrics?\$filter=cache eq 'caching'"

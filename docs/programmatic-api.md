@@ -48,16 +48,16 @@ A string key.
 
 ```javascript
 // String key
-const key1 = cache.createKey("user:123")
-// Returns: "user:123"
+const key1 = cache.createKey("bp:1000001")
+// Returns: "bp:1000001"
 
 // Object key (CQN query)
-const query = SELECT.from('Users').where({ id: 123 })
+const query = SELECT.from('BusinessPartners').where({ businessPartner: 1000001 })
 const key2 = cache.createKey(query)
 // Returns: "bd3f3690d3e96a569bd89d9e207a89af"
 
 // Request key
-const request = new Request({ event: 'READ', target: 'Users' })
+const request = new Request({ event: 'READ', target: 'BusinessPartners' })
 const key3 = cache.createKey(request)
 // Returns: "user-john.doe-tenant-acme-locale-en-US-bd3f3690d3e96a569bd89d9e207a89af"
 ```
@@ -86,10 +86,10 @@ Sets a value in the cache.
 
 ```javascript
 // Basic set
-await cache.set("user:123", { name: "John Doe", email: "john@example.com" })
+await cache.set("bp:1000001", { businessPartner: 1000001, name: "Acme Corporation", type: "2" })
 
 // Set with TTL
-await cache.set("user:123", userData, { ttl: 3600000 }) // 1 hour
+await cache.set("bp:1000001", businessPartnerData, { ttl: 3600000 }) // 1 hour
 
 // Set with custom key template
 await cache.set(query, result, { 
@@ -98,11 +98,11 @@ await cache.set(query, result, {
 })
 
 // Set with tags
-await cache.set("user:123", userData, { 
+await cache.set("bp:1000001", businessPartnerData, { 
   tags: [
-    { value: "user-123" },
-    { template: "user-{user}" },
-    { data: "id", prefix: "user-" }
+    { value: "bp-1000001" },
+    { template: "bp-{user}" },
+    { data: "businessPartner", prefix: "bp-" }
   ]
 })
 ```
@@ -125,14 +125,14 @@ The deserialized value from the cache or `undefined` if the value does not exist
 
 ```javascript
 // Get by string key
-const user = await cache.get("user:123")
+const businessPartner = await cache.get("bp:1000001")
 
 // Get by query
-const query = SELECT.from('Users').where({ id: 123 })
-const users = await cache.get(query)
+const query = SELECT.from('BusinessPartners').where({ businessPartner: 1000001 })
+const businessPartners = await cache.get(query)
 
 // Get by request
-const request = new Request({ event: 'READ', target: 'Users' })
+const request = new Request({ event: 'READ', target: 'BusinessPartners' })
 const result = await cache.get(request)
 ```
 
@@ -154,10 +154,10 @@ Checks if a value exists in the cache.
 
 ```javascript
 // Check if key exists
-const exists = await cache.has("user:123")
+const exists = await cache.has("bp:1000001")
 
 // Check if query result is cached
-const query = SELECT.from('Users').where({ id: 123 })
+const query = SELECT.from('BusinessPartners').where({ businessPartner: 1000001 })
 const isCached = await cache.has(query)
 ```
 
@@ -179,10 +179,10 @@ Deletes a value from the cache.
 
 ```javascript
 // Delete by key
-await cache.delete("user:123")
+await cache.delete("bp:1000001")
 
 // Delete by query
-const query = SELECT.from('Users').where({ id: 123 })
+const query = SELECT.from('BusinessPartners').where({ businessPartner: 1000001 })
 await cache.delete(query)
 ```
 
@@ -212,8 +212,8 @@ Deletes all values from the cache that are associated with the given tag.
 #### Examples
 
 ```javascript
-// Delete all user-related cache entries
-await cache.deleteByTag("user-123")
+// Delete all business partner-related cache entries
+await cache.deleteByTag("bp-1000001")
 
 // Delete all entries for a specific tenant
 await cache.deleteByTag("tenant-acme")
@@ -269,24 +269,24 @@ An object containing:
 
 ```javascript
 // Cache database query
-const query = SELECT.from('Users').where({ active: true })
+const query = SELECT.from('BusinessPartners').where({ businessPartnerType: '2' })
 const { result, cacheKey, metadata } = await cache.rt.run(query, db, { ttl: 3600000 })
 
 // Cache with custom key template
 const { result, cacheKey, metadata } = await cache.rt.run(query, db, { 
-  key: "active-users:{tenant}:{hash}",
+  key: "active-bps:{tenant}:{hash}",
   ttl: 1800000 
 })
 
 // Cache CAP request in service handler
-this.on('READ', Users, async (req, next) => {
+this.on('READ', BusinessPartners, async (req, next) => {
   const { result, cacheKey, metadata } = await cache.rt.run(req, next)
   return result
 })
 
 // Cache with tags
 const { result, cacheKey, metadata } = await cache.rt.run(query, db, { 
-  tags: [{ value: "active-users" }],
+  tags: [{ value: "active-business-partners" }],
   ttl: 3600000 
 })
 ```
@@ -369,39 +369,39 @@ A function that returns an object containing:
 
 ```javascript
 // Basic usage - automatic argument-based key generation
-const expensiveOperation = async (userId, filter) => {
-  // ... expensive computation
-  return result
+const fetchBusinessPartnerData = async (businessPartnerId, includeAddresses) => {
+  // ... expensive computation to fetch BP data
+  return businessPartnerData
 }
 
-const cachedOperation = cache.rt.wrap("expensive-op", expensiveOperation, { 
+const cachedOperation = cache.rt.wrap("bp-data", fetchBusinessPartnerData, { 
   ttl: 3600000,
-  tags: ['computation']
+  tags: ['business-partner']
 })
 
 // Use the cached function - each parameter combination gets its own cache entry
-const { result, cacheKey, metadata } = await cachedOperation("user-123", "active")
-const { result: result2, cacheKey: key2, metadata: metadata2 } = await cachedOperation("user-456", "inactive") // Different cache entry
-const { result: result3, cacheKey: key3, metadata: metadata3 } = await cachedOperation("user-123", "active")   // Cache hit
+const { result, cacheKey, metadata } = await cachedOperation("1000001", true)
+const { result: result2, cacheKey: key2, metadata: metadata2 } = await cachedOperation("1000002", false) // Different cache entry
+const { result: result3, cacheKey: key3, metadata: metadata3 } = await cachedOperation("1000001", true)   // Cache hit
 
-console.log('Cache key:', cacheKey) // e.g., "expensive-op:user-123:active:a1b2c3d4"
+console.log('Cache key:', cacheKey) // e.g., "bp-data:1000001:true:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
 
 // Custom template-based key generation
-const cachedOperation2 = cache.rt.wrap("user-data", expensiveOperation, {
-  key: "user:{args[0]}:{args[1]}:{hash}",
+const cachedOperation2 = cache.rt.wrap("bp-data", fetchBusinessPartnerData, {
+  key: "bp:{args[0]}:{args[1]}:{hash}",
   ttl: 1800000
 })
 
 // Context-aware key generation
-const cachedOperation3 = cache.rt.wrap("tenant-data", expensiveOperation, {
+const cachedOperation3 = cache.rt.wrap("tenant-bp-data", fetchBusinessPartnerData, {
   key: "{tenant}:{user}:{args[0]}:{hash}",
   ttl: 3600000
 })
 
 // Override global configuration for specific operations
-const cachedOperation4 = cache.rt.wrap("public-data", expensiveOperation, {
+const cachedOperation4 = cache.rt.wrap("public-bp-data", fetchBusinessPartnerData, {
   key: "{baseKey}:{args[0]}" // No user context, even if globally enabled
 })
 ```
@@ -438,32 +438,32 @@ An object containing:
 
 ```javascript
 // Basic usage - automatic argument-based key generation
-const { result, cacheKey, metadata } = await cache.rt.exec("data-processing", async (param1, param2) => {
-  // ... data processing
-  return processedData
-}, ["value1", "value2"], { 
+const { result, cacheKey, metadata } = await cache.rt.exec("product-processing", async (productId, includePricing) => {
+  // ... product data processing
+  return processedProductData
+}, ["1000001", true], { 
   ttl: 1800000,
-  tags: ['processing']
+  tags: ['product-processing']
 })
 
-console.log('Cache key:', cacheKey) // e.g., "data-processing:value1:value2:a1b2c3d4"
+console.log('Cache key:', cacheKey) // e.g., "product-processing:1000001:true:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
 
 // Custom template-based key generation
-const { result, cacheKey, metadata } = await cache.rt.exec("user-profile", async (userId, includeDetails) => {
-  // ... fetch user profile
-  return profile
-}, ["user-123", true], {
-  key: "profile:{args[0]}:{args[1]}:{hash}",
+const { result, cacheKey, metadata } = await cache.rt.exec("bp-profile", async (businessPartnerId, includeAddresses) => {
+  // ... fetch business partner profile
+  return businessPartnerProfile
+}, ["1000001", true], {
+  key: "bp-profile:{args[0]}:{args[1]}:{hash}",
   ttl: 3600000
 })
 
 // Context-aware key generation
-const { result, cacheKey, metadata } = await cache.rt.exec("tenant-data", async (dataId) => {
-  // ... fetch tenant-specific data
-  return data
-}, ["data-456"], {
+const { result, cacheKey, metadata } = await cache.rt.exec("tenant-bp-data", async (businessPartnerId) => {
+  // ... fetch tenant-specific business partner data
+  return businessPartnerData
+}, ["1000001"], {
   key: "{tenant}:{user}:{args[0]}:{hash}",
   ttl: 1800000
 })

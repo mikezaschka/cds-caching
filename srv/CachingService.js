@@ -74,9 +74,6 @@ class CachingService extends cds.Service {
             if (typeof event.data.value === "object") {
                 event.data.value = JSON.stringify(event.data.value);
             }
-
-            console.log(event.data);
-
             await this.cache.set(event.data.key, event.data.value, (event.data.ttl || 0))
         });
 
@@ -227,6 +224,7 @@ class CachingService extends cds.Service {
             switch (arg1.constructor.name) {
                 case "Request":
                 case "NoaRequest":
+                case "ODataRequest":
                     const req = arg1;
                     const next = arguments[1];
 
@@ -492,6 +490,7 @@ class CachingService extends cds.Service {
             switch (keyOrObject.constructor.name) {
                 case "Request":
                 case "NoaRequest":
+                case "ODataRequest":
 
                     return this.createCacheKey((!options.value && !options.template) ? { template: '{tenant}:{user}:{locale}:{hash}' } : options, {
                         req: keyOrObject,

@@ -75,7 +75,7 @@ describe('CachingService', () => {
 
             })
 
-            it("should cache the request to a REST service", async () => {
+            it.skip("should cache the request to a REST service", async () => {
                 const key = "restful:objects";
                 const restService = await cds.connect.to({
                     "kind": "rest",

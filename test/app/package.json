@@ -6,14 +6,15 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^8",
+    "@sap/cds": "^9",
     "express": "^4",
-    "@sap-cloud-sdk/http-client": "~3.25.0",
+    "@sap-cloud-sdk/http-client": "~4.0.2",
+    "@sap-cloud-sdk/resilience": "~4.0.2",
     "cds-caching": "*"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1",
-    "@cap-js/cds-types": "^0.9.0"
+    "@cap-js/sqlite": "^2",
+    "@cap-js/cds-types": "^0.13.0"
   },
   "scripts": {
     "start": "cds-serve"

@@ -142,6 +142,41 @@ Installing and using cds-caching is straightforward since it's a CAP plugin. Sim
 npm install cds-caching
 ```
 
+### TypeScript Support
+
+cds-caching includes comprehensive TypeScript definitions. The library is written in JavaScript but provides full TypeScript support for better development experience.
+
+#### Basic Usage with TypeScript
+
+```typescript
+import { CachingService, CacheOptions, ReadThroughResult } from 'cds-caching';
+
+// In your CAP service
+class MyService extends cds.ApplicationService {
+  async init() {
+    const cache = await cds.connect.to('caching') as CachingService;
+    
+    // Basic cache operations
+    await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
+    const value = await cache.get('my-key');
+    
+    // Read-through operations with full type safety
+    const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
+      ttl: 1800,
+      tags: ['user-data']
+    });
+    
+    // Function wrapping with type inference
+    const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
+      return await this.performExpensiveOperation(id);
+    });
+    
+    const { result: operationResult } = await cachedFunction('user-123');
+  }
+}
+```
+
+
 ### Configuration
 
 The cds-caching plugin supports comprehensive configuration through `package.json`. Here are all available configuration options:

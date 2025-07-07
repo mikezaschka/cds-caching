@@ -21,9 +21,11 @@
   },
   "homepage": "https://github.com/mikezaschka/cds-caching#readme",
   "main": "cds-plugin.js",
+  "types": "lib/CachingService.d.ts",
   "files": [
     "srv/**",
-    "index.cds"
+    "index.cds",
+    "lib/**"
   ],
   "scripts": {
     "test": "jest --runInBand --silent",

@@ -56,6 +56,54 @@ export interface CachableFunctionOptions {
   '@cache.tags'?: string[];
 }
 
+export interface ReadThroughResult<T = any> {
+  result: T;
+  cacheKey: string;
+  metadata: {
+    hit: boolean;
+    latency: number;
+  };
+}
+
+export interface CacheAnnotatedFunction {
+  name: string;
+  options: CachableFunctionOptions;
+}
+
+// ============================================================================
+// Read Through Operations Interface
+// ============================================================================
+
+export interface ReadThroughOperations {
+  /**
+   * Send a request with caching with read-through capabilities
+   */
+  send(request: any, service: any, options?: CacheOptions): Promise<ReadThroughResult>;
+
+  /**
+   * Run a cached operation with automatic key generation
+   */
+  run(req: any, handler?: Function, options?: CacheOptions): Promise<ReadThroughResult>;
+
+  /**
+   * Wraps an async function and caches the result
+   */
+  wrap<T extends (...args: any[]) => Promise<any>>(
+    key: string,
+    asyncFunction: T,
+    options?: CacheOptions
+  ): (...args: Parameters<T>) => Promise<ReadThroughResult<Awaited<ReturnType<T>>>>;
+
+  /**
+   * Executes an async function and caches its result
+   */
+  exec<T>(
+    key: string,
+    asyncFunction: () => Promise<T>,
+    options?: CacheOptions
+  ): Promise<ReadThroughResult<T>>;
+}
+
 // ============================================================================
 // CachingService Class Definition
 // ============================================================================
@@ -71,13 +119,21 @@ export declare class CachingService extends Service {
   };
   
   private cacheAnnotatedFunctions: {
-    bound: Array<{ name: string; options: CachableFunctionOptions }>;
-    unbound: Array<{ name: string; options: CachableFunctionOptions }>;
+    bound: CacheAnnotatedFunction[];
+    unbound: CacheAnnotatedFunction[];
   };
+
+  // Read-through operations
+  readonly rt: ReadThroughOperations;
 
   // ============================================================================
   // Core Cache Operations
   // ============================================================================
+
+  /**
+   * Create a cache key from various inputs
+   */
+  createKey(...args: any[]): string;
 
   /**
    * Set a value in the cache
@@ -124,35 +180,36 @@ export declare class CachingService extends Service {
    */
   iterator(): AsyncIterableIterator<[string, CacheMetadata]>;
 
+  /**
+   * Get a raw value from the cache without statistics tracking
+   */
+  getRaw(key: string | object): Promise<any>;
+
   // ============================================================================
-  // CAP Operations
+  // Deprecated CAP Operations (for backward compatibility)
   // ============================================================================
 
   /**
-   * Send a request with caching (CDS Service method)
+   * @deprecated Use cache.rt.send() instead. The rt.send() method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
    */
   send(arg1: any, service: any, options?: CacheOptions): Promise<any>;
 
   /**
-   * Run a cached operation with automatic key generation
+   * @deprecated Use cache.rt.run() instead. The rt.run() method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
    */
   run(req: any, handler?: Function, options?: CacheOptions): Promise<any>;
 
-  // ============================================================================
-  // Async Operations
-  // ============================================================================
-
   /**
-   * Wraps an async function and caches the result
+   * @deprecated Use cache.rt.wrap() instead. The rt.wrap() method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
    */
   wrap<T extends (...args: any[]) => Promise<any>>(
     key: string,
     asyncFunction: T,
     options?: CacheOptions
-  ): T;
+  ): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>;
 
   /**
-   * Executes an async function and caches its result
+   * @deprecated Use cache.rt.exec() instead. The rt.exec() method provides enhanced functionality including read-through metadata, dynamic cache keys, and detailed mode options.
    */
   exec<T>(
     key: string,
@@ -161,18 +218,37 @@ export declare class CachingService extends Service {
   ): Promise<T>;
 
   // ============================================================================
-  // Statistics and Configuration
+  // Tag Resolution
+  // ============================================================================
+
+  /**
+   * Resolve tags for a given query
+   */
+  resolveTags(...args: any[]): Promise<any>;
+
+  // ============================================================================
+  // Statistics and Metrics
   // ============================================================================
 
   /**
    * Get statistics for a specific period
    */
-  getStats(period: string, from: Date, to: Date): Promise<CacheStatistics>;
+  getMetrics(from: Date, to: Date): Promise<CacheStatistics>;
+
+  /**
+   * Get key-specific metrics for a specific period
+   */
+  getKeyMetrics(key: string, from: Date, to: Date): Promise<CacheKeyMetrics>;
 
   /**
    * Get current statistics
    */
-  getCurrentStats(): Promise<CacheStatistics>;
+  getCurrentMetrics(): Promise<CacheStatistics>;
+
+  /**
+   * Get current key metrics
+   */
+  getCurrentKeyMetrics(): Promise<CacheKeyMetrics>;
 
   /**
    * Clear all metrics
@@ -193,6 +269,15 @@ export declare class CachingService extends Service {
    * Enable or disable key tracking at runtime
    */
   setKeyMetricsEnabled(enabled: boolean): Promise<void>;
+
+  /**
+   * Persist metrics to database
+   */
+  persistMetrics(): Promise<void>;
+
+  // ============================================================================
+  // Configuration Management
+  // ============================================================================
 
   /**
    * Get current runtime configuration

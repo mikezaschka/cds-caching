@@ -61,7 +61,10 @@ await caching.set("mykey", "myvalue", { key: "{hash}:{user}" })
 ```javascript
 
 // Read through query execution
-let { result, cacheKey, metadata } = await caching.rt.run(SELECT.from("AppService.Foo"), db, { ttl: 10_000 })
+let { result:foos, cacheKey:fooKey, metadata:fooMetadata } = await caching.rt.run(SELECT.from("AppService.Foo"), db)
+
+const products_1 = await caching.rt.run(SELECT.from("AppService.Products"), AppService, { ttl: 10_000 })
+const products_2 = await caching.rt.run(SELECT.from("AppService.Products"), AppService, { ttl: 10_000 })
 
 ```
 

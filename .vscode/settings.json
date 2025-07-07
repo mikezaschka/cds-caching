@@ -8,6 +8,7 @@
     // "tab",
     // "tsv"
   ],
+  "jest.useJest30": true,
   "sqltools.useNodeRuntime": true,
   "sqltools.connections": [
     {

@@ -21,9 +21,11 @@
   },
   "homepage": "https://github.com/mikezaschka/cds-caching#readme",
   "main": "cds-plugin.js",
+  "types": "lib/CachingService.d.ts",
   "files": [
     "srv/**",
-    "index.cds"
+    "index.cds",
+    "lib/**"
   ],
   "scripts": {
     "test": "jest --runInBand --silent",
@@ -36,7 +38,9 @@
   },
   "workspaces": [
     ".",
-    "test/**"
+    "test/app",
+    "examples/dashboard",
+    "examples/app"
   ],
   "dependencies": {
     "@keyv/compress-gzip": "^2.0.3",
@@ -53,6 +57,6 @@
     "@cap-js/cds-test": "^0.4.0"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   }
 }

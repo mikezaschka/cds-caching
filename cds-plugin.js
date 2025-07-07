@@ -1,6 +1,6 @@
 const cds = require('@sap/cds')
-const CachingService = require('./srv/CachingService')
-const { scanCachingAnnotations } = require('./srv/util')
+const CachingService = require('./lib/CachingService')
+const { scanCachingAnnotations } = require('./lib/util')
 
 cds.on('served', scanCachingAnnotations)
 

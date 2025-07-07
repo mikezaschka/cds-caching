@@ -1,0 +1,67 @@
+{
+  "name": "cds-caching-example-app",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^9",
+    "express": "^4",
+    "@sap-cloud-sdk/http-client": "~4.0.2",
+    "cds-caching": "*"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.0.1",
+    "@sap/cds-foss": "^5.0.1",
+    "@cap-js/cds-types": "^0.10.0",
+    "antlr4": "^4.13.2"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "file": "db.sqlite"
+        }
+      },
+      "caching": {
+        "impl": "cds-caching",
+        "namespace": "redisCache",
+        "store": "redis",
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 10000,
+          "maxLatencies": 1000
+        },
+        "credentials": {
+          "socket": {
+            "host": "localhost",
+            "port": 6379,
+            "keepAlive": true,
+            "pingInterval": 1000
+          }
+        }
+      },
+      "caching-northwind": {
+        "impl": "cds-caching",
+        "namespace": "northwind",
+        "store": "sqlite",
+        "credentials": {
+          "url": "file::memory:"
+        }
+      },
+      "Northwind": {
+        "kind": "odata",
+        "model": "srv/external/Northwind",
+        "credentials": {
+          "url": "https://services.odata.org/Experimental/OData/OData.svc/"
+        }
+      }
+
+    }
+  }
+}

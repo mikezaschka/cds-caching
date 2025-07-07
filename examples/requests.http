@@ -1,0 +1,16 @@
+
+### Get an uncached entity
+GET http://localhost:8080/odata/v4/app/Foo
+
+### Get a cached entity
+GET http://localhost:8080/odata/v4/app/CachedFoo
+
+### Get all products
+GET http://localhost:8080/odata/v4/app/Products
+
+
+### Get all products with caching and key tracking
+GET http://localhost:8080/odata/v4/app/CachedFoo?$expand=products,bar
+
+### Get all products with caching and key tracking
+GET http://localhost:8080/odata/v4/app/Foo?$expand=products,bar

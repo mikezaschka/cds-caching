@@ -1,5 +1,7 @@
 test
 node_modules
+examples
+coverage
 .git
 .gitignore
 .eslintrc.js

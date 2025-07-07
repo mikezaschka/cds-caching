@@ -1,0 +1,57 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.Main" displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	xmlns:card="sap.f.cards"
+	xmlns:cssgrid="sap.ui.layout.cssgrid"
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+	xmlns:viz.data="sap.viz.ui5.data" core:require="{
+		formatter: 'cds/plugin/caching/dashboard/model/formatter'
+	}">
+
+	<f:DynamicPage title="cds-caching – Dashboard" headerExpanded="true" headerPinned="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="cds-caching – Dashboard" />
+				</f:heading>
+				<f:actions>
+					<Button type="Transparent" icon="sap-icon://refresh" text="Refresh" press="onRefresh" />
+				</f:actions>
+			</f:DynamicPageTitle>
+		</f:title>
+
+		<f:content>
+
+			<Table id="cachesList" headerText="Caching Services" mode="SingleSelectMaster" items="{path: '/Caches'}" itemPress="onCacheSelect" noDataText="No caches available">
+				<columns>
+					<Column>
+						<Text text="Name" />
+					</Column>
+					<Column>
+						<Text text="Statistic Tracking Enabled" />
+					</Column>
+					<Column>
+						<Text text="Key Tracking Enabled" />
+					</Column>
+				</columns>
+				<items>
+					<ColumnListItem type="Navigation">
+						<cells>
+							<Text text="{name}" />
+							<Switch enabled="false" state="{metricsEnabled}" />
+							<Switch enabled="false" state="{keyMetricsEnabled}" />
+						</cells>
+
+					</ColumnListItem>
+				</items>
+			</Table>
+		</f:content>
+
+	</f:DynamicPage>
+
+</mvc:View>

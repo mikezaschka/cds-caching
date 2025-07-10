@@ -1,19 +1,27 @@
-import { Service } from '@sap/cds';
+import { Service, cds } from '@sap/cds';
 
 // ============================================================================
 // Type Definitions
 // ============================================================================
 
+export interface CacheTag {
+  template: string;
+  data?: string;
+  prefix?: string;
+  suffix?: string;
+  value?: string; 
+}
+
 export interface CacheOptions {
   ttl?: number;
-  tags?: string[];
+  tags?: CacheTag[] | string[];
   key?: string | object;
   params?: Record<string, any>;
 }
 
 export interface CacheMetadata {
   value: any;
-  tags: string[];
+  tags: CacheTag[]; 
   timestamp: number;
 }
 
@@ -78,12 +86,12 @@ export interface ReadThroughOperations {
   /**
    * Send a request with caching with read-through capabilities
    */
-  send(request: any, service: any, options?: CacheOptions): Promise<ReadThroughResult>;
+  send(request: any, service: Service, options?: CacheOptions): Promise<ReadThroughResult>;
 
   /**
    * Run a cached operation with automatic key generation
    */
-  run(req: any, handler?: Function, options?: CacheOptions): Promise<ReadThroughResult>;
+  run(req: any, service: Service, options?: CacheOptions): Promise<ReadThroughResult>;
 
   /**
    * Wraps an async function and caches the result

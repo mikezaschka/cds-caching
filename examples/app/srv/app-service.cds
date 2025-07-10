@@ -8,14 +8,7 @@ service AppService {
             bar  : Association to Bar
                        on bar.foo = $self;
             products : Association to Northwind.Products;
-    } actions {
-        @cache: {
-            service: 'caching',
-            ttl    : 0
-        }
-        function getBoundCachedValue(param1 : String) returns String;
-    };
-
+    }
 
     entity Bar {
         key ID   : Integer;
@@ -23,19 +16,15 @@ service AppService {
             foo  : Association to Foo;
     };
 
-
-    entity ManualCachedFoo as projection on Foo;
-
     @cache                 : {
         service: 'caching',
         ttl    : 5000,
         key    : '{hash}_{user}',
         tags   : [
             {template: 'user-{user}'},
-            {value: 'user-1'},
             {
                 data  : 'name',
-                prefix: 'name-'
+                prefix: 'foo-'
             }
         ]
     }
@@ -48,15 +37,4 @@ service AppService {
     }
     @readonly
     entity Products        as projection on Northwind.Products;
-
-    @cache: {
-        service: 'caching',
-        tags   : ['getCachedValue'],
-        ttl    : 0
-    }
-    function getCachedValue(param1 : String)    returns String;
-
-
-    function manualCachedValue(param1 : String) returns String;
-
 }

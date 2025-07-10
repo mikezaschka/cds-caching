@@ -41,6 +41,8 @@ Please also read the introduction blog post in the SAP Community: [Boosting perf
 
 ### 🔄 API Changes for read-through methods
 
+Version 1.x introduces new methods that provide more insights into the read-through caching as they also directly return the genrated cache `key` and some caching `metadata`. The should be preferrably used instead of the old methods.
+
 | **Old Method** | **New Method** | **Key Differences** |
 |----------------|----------------|---------------------|
 | `cache.run()` | `cache.rt.run()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
@@ -94,7 +96,7 @@ await cache.set(query, result, {
 
 **Example 1: Basic Caching**
 ```javascript
-// ❌ Old way (deprecated)
+// ❌ Old way (deprecated, but will still work)
 const result = await cache.run(query, db)
 
 // ✅ New way
@@ -103,7 +105,7 @@ const { result, cacheKey, metadata } = await cache.rt.run(query, db)
 
 **Example 2: Function Wrapping**
 ```javascript
-// ❌ Old way (deprecated)
+// ❌ Old way (deprecated, but will still work)
 const cachedFn = cache.wrap("key", expensiveOperation)
 const result = await cachedFn("param1", "param2")
 
@@ -114,7 +116,7 @@ const { result, cacheKey, metadata } = await cachedFn("param1", "param2")
 
 **Example 3: Custom Key Templates**
 ```javascript
-// ❌ Old way (deprecated)
+// ❌ Old way (will not work anymore)
 await cache.set(data, value, { 
   key: { template: "user:{user}:{hash}" }
 })
@@ -151,29 +153,25 @@ cds-caching includes comprehensive TypeScript definitions. The library is writte
 ```typescript
 import { CachingService, CacheOptions, ReadThroughResult } from 'cds-caching';
 
-// In your CAP service
-class MyService extends cds.ApplicationService {
-  async init() {
-    const cache = await cds.connect.to('caching') as CachingService;
-    
-    // Basic cache operations
-    await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
-    const value = await cache.get('my-key');
-    
-    // Read-through operations with full type safety
-    const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
-      ttl: 1800,
-      tags: ['user-data']
-    });
-    
-    // Function wrapping with type inference
-    const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
-      return await this.performExpensiveOperation(id);
-    });
-    
-    const { result: operationResult } = await cachedFunction('user-123');
-  }
-}
+const cache = await cds.connect.to('caching') as CachingService;
+
+// Basic cache operations
+await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
+const value = await cache.get('my-key');
+
+// Read-through operations with full type safety
+const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
+  ttl: 1800,
+  tags: ['user-data']
+});
+
+// Function wrapping with type inference
+const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
+  return await this.performExpensiveOperation(id);
+});
+
+const { result: operationResult } = await cachedFunction('user-123');
+
 ```
 
 
@@ -666,14 +664,14 @@ const { result, cacheKey } = await cache.rt.run(query, db)
 console.log('Generated key:', cacheKey) // e.g., "tenant-acme:user-john:locale-en:hash-abc123"
 
 // Override RT key template for requests
-await cache.rt.run(req, remoteService, { key: { template: "mykey:{tenant}:{user}:{locale}:{hash}" } })
+await cache.rt.run(req, remoteService, { key: "mykey:{tenant}:{user}:{locale}:{hash}" })
 
 // This requests will be cached for all users and for each locale 
-await cache.rt.run(req, remoteService, { key: { template: "mykey:{user}:{locale}:{hash}" } })
+await cache.rt.run(req, remoteService, { key: "mykey:{user}:{locale}:{hash}" })
 
 // Function wrapping with custom key template
 const cachedFunction = cache.rt.wrap("user-data", expensiveOperation, {
-  key: { template: "user:{user}:{args[0]}" }
+  key: "user:{user}:{args[0]}"
 })
 ```
 

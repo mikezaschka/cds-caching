@@ -28,9 +28,16 @@
           "file": "db.sqlite"
         }
       },
+      "Northwind": {
+        "kind": "odata",
+        "model": "srv/external/Northwind",
+        "credentials": {
+          "url": "https://services.odata.org/Experimental/OData/OData.svc/"
+        }
+      }, 
       "caching": {
         "impl": "cds-caching",
-        "namespace": "redisCache",
+        "namespace": "my-cache",
         "store": "redis",
         "statistics": {
           "enabled": true,
@@ -48,20 +55,12 @@
       },
       "caching-northwind": {
         "impl": "cds-caching",
-        "namespace": "northwind",
+        "namespace": "northwind-cache",
         "store": "sqlite",
         "credentials": {
           "url": "file::memory:"
         }
-      },
-      "Northwind": {
-        "kind": "odata",
-        "model": "srv/external/Northwind",
-        "credentials": {
-          "url": "https://services.odata.org/Experimental/OData/OData.svc/"
-        }
       }
-
     }
   }
 }

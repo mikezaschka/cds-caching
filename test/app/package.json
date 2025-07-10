@@ -22,10 +22,7 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "sqlite",
-        "credentials": {
-          "file": "db.sqlite"
-        }
+        "kind": "sqlite"
       },
       "caching": {
         "impl": "cds-caching",

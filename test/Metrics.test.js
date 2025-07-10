@@ -505,6 +505,285 @@ describe('Cache Metrics - Testing', () => {
                 expect(key.totalRequests).to.be.greaterThanOrEqual(0);
             });
         })
+
+        it("should calculate hit ratio correctly for individual keys", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:ratio";
+
+            // First request (miss)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Second request (hit)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Third request (hit)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.hits).to.equal(2);
+            expect(keyStats.misses).to.equal(1);
+            expect(keyStats.totalRequests).to.equal(3);
+            expect(keyStats.hitRatio).to.be.closeTo(66.67, 1); // 2/3 = 66.67%
+        })
+
+        it("should handle zero hit ratio correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:zero:ratio";
+
+            // Use different keys to ensure misses
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey + ":1" }
+            );
+
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test2" } }),
+                appService,
+                { key: testKey + ":2" }
+            );
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            
+            // Check that we have metrics for both keys
+            const key1Stats = keyMetrics.get(testKey + ":1");
+            const key2Stats = keyMetrics.get(testKey + ":2");
+
+            expect(key1Stats).to.exist;
+            expect(key2Stats).to.exist;
+            
+            // Each key should have 1 miss, 0 hits
+            expect(key1Stats.hits).to.equal(0);
+            expect(key1Stats.misses).to.equal(1);
+            expect(key1Stats.totalRequests).to.equal(1);
+            expect(key1Stats.hitRatio).to.equal(0); // 0/1 = 0%
+            
+            expect(key2Stats.hits).to.equal(0);
+            expect(key2Stats.misses).to.equal(1);
+            expect(key2Stats.totalRequests).to.equal(1);
+            expect(key2Stats.hitRatio).to.equal(0); // 0/1 = 0%
+        })
+
+        it("should handle 100% hit ratio correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:hundred:ratio";
+
+            // First request (miss) to populate cache
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Subsequent requests (hits)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.hits).to.equal(2);
+            expect(keyStats.misses).to.equal(1);
+            expect(keyStats.totalRequests).to.equal(3);
+            expect(keyStats.hitRatio).to.be.closeTo(66.67, 1); // 2/3 = 66.67%
+        })
+
+        it("should calculate cache efficiency correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:efficiency";
+
+            // Perform operations to generate latency data
+            for (let i = 0; i < 3; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.cacheEfficiency).to.be.a('number');
+            expect(keyStats.cacheEfficiency).to.be.greaterThanOrEqual(0);
+        })
+
+        it("should handle native operation ratios correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:native:ratio";
+
+            // Perform native operations
+            await cache.set(testKey, "value");
+            await cache.get(testKey); // hit
+            await cache.get(testKey); // hit
+            await cache.get("test:native:ratio:missing"); // miss
+            await cache.delete(testKey);
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.nativeHits).to.equal(2);
+            expect(keyStats.nativeMisses).to.equal(0); // Only the missing key would be tracked separately
+            expect(keyStats.nativeSets).to.equal(1);
+            expect(keyStats.nativeDeletes).to.equal(1);
+            expect(keyStats.totalNativeOperations).to.equal(4);
+        })
+    })
+
+    // ============================================================================
+    // KEY METRICS RATIOS AND CALCULATIONS
+    // ============================================================================
+
+    describe('Key Metrics Ratios and Calculations', () => {
+
+        it("should calculate throughput correctly for individual keys", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:throughput";
+
+            const startTime = Date.now();
+
+            // Perform operations over time
+            for (let i = 0; i < 5; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+                await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
+            }
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.throughput).to.be.a('number');
+            expect(keyStats.throughput).to.be.greaterThan(0);
+            expect(keyStats.throughput).to.be.lessThan(1000); // Reasonable upper bound
+        })
+
+        it("should calculate error rate correctly for individual keys", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:error:rate";
+
+            // Perform successful operations
+            for (let i = 0; i < 8; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            // Simulate some errors
+            try {
+                await cache.rt.send(
+                    new Request({ event: "NonExistentFunction" }),
+                    appService,
+                    { key: testKey }
+                );
+            } catch (error) {
+                // Expected to fail
+            }
+
+            try {
+                await cache.rt.send(
+                    new Request({ event: "AnotherNonExistentFunction" }),
+                    appService,
+                    { key: testKey }
+                );
+            } catch (error) {
+                // Expected to fail
+            }
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.errorRate).to.be.a('number');
+            expect(keyStats.errorRate).to.be.greaterThanOrEqual(0);
+            expect(keyStats.errorRate * 100).to.be.lessThanOrEqual(100);
+        })
+
+        it("should handle edge case of no operations for ratio calculations", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:no:operations";
+
+            // Don't perform any operations on this key
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            // Key should not exist since no operations were performed
+            expect(keyStats).to.be.undefined;
+        })
+
+        it("should calculate latency statistics correctly for individual keys", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:latency:stats";
+
+            // Perform operations to generate latency data
+            for (let i = 0; i < 5; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            const keyMetrics = await cache.getCurrentKeyMetrics();
+            const keyStats = keyMetrics.get(testKey);
+
+            expect(keyStats).to.exist;
+            expect(keyStats.avgMissLatency).to.be.a('number');
+            expect(keyStats.avgMissLatency).to.be.greaterThanOrEqual(0);
+            expect(keyStats.minMissLatency).to.be.a('number');
+            expect(keyStats.maxMissLatency).to.be.a('number');
+            expect(keyStats.minMissLatency).to.be.lessThanOrEqual(keyStats.maxMissLatency);
+        })
     })
 
     // ============================================================================
@@ -596,6 +875,281 @@ describe('Cache Metrics - Testing', () => {
                 expect(metric.misses).to.be.greaterThan(0);
                 expect(metric.totalRequests).to.be.greaterThan(0);
             });
+        })
+
+        it("should persist key metrics ratios correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:ratio";
+
+            // Create a scenario with known hit/miss pattern
+            // First request (miss)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Second request (hit)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Third request (hit)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Fourth request (hit)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.be.greaterThan(0);
+
+            const persistedMetric = historicalKeyMetrics[0];
+            expect(persistedMetric.hits).to.equal(3);
+            expect(persistedMetric.misses).to.equal(1);
+            expect(persistedMetric.totalRequests).to.equal(4);
+            
+            // Check that hit ratio is calculated correctly in persisted data
+            const expectedHitRatio = (3 / 4) * 100; // 75%
+            expect(persistedMetric.hitRatio).to.be.closeTo(expectedHitRatio, 1);
+        })
+
+        it("should persist zero hit ratio correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:zero:ratio";
+
+            // Use different keys to ensure misses
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey + ":1" }
+            );
+
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test2" } }),
+                appService,
+                { key: testKey + ":2" }
+            );
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            // Check both keys
+            const historicalKeyMetrics1 = await cache.getKeyMetrics(testKey + ":1", from, to);
+            const historicalKeyMetrics2 = await cache.getKeyMetrics(testKey + ":2", from, to);
+
+            expect(historicalKeyMetrics1).to.be.an('array');
+            expect(historicalKeyMetrics1.length).to.be.greaterThan(0);
+            expect(historicalKeyMetrics2).to.be.an('array');
+            expect(historicalKeyMetrics2.length).to.be.greaterThan(0);
+
+            const persistedMetric1 = historicalKeyMetrics1[0];
+            const persistedMetric2 = historicalKeyMetrics2[0];
+
+            expect(persistedMetric1.hits).to.equal(0);
+            expect(persistedMetric1.misses).to.equal(1);
+            expect(persistedMetric1.totalRequests).to.equal(1);
+            expect(persistedMetric1.hitRatio).to.equal(0); // 0%
+
+            expect(persistedMetric2.hits).to.equal(0);
+            expect(persistedMetric2.misses).to.equal(1);
+            expect(persistedMetric2.totalRequests).to.equal(1);
+            expect(persistedMetric2.hitRatio).to.equal(0); // 0%
+        })
+
+        it("should persist latency statistics correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:latency";
+
+            // Perform operations to generate latency data
+            for (let i = 0; i < 5; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.be.greaterThan(0);
+
+            const persistedMetric = historicalKeyMetrics[0];
+            expect(persistedMetric.avgMissLatency).to.be.a('number');
+            expect(persistedMetric.avgMissLatency).to.be.greaterThanOrEqual(0);
+            expect(persistedMetric.minMissLatency).to.be.a('number');
+            expect(persistedMetric.maxMissLatency).to.be.a('number');
+            expect(persistedMetric.minMissLatency).to.be.lessThanOrEqual(persistedMetric.maxMissLatency);
+        })
+
+        it("should persist cache efficiency metrics correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:efficiency";
+
+            // Perform operations to generate both hit and miss latencies
+            // First request (miss)
+            await cache.rt.send(
+                new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                appService,
+                { key: testKey }
+            );
+
+            // Subsequent requests (hits)
+            for (let i = 0; i < 3; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.be.greaterThan(0);
+
+            const persistedMetric = historicalKeyMetrics[0];
+            expect(persistedMetric.cacheEfficiency).to.be.a('number');
+            expect(persistedMetric.cacheEfficiency).to.be.greaterThanOrEqual(0);
+        })
+
+        it("should persist throughput metrics correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:throughput";
+
+            // Perform operations over time
+            for (let i = 0; i < 5; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+                await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
+            }
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.be.greaterThan(0);
+
+            const persistedMetric = historicalKeyMetrics[0];
+            expect(persistedMetric.throughput).to.be.a('number');
+            expect(persistedMetric.throughput).to.be.greaterThan(0);
+        })
+
+        it("should persist error rate metrics correctly", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:error:rate";
+
+            // Perform successful operations
+            for (let i = 0; i < 8; i++) {
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: testKey }
+                );
+            }
+
+            // Simulate some errors
+            try {
+                await cache.rt.send(
+                    new Request({ event: "NonExistentFunction" }),
+                    appService,
+                    { key: testKey }
+                );
+            } catch (error) {
+                // Expected to fail
+            }
+
+            try {
+                await cache.rt.send(
+                    new Request({ event: "AnotherNonExistentFunction" }),
+                    appService,
+                    { key: testKey }
+                );
+            } catch (error) {
+                // Expected to fail
+            }
+
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.be.greaterThan(0);
+
+            const persistedMetric = historicalKeyMetrics[0];
+            expect(persistedMetric.errorRate).to.be.a('number');
+            expect(persistedMetric.errorRate).to.be.greaterThanOrEqual(0);
+            expect(persistedMetric.errorRate * 100).to.be.lessThanOrEqual(100);
+        })
+
+        it("should handle edge case of persisted metrics with no operations", async () => {
+            await cache.setKeyMetricsEnabled(true);
+            await cache.setMetricsEnabled(true);
+
+            const testKey = "test:key:persisted:no:operations";
+
+            // Don't perform any operations, just persist
+            await cache.persistMetrics();
+
+            const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const to = new Date();
+
+            const historicalKeyMetrics = await cache.getKeyMetrics(testKey, from, to);
+
+            // Should return empty array since no operations were performed
+            expect(historicalKeyMetrics).to.be.an('array');
+            expect(historicalKeyMetrics.length).to.equal(0);
         })
     })
 

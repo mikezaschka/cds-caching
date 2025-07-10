@@ -1,4 +1,6 @@
 # Welcome to cds-caching
+[![npm version](https://img.shields.io/npm/v/cds-caching)](https://www.npmjs.com/package/cds-caching/common)
+[![monthly downloads](https://img.shields.io/npm/dm/cds-caching)](https://www.npmjs.com/package/cds-caching)
 
 ## Overview
 

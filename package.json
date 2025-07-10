@@ -1,6 +1,6 @@
 {
   "name": "cds-caching",
-  "version": "0.3.3",
+  "version": "1.0.0",
   "description": "A caching plugin for SAP CAP applications",
   "repository": {
     "type": "git",

@@ -136,6 +136,19 @@ await cache.set(data, value, {
 
 For detailed API documentation, see [Programmatic API Reference](docs/programmatic-api.md). 
 
+### Example Application
+
+The cds-caching plugin includes a comprehensive example application demonstrating various caching use cases and a UI5-based dashboard for monitoring cache performance.
+
+![Cache Dashboard](./docs/dashboard.jpg)
+
+The example consists of:
+- **Backend Application** (`examples/app/`) - A CAP application showing annotation-based and programmatic caching patterns
+- **Dashboard** (`examples/dashboard/`) - A UI5-based monitoring interface with real-time metrics, key-level analytics, and historical data
+
+[See the full Example Application Guide →](docs/example-app.md)
+
+
 ### Installation
 
 Installing and using cds-caching is straightforward since it's a CAP plugin. Simply run:
@@ -143,37 +156,6 @@ Installing and using cds-caching is straightforward since it's a CAP plugin. Sim
 ```bash
 npm install cds-caching
 ```
-
-### TypeScript Support
-
-cds-caching includes comprehensive TypeScript definitions. The library is written in JavaScript but provides full TypeScript support for better development experience.
-
-#### Basic Usage with TypeScript
-
-```typescript
-import { CachingService, CacheOptions, ReadThroughResult } from 'cds-caching';
-
-const cache = await cds.connect.to('caching') as CachingService;
-
-// Basic cache operations
-await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
-const value = await cache.get('my-key');
-
-// Read-through operations with full type safety
-const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
-  ttl: 1800,
-  tags: ['user-data']
-});
-
-// Function wrapping with type inference
-const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
-  return await this.performExpensiveOperation(id);
-});
-
-const { result: operationResult } = await cachedFunction('user-123');
-
-```
-
 
 ### Configuration
 
@@ -769,6 +751,36 @@ for await (const entry of iterator) {
 ```
 
 This will return an iterator over all cache entries. You can use this to traverse all cache entries and invalidate them based on a specific condition. You should only use this for small caches (e.g. by using multiple caching services with different namespaces).
+
+### TypeScript Support
+
+cds-caching includes comprehensive TypeScript definitions. The library is written in JavaScript but provides full TypeScript support for better development experience.
+
+#### Basic Usage with TypeScript
+
+```typescript
+import { CachingService, CacheOptions, ReadThroughResult } from 'cds-caching';
+
+const cache = await cds.connect.to('caching') as CachingService;
+
+// Basic cache operations
+await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
+const value = await cache.get('my-key');
+
+// Read-through operations with full type safety
+const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
+  ttl: 1800,
+  tags: ['user-data']
+});
+
+// Function wrapping with type inference
+const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
+  return await this.performExpensiveOperation(id);
+});
+
+const { result: operationResult } = await cachedFunction('user-123');
+
+```
 
 ### OData Service Caching Considerations
 

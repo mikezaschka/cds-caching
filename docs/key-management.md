@@ -16,7 +16,8 @@ The automatic generation of cache keys by default does not respect the context (
 {
   result: any,           // The actual result from the operation
   cacheKey: string,      // The dynamically generated cache key
-  metadata: object       // Cache metadata (hit/miss, latency, etc.)
+  metadata: object,      // Cache metadata (hit/miss, latency, etc.)
+  cacheErrors?: string[] // Array of cache error messages (if any occurred)
 }
 ```
 
@@ -40,6 +41,29 @@ const { result, cacheKey, metadata } = await cache.rt.exec("key", expensiveOpera
 ```
 
 The `cacheKey` is always available, allowing you to inspect the generated key or use it for cache management operations.
+
+### Error Handling
+
+Read-through operations include error handling information in their responses:
+
+```javascript
+// Handle cache errors in read-through operations
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.run(query, db)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result will be fetched from remote service despite cache errors
+}
+
+// The result is always available, regardless of cache errors
+return result
+```
+
+**Error Handling Behavior:**
+- Read-through operations never throw errors, even when cache operations fail
+- When cache errors occur, the operation falls back to the remote service
+- Cache errors are logged and included in the response for monitoring
+- The result is always available, ensuring application continuity
 
 ## Global Configuration
 

@@ -23,6 +23,7 @@ cds-caching provides comprehensive metrics collection to help you monitor and op
 - Error rates and failure patterns
 - Key-level performance analysis
 
+
 ## Configuration
 
 ### Basic Configuration
@@ -117,6 +118,8 @@ General metrics provide an overview of overall cache performance:
 ### 2. Key-Level Metrics
 
 Key-level metrics provide detailed performance data for individual cache keys:
+
+
 
 #### Basic Statistics
 - **hits**: Number of hits for this key
@@ -432,6 +435,8 @@ const thresholds = {
 - **Daily Metrics**: Keep for 1 year
 - **Key Metrics**: Keep for 7 days (high volume)
 
+
+
 ### 4. Performance Optimization
 
 1. **Selective Key Tracking**: Only track important keys
@@ -463,11 +468,12 @@ const thresholds = {
 #### 3. High Error Rates
 
 **Symptoms**: Error rate > 5%
-**Causes**: Storage issues, configuration problems
+**Causes**: Storage issues, configuration problems, network connectivity
 **Solutions**:
 - Check storage connectivity
 - Verify configuration
 - Review error logs
+- Monitor error counts in metrics for patterns
 
 #### 4. Performance Degradation
 
@@ -477,6 +483,8 @@ const thresholds = {
 - Disable metrics temporarily
 - Check storage performance
 - Optimize configuration
+
+
 
 ### Debugging Commands
 
@@ -495,7 +503,16 @@ await cache.triggerPersistence()
 // Get detailed key information
 const keyDetails = await cache.getKeyDetails('my-key')
 console.log('Key details:', keyDetails)
-```
+
+// Check error handling configuration
+const config = await cache.getRuntimeConfiguration()
+console.log('Throw on errors:', config.throwOnErrors)
+
+// Monitor error counts
+const stats = await cache.getCurrentStats()
+if (stats.errors > 0) {
+  console.log('Cache error count:', stats.errors)
+}
 
 ### Log Analysis
 
@@ -536,4 +553,6 @@ Remember to:
 - Monitor key performance indicators regularly
 - Use historical data to identify trends and optimize configuration
 - Implement appropriate alerting and monitoring
-- Regularly review and clean up old metrics data 
+- Regularly review and clean up old metrics data
+- Monitor error counts in metrics for cache health
+- Configure throwOnErrors based on your application's error tolerance 

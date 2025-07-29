@@ -196,6 +196,7 @@ The cds-caching plugin supports comprehensive configuration through `package.jso
         "namespace": "caching",
         "store": "in-memory", // "in-memory", "sqlite", or "redis"
         "compression": "lz4", // "lz4" or "gzip"
+        "throwOnErrors": false, // Whether basic operations should throw errors (default: false)
         "credentials": {
           // Redis configuration
           "host": "localhost",
@@ -236,6 +237,36 @@ Configure default key templates for read-through operations:
 ```
 
 **Default behavior** (if not configured): All context elements are disabled by default.
+
+#### Error Handling Configuration
+
+Configure how the caching service handles errors:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        ...
+        "throwOnErrors": true,      // Basic operations (set, get, delete, has) throw errors
+        // Default: false - operations return undefined/null instead of throwing
+      }
+    }
+  }
+}
+```
+
+**Error Handling Behavior:**
+
+- **Basic Operations** (`set`, `get`, `delete`, `has`):
+  - When `throwOnErrors: false` (default): Operations return `undefined`/`null` on errors
+  - When `throwOnErrors: true`: Operations throw errors for connection issues, etc.
+
+- **Read-Through Operations** (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`):
+  - Never throw errors, regardless of `throwOnErrors` setting
+  - Include `cacheErrors` array in response when errors occur
+  - Always fetch from remote service when cache operations fail
+  - Log errors for monitoring and debugging
 
 #### Environment-Specific Configuration
 
@@ -302,6 +333,7 @@ cds-caching provides 3 storage options:
 - Works across multiple app instances, making it ideal for scalable applications
 - Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)
 - Even trial accounts provide Redis access
+- Redis will be non-blocking
 
 #### Redis Development Setup
 
@@ -415,6 +447,31 @@ await cache.delete("bp:1000001")
 await cache.clear()
 ```
 
+**Error Handling for Basic Operations:**
+
+```javascript
+// With throwOnErrors: false (default)
+try {
+  const value = await cache.get("bp:1000001")
+  if (value === undefined) {
+    // Handle cache miss or error
+    console.log("Value not found or cache error occurred")
+  }
+} catch (error) {
+  // Only thrown for non-cache related errors
+  console.error("Unexpected error:", error)
+}
+
+// With throwOnErrors: true
+try {
+  const value = await cache.get("bp:1000001")
+  // Value will be undefined if not found, but errors will be thrown
+} catch (error) {
+  // Errors thrown for connection issues, etc.
+  console.error("Cache error:", error)
+}
+```
+
 #### 2. CQN Query Caching
 
 For more advanced CAP integration, cache CAP's CQN queries directly. By passing in the query, a dynamic key is generated based on the CQN structure of the query. Note, that passing in queries with dynamic parameters (e.g. `SELECT.from(Foo).where({id: 1})`) will result in a different key for each query execution.
@@ -445,6 +502,23 @@ Because the cache key has been dynamically created at runtime, it will also be r
 ```javascript
 // Access the cacheKey for later usage
 const { result, cacheKey } = await cache.rt.run(query, db)
+```
+
+**Error Handling for Read-Through Operations:**
+
+Read-through operations never throw errors, even when cache operations fail. Instead, they include error information in the response:
+
+```javascript
+// Read-through operations always return a result, even on cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.run(query, db)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result will be fetched from remote service despite cache errors
+}
+
+// The result is always available, regardless of cache errors
+return result
 ```
 
 #### 3. RemoteService Request-Level Caching

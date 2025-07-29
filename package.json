@@ -44,17 +44,18 @@
   ],
   "dependencies": {
     "@keyv/compress-gzip": "^2.0.3",
-    "@keyv/compress-lz4": "^1.0.0",
-    "@keyv/redis": "^4.5.0",
+    "@keyv/compress-lz4": "^1.0.1",
+    "@keyv/redis": "^5.0.0",
     "@keyv/sqlite": "^4.0.5",
-    "keyv": "^5.3.4"
+    "keyv": "^5.4.0"
   },
   "devDependencies": {
-    "eslint": "^9.30.1",
+    "@cap-js/cds-test": "^0.4.0",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "eslint": "^9.32.0",
     "husky": "^9.1.7",
-    "jest": "^30.0.4",
-    "release-it": "^19.0.3",
-    "@cap-js/cds-test": "^0.4.0"
+    "jest": "^30.0.5",
+    "release-it": "^19.0.4"
   },
   "engines": {
     "node": ">=20"

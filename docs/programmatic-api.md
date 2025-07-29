@@ -32,6 +32,54 @@ await cache.delete("key")
 
 ## Core Cache Operations
 
+### Error Handling
+
+The caching service provides configurable error handling for different operation types:
+
+#### Basic Operations Error Handling
+
+Basic operations (`set`, `get`, `delete`, `has`) behavior depends on the `throwOnErrors` configuration:
+
+```javascript
+// With throwOnErrors: false (default)
+try {
+  const value = await cache.get("key")
+  if (value === undefined) {
+    // Handle cache miss or error
+    console.log("Value not found or cache error occurred")
+  }
+} catch (error) {
+  // Only thrown for non-cache related errors
+  console.error("Unexpected error:", error)
+}
+
+// With throwOnErrors: true
+try {
+  const value = await cache.get("key")
+  // Value will be undefined if not found, but errors will be thrown
+} catch (error) {
+  // Errors thrown for connection issues, etc.
+  console.error("Cache error:", error)
+}
+```
+
+#### Read-Through Operations Error Handling
+
+Read-through operations (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`) never throw errors, regardless of the `throwOnErrors` setting:
+
+```javascript
+// Read-through operations always return a result, even on cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.run(query, db)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result will be fetched from remote service despite cache errors
+}
+
+// The result is always available, regardless of cache errors
+return result
+```
+
 ### `cache.createKey(key: any)` : `string`
 
 Creates a key from a string or an object. This method is used internally when passing keys to the cache methods, so you don't need to call it directly other than to retrieve the dynamically generated key for a given object.
@@ -234,9 +282,21 @@ All read-through `rt.xxx` methods return an object with the following structure:
 {
   result: any,           // The actual result from the operation
   cacheKey: string,      // The dynamically generated cache key
-  metadata: object       // Cache metadata (hit/miss, latency, etc.)
+  metadata: object,      // Cache metadata (hit/miss, latency, etc.)
+  cacheErrors?: string[] // Array of cache error messages (if any occurred)
 }
 ```
+
+**Error Handling:**
+
+- **Basic Operations** (`set`, `get`, `delete`, `has`): Behavior depends on `throwOnErrors` configuration
+  - `throwOnErrors: false` (default): Return `undefined`/`null` on errors
+  - `throwOnErrors: true`: Throw errors for connection issues, etc.
+
+- **Read-Through Operations** (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`): Never throw errors
+  - Always return a result (fetched from remote service if cache fails)
+  - Include `cacheErrors` array when cache operations fail
+  - Log errors for monitoring and debugging
 
 ### `await cache.rt.run(query: cds.CQN | cds.Request, service: cds.Service, options: object)`
 
@@ -264,6 +324,7 @@ An object containing:
 - `result: any` - The result of the query, either from the cache or the service
 - `cacheKey: string` - The dynamically generated cache key
 - `metadata: object` - Cache metadata including `hit` (boolean) and `latency` (number)
+- `cacheErrors?: string[]` - Array of cache error messages (if any occurred)
 
 #### Examples
 
@@ -289,7 +350,17 @@ const { result, cacheKey, metadata } = await cache.rt.run(query, db, {
   tags: [{ value: "active-business-partners" }],
   ttl: 3600000 
 })
-```
+
+// Handle cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.run(query, db)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result is still available from remote service
+}
+
+// The result is always available, regardless of cache errors
+return result
 
 ---
 
@@ -317,6 +388,7 @@ An object containing:
 - `result: any` - The result of the request, either from the cache or the service
 - `cacheKey: string` - The dynamically generated cache key
 - `metadata: object` - Cache metadata including `hit` (boolean) and `latency` (number)
+- `cacheErrors?: string[]` - Array of cache error messages (if any occurred)
 
 #### Examples
 
@@ -336,7 +408,14 @@ const { result, cacheKey, metadata } = await cache.rt.send(request, remoteServic
   key: "{tenant}:{user}:{hash}",
   ttl: 3600000 
 })
-```
+
+// Handle cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.send(request, remoteService)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result is still available from remote service
+}
 
 ---
 
@@ -364,6 +443,7 @@ A function that returns an object containing:
 - `result: any` - The function result
 - `cacheKey: string` - The generated cache key
 - `metadata: object` - Additional metadata including `hit` (boolean) and `latency` (number)
+- `cacheErrors?: string[]` - Array of cache error messages (if any occurred)
 
 #### Examples
 
@@ -387,6 +467,14 @@ const { result: result3, cacheKey: key3, metadata: metadata3 } = await cachedOpe
 console.log('Cache key:', cacheKey) // e.g., "bp-data:1000001:true:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
+
+// Handle cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cachedOperation("1000001", true)
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result is still available from function execution
+}
 
 // Custom template-based key generation
 const cachedOperation2 = cache.rt.wrap("bp-data", fetchBusinessPartnerData, {
@@ -433,6 +521,7 @@ An object containing:
 - `result: any` - The function result
 - `cacheKey: string` - The generated cache key
 - `metadata: object` - Additional metadata including `hit` (boolean) and `latency` (number)
+- `cacheErrors?: string[]` - Array of cache error messages (if any occurred)
 
 #### Examples
 
@@ -449,6 +538,20 @@ const { result, cacheKey, metadata } = await cache.rt.exec("product-processing",
 console.log('Cache key:', cacheKey) // e.g., "product-processing:1000001:true:a1b2c3d4"
 console.log('Cache hit:', metadata.hit) // true/false
 console.log('Latency:', metadata.latency) // milliseconds
+
+// Handle cache errors
+const { result, cacheKey, metadata, cacheErrors } = await cache.rt.exec("product-processing", async (productId, includePricing) => {
+  // ... product data processing
+  return processedProductData
+}, ["1000001", true], { 
+  ttl: 1800000,
+  tags: ['product-processing']
+})
+
+if (cacheErrors && cacheErrors.length > 0) {
+  console.log("Cache errors occurred:", cacheErrors)
+  // Result is still available from function execution
+}
 
 // Custom template-based key generation
 const { result, cacheKey, metadata } = await cache.rt.exec("bp-profile", async (businessPartnerId, includeAddresses) => {

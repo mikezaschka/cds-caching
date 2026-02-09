@@ -17,6 +17,17 @@ This document provides a comprehensive reference for the cds-caching programmati
 
 The cds-caching programmatic API provides a rich set of methods for managing cache operations directly in your CAP application code. This API is designed to be intuitive and follows CAP conventions.
 
+### Adapter packages (Redis / SQLite / Compression)
+
+`cds-caching` only includes the in-memory store. If you configure a different store or compression, install the corresponding adapter package in your consuming project:
+
+```bash
+npm install @keyv/redis          # store: "redis"
+npm install @keyv/sqlite         # store: "sqlite"
+npm install @keyv/compress-lz4   # compression: "lz4"
+npm install @keyv/compress-gzip  # compression: "gzip"
+```
+
 ### Getting Started
 
 ```javascript
@@ -29,6 +40,27 @@ const value = await cache.get("key")
 const exists = await cache.has("key")
 await cache.delete("key")
 ```
+
+### Transaction isolation for basic operations (optional)
+
+In CAP, multiple `before` handlers can run concurrently. If one handler fails and causes the request transaction to roll back, other concurrent handlers may still be running and can fail when they try to call `cds-caching` using the *request-bound* transaction.
+
+To isolate **basic cache operations** (`get`, `set`, `delete`, `clear`, `deleteByTag`, `metadata`, `tags`, `getRaw`) from the request transaction, you can enable:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "transactionalOperations": true
+      }
+    }
+  }
+}
+```
+
+When enabled, the caching service will execute those basic operations in a dedicated cache transaction (`cache.tx()`), so they are not affected by rollbacks of the surrounding request.
 
 ## Core Cache Operations
 

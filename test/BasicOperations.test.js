@@ -159,6 +159,112 @@ describe('CachingService', () => {
                 expect(iterator).to.be.an("AsyncGenerator");
             })
         })
+
+        describe('createKey() returning undefined', () => {
+            it('should not call the cache backend when no key can be created', async () => {
+                // KeyManager returns undefined for non-SELECT CQN queries (e.g. UPDATE/INSERT/DELETE)
+                const nonCacheable = UPDATE('Foo').set({ a: 1 }).where({ ID: 1 });
+
+                const origSend = cache.send.bind(cache);
+                let sendCalls = 0;
+                cache.send = async (...args) => {
+                    sendCalls++;
+                    return origSend(...args);
+                };
+
+                await cache.set(nonCacheable, "value");        // no-op
+                await cache.delete(nonCacheable);              // false
+                await cache.metadata(nonCacheable);            // null
+                await cache.tags(nonCacheable);                // []
+                await cache.getRaw(nonCacheable);              // undefined
+
+                expect(sendCalls).to.equal(0);
+
+                cache.send = origSend;
+            });
+        })
+
+        describe('transactionalOperations option', () => {
+            let origTx;
+            let txCalls;
+            let txCallsWithoutArgs;
+
+            beforeEach(() => {
+                // Toggle at runtime; `cache.options` exists on the CachingService instance.
+                cache.options.transactionalOperations = false;
+
+                origTx = cache.tx?.bind(cache);
+                txCalls = 0;
+                txCallsWithoutArgs = 0;
+
+                // Count tx() calls without changing behavior
+                cache.tx = async (...args) => {
+                    txCalls++;
+                    if (!args || args.length === 0) txCallsWithoutArgs++;
+                    return origTx(...args);
+                };
+            });
+
+            afterEach(() => {
+                // Restore original tx()
+                cache.tx = origTx;
+                cache.options.transactionalOperations = false;
+            });
+
+            it('should not open a cache transaction when disabled', async () => {
+                cache.options.transactionalOperations = false;
+
+                await cache.set("key", "value");
+                const value = await cache.get("key");
+                expect(value).to.eql("value");
+
+                const exists = await cache.has("key");
+                expect(exists).to.eql(true);
+
+                // CAP may internally use `cache.tx(req)` as part of `service.send(...)`.
+                // The plugin's transactional mode specifically uses `cache.tx()` with no args.
+                expect(txCallsWithoutArgs).to.eql(0);
+            });
+
+            it('should open a dedicated cache transaction for get/set/deleteByTag when enabled', async () => {
+                cache.options.transactionalOperations = true;
+
+                await cache.set("k1", "v1");
+                const v1 = await cache.get("k1");
+                expect(v1).to.eql("v1");
+
+                // `has()` intentionally bypasses CAP tx handling and should not open a transaction
+                const exists = await cache.has("k1");
+                expect(exists).to.eql(true);
+
+                await cache.set("k2", "v2", { tags: ["t"] });
+                await cache.deleteByTag("t");
+                const v2 = await cache.get("k2");
+                expect(v2).to.be.undefined;
+
+                // The plugin's mode uses `cache.tx()` with no args.
+                // set + get + set + deleteByTag + get => 5 transactions expected (has() should not open one)
+                expect(txCallsWithoutArgs).to.eql(5);
+            });
+
+            it('should not call cache.tx() when an explicit tx is provided, even if enabled', async () => {
+                cache.options.transactionalOperations = true;
+
+                // Create an explicit tx up front
+                const tx = await origTx();
+
+                // If the routing tries to open an internal tx, fail fast.
+                cache.tx = async () => {
+                    throw new Error("cache.tx() should not be called when tx is provided");
+                };
+
+                await cache.set("key", "value", {}, tx);
+                const value = await cache.get("key", tx);
+                expect(value).to.eql("value");
+
+                await tx.commit();
+            });
+        })
       
     })
 

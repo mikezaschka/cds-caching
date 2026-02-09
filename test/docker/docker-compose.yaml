@@ -5,3 +5,11 @@ services:
       REDIS_HOST: redis
     ports:
       - 6379:6379
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 5432:5432

@@ -3,10 +3,10 @@ using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
 service AppService {
     entity Foo {
-        key ID   : Integer;
-            name : String;
-            bar  : Association to Bar
-                       on bar.foo = $self;
+        key ID       : Integer;
+            name     : String;
+            bar      : Association to Bar
+                           on bar.foo = $self;
             products : Association to Northwind.Products;
     } actions {
         @cache: {
@@ -48,6 +48,13 @@ service AppService {
     }
     @readonly
     entity Products        as projection on Northwind.Products;
+
+    @cache: {
+        service: 'caching-northwind',
+        ttl    : 5000
+    }
+    @readonly
+    entity Categories      as projection on Northwind.Categories;
 
     @cache: {
         service: 'caching',

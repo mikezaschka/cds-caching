@@ -9,7 +9,8 @@
     "@sap/cds": "^9",
     "express": "^4",
     "@sap-cloud-sdk/http-client": "~4.0.2",
-    "cds-caching": "*"
+    "cds-caching": "*",
+    "@keyv/redis": "5.1.6"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2.0.1",

@@ -1,6 +1,59 @@
 const cds = require('@sap/cds')
 const { GET, expect } = cds.test().in(__dirname + '/app')
 
+const FORCED_STORE_ERROR_MESSAGE = 'Forced cache store failure (test)'
+
+/**
+ * Force the underlying Keyv store adapter to fail deterministically.
+ *
+ * Important: We patch the *store adapter* methods (not Keyv's own methods),
+ * so Keyv's `throwOnErrors` behavior is still exercised.
+ *
+ * @param {any} cacheService - The connected cds-caching service instance
+ * @param {string} [message]
+ * @returns {() => void} restore function
+ */
+const forceKeyvStoreFailure = (cacheService, message = FORCED_STORE_ERROR_MESSAGE) => {
+    const keyv = cacheService?.cache
+    if (!keyv) {
+        throw new Error('Test setup failed: caching service has no `cache` (Keyv) instance')
+    }
+
+    const store = keyv.store || keyv.opts?.store
+    if (!store) {
+        throw new Error('Test setup failed: Keyv instance has no store adapter (`keyv.store`)')
+    }
+
+    const forcedError = new Error(message)
+    const originals = {}
+
+    const patch = (name, impl) => {
+        if (typeof store[name] !== 'function') return
+        originals[name] = store[name]
+        store[name] = impl
+    }
+
+    // These are invoked by Keyv and wrapped in try/catch respecting `keyv.throwOnErrors`.
+    patch('get', async () => { throw forcedError })
+    patch('set', async () => { throw forcedError })
+    patch('delete', async () => { throw forcedError })
+    patch('clear', async () => { throw forcedError })
+
+    // Keyv delegates `has()` directly to the adapter if it exists (no try/catch in Keyv),
+    // so we mimic the adapter's behavior: throw only if the adapter is configured to throw.
+    patch('has', async () => {
+        if (store.throwOnErrors) throw forcedError
+        if (typeof store.emit === 'function') store.emit('error', forcedError)
+        return false
+    })
+
+    return () => {
+        for (const [name, original] of Object.entries(originals)) {
+            store[name] = original
+        }
+    }
+}
+
 const defaultOptions = {
     impl: "cds-caching",
     namespace: "test",
@@ -8,12 +61,12 @@ const defaultOptions = {
     credentials: {
         socket: {
             host: "localhost",
-            port: 6381, // Redis is not running on this port
+            port: 6379,
             keepAlive: true,
             pingInterval: 1000
         }
     },
-    throwOnErrors: false
+    throwOnErrors: false    // Default is false
 }
 
 describe('CachingService Error Handling', () => {
@@ -22,12 +75,19 @@ describe('CachingService Error Handling', () => {
         let cache;
         let AppService;
         let Foo;
+        let restoreStoreFailure;
 
         beforeEach(async () => {
             cache = await cds.connect.to(defaultOptions);
+            restoreStoreFailure = forceKeyvStoreFailure(cache);
             AppService = await cds.connect.to('AppService')
             Foo = AppService.entities.Foo
         });
+
+        afterEach(() => {
+            restoreStoreFailure?.()
+            restoreStoreFailure = null
+        })
 
         describe("Basic Operations", () => {
 
@@ -106,22 +166,29 @@ describe('CachingService Error Handling', () => {
         let cache;
         let AppService;
         let Foo;
+        let restoreStoreFailure;
 
         beforeEach(async () => {
             cache = await cds.connect.to({ ...defaultOptions, throwOnErrors: true });
+            restoreStoreFailure = forceKeyvStoreFailure(cache);
             AppService = await cds.connect.to('AppService')
             Foo = AppService.entities.Foo
         });
+
+        afterEach(() => {
+            restoreStoreFailure?.()
+            restoreStoreFailure = null
+        })
         
         describe("Basic Operations", () => {
 
             it('should throw errors when calling SET', async () => {
                 await expect(cache.set("key", "value")).to.be.rejectedWith(Error);
-            });
+            }, 10000);
 
             it('should throw errors when calling GET', async () => {
                 await expect(cache.get("key")).to.be.rejectedWith(Error);
-            });
+            }, 10000);
 
             it('should throw errors when calling DELETE', async () => {
                 await expect(cache.delete("key")).to.be.rejectedWith(Error);
@@ -140,8 +207,9 @@ describe('CachingService Error Handling', () => {
                 expect(result).to.be.an('array');
                 expect(cacheErrors).to.be.an('array');
                 expect(cacheErrors.length).to.equal(1);
-                expect(cacheErrors[0].message).to.equal('Redis client is not connected or has failed to connect. This is thrown because throwOnConnectError is set to true.');
-            });
+                expect(cacheErrors[0].operation).to.equal('set');
+                expect(cacheErrors[0].message).to.contain(FORCED_STORE_ERROR_MESSAGE);
+            }, 20000);
 
             it('should not throw errors when calling rt.send but return the result of the request', async () => {
                 const northwind = await cds.connect.to("Northwind");
@@ -154,7 +222,8 @@ describe('CachingService Error Handling', () => {
                 expect(result).to.be.an('array');
                 expect(cacheErrors).to.be.an('array');
                 expect(cacheErrors.length).to.equal(1);
-                expect(cacheErrors[0].message).to.equal('Redis client is not connected or has failed to connect. This is thrown because throwOnConnectError is set to true.');
+                expect(cacheErrors[0].operation).to.equal('set');
+                expect(cacheErrors[0].message).to.contain(FORCED_STORE_ERROR_MESSAGE);
             });
 
             it('should not throw errors when calling rt.wrap with a function', async () => {
@@ -167,7 +236,8 @@ describe('CachingService Error Handling', () => {
                 expect(result).to.be.an('array');
                 expect(cacheErrors).to.be.an('array');
                 expect(cacheErrors.length).to.equal(1);
-                expect(cacheErrors[0].message).to.equal('Redis client is not connected or has failed to connect. This is thrown because throwOnConnectError is set to true.');
+                expect(cacheErrors[0].operation).to.equal('set');
+                expect(cacheErrors[0].message).to.contain(FORCED_STORE_ERROR_MESSAGE);
             });
 
             it('should not throw errors when calling rt.execute with a function', async () => {
@@ -179,7 +249,8 @@ describe('CachingService Error Handling', () => {
                 expect(result).to.be.an('array');
                 expect(cacheErrors).to.be.an('array');
                 expect(cacheErrors.length).to.equal(1);
-                expect(cacheErrors[0].message).to.equal('Redis client is not connected or has failed to connect. This is thrown because throwOnConnectError is set to true.');
+                expect(cacheErrors[0].operation).to.equal('set');
+                expect(cacheErrors[0].message).to.contain(FORCED_STORE_ERROR_MESSAGE);
             });
             
         });

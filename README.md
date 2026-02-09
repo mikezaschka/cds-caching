@@ -37,9 +37,35 @@ Please also read the introduction blog post in the SAP Community: [Boosting perf
 > - [Metrics Guide](docs/metrics-guide.md)
 > - [OData API Reference](docs/odata-api.md)
 
-## 🚨 Breaking Changes: Migrating from cds-caching 0.x
+## 🚨 Breaking Changes: Migrating cds-caching
 
 > **⚠️ Important:** Version 1.x contains breaking changes. Please review the migration guide below.
+
+## Upgrading from 1.1.0 to 1.2.0
+
+From **1.2.0** onwards, storage/compression adapters are treated as **optional peer dependencies** and must be installed **explicitly in your consuming CAP project** (i.e. *your app*, not `cds-caching`). This avoids relying on transitive dependencies and makes adapter usage deterministic.
+
+### Required adapter packages (add to your app's `package.json`)
+
+Install the package(s) matching your configured `store` / `compression`:
+
+| Config | Value | Install in your app |
+|---|---|---|
+| `store` | `"redis"` | `@keyv/redis` |
+| `store` | `"sqlite"` | `@resolid/keyv-sqlite` (recommended) **or** `@keyv/sqlite` |
+| `store` | `"postgres"` | `@keyv/postgres` |
+| `compression` | `"lz4"` | `@keyv/compress-lz4` |
+| `compression` | `"gzip"` | `@keyv/compress-gzip` |
+
+Example:
+
+```bash
+npm i @keyv/redis
+# or: npm i @resolid/keyv-sqlite
+# and optionally: npm i @keyv/compress-gzip
+```
+
+## Upgrading from 0.x to 1.x
 
 ### 🔄 API Changes for read-through methods
 
@@ -159,6 +185,25 @@ Installing and using cds-caching is straightforward since it's a CAP plugin. Sim
 npm install cds-caching
 ```
 
+#### Adapter packages (Redis / SQLite / Compression)
+
+`cds-caching` only ships with the in-memory store. If you configure a different store or compression, you must install the corresponding adapter package **in your consuming CAP project**:
+
+```bash
+# Redis store
+npm install @keyv/redis
+
+# SQLite store
+npm install @resolid/keyv-sqlite  # Preferred in CAP because of better-sqlite3 usage
+npm install @keyv/sqlite          # Alternative if you want to rely on the official adapter
+
+# Compression
+npm install @keyv/compress-lz4   # for "lz4"
+npm install @keyv/compress-gzip  # for "gzip"
+```
+
+If you configure an adapter but don’t have its package installed, `cds-caching` will fail fast with a clear error telling you what to install.
+
 ### Configuration
 
 The cds-caching plugin supports comprehensive configuration through `package.json`. Here are all available configuration options:
@@ -197,6 +242,7 @@ The cds-caching plugin supports comprehensive configuration through `package.jso
         "store": "in-memory", // "in-memory", "sqlite", or "redis"
         "compression": "lz4", // "lz4" or "gzip"
         "throwOnErrors": false, // Whether basic operations should throw errors (default: false)
+        "transactionalOperations": false, // When true, basic ops run in a dedicated cache tx (cache.tx())
         "credentials": {
           // Redis configuration
           "host": "localhost",
@@ -214,6 +260,27 @@ The cds-caching plugin supports comprehensive configuration through `package.jso
   }
 }
 ```
+
+#### Transaction isolation for basic operations (`transactionalOperations`)
+
+CAP can run multiple `before` handlers concurrently. If one handler fails and rolls back the request transaction, other concurrent handlers may still be running and can fail when they access the cache (typical error: “Transaction is rolled back, no subsequent .run allowed…”).
+
+To isolate **basic cache operations** (`get`, `set`, `delete`, `clear`, `deleteByTag`, `metadata`, `tags`, `getRaw`) from the request transaction, enable:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "transactionalOperations": true
+      }
+    }
+  }
+}
+```
+
+In the background, the caching service opens a dedicated cache transaction via `cache.tx()`, executes the operation via `tx.send(...)`, and commits/rolls back the cache transaction per operation. This keeps cache calls working even if the surrounding request transaction is already rolled back.
 
 #### Read-Through (RT) Key Configuration
 
@@ -323,12 +390,14 @@ cds-caching provides 3 storage options:
 - Memory on SAP BTP Cloud Foundry is limited (up to 16 GB) and produces costs
 
 ##### SQLite (for medium-size use uses)
+- Requires installing the adapter package: `@keyv/sqlite` (in your project)
 - Data is stored in local SQLite database
 - Data is persited next to SAP BTP application with disk-quota up to 10 GB
 - Cache will be removed after each deployment to SAP BTP
 - No distributed cache between application instances (horizontal scaling)
 
 ##### Redis Cache (recommended for production)
+- Requires installing the adapter package: `@keyv/redis` (in your project)
 - Persistent and supports distributed caching
 - Works across multiple app instances, making it ideal for scalable applications
 - Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)

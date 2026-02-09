@@ -124,6 +124,12 @@ export declare class CachingService extends Service {
     compression: any;
     credentials: Record<string, any>;
     namespace?: string;
+    throwOnErrors?: boolean;
+    /**
+     * When enabled, basic operations (`get`, `set`, `delete`, ...) run in a dedicated cache transaction.
+     * This isolates cache access from the caller's request transaction (useful for concurrent BEFORE handlers).
+     */
+    transactionalOperations?: boolean;
   };
   
   private cacheAnnotatedFunctions: {
@@ -146,52 +152,52 @@ export declare class CachingService extends Service {
   /**
    * Set a value in the cache
    */
-  set(key: string | object, value: any, options?: CacheOptions): Promise<void>;
+  set(key: string | object, value: any, options?: CacheOptions, tx?: any): Promise<void>;
 
   /**
    * Get a value from the cache
    */
-  get(key: string | object): Promise<any>;
+  get(key: string | object, tx?: any): Promise<any>;
 
   /**
    * Check if a key exists in the cache
    */
-  has(key: string | object): Promise<boolean>;
+  has(key: string | object, tx?: any): Promise<boolean>;
 
   /**
    * Delete a key from the cache
    */
-  delete(key: string | object): Promise<boolean>;
+  delete(key: string | object, tx?: any): Promise<boolean>;
 
   /**
    * Clear all cache entries
    */
-  clear(): Promise<void>;
+  clear(tx?: any): Promise<void>;
 
   /**
    * Delete all keys that have a specific tag
    */
-  deleteByTag(tag: string): Promise<void>;
+  deleteByTag(tag: string, tx?: any): Promise<void>;
 
   /**
    * Get metadata for a key
    */
-  metadata(key: string | object): Promise<CacheMetadata | null>;
+  metadata(key: string | object, tx?: any): Promise<CacheMetadata | null>;
 
   /**
    * Get tags for a key
    */
-  tags(key: string | object): Promise<string[]>;
+  tags(key: string | object, tx?: any): Promise<string[]>;
 
   /**
    * Iterator for all cache entries
    */
-  iterator(): AsyncIterableIterator<[string, CacheMetadata]>;
+  iterator(tx?: any): AsyncIterableIterator<[string, CacheMetadata]>;
 
   /**
    * Get a raw value from the cache without statistics tracking
    */
-  getRaw(key: string | object): Promise<any>;
+  getRaw(key: string | object, tx?: any): Promise<any>;
 
   // ============================================================================
   // Deprecated CAP Operations (for backward compatibility)

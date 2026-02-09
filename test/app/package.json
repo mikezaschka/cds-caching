@@ -14,7 +14,10 @@
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
-    "@cap-js/cds-types": "^0.13.0"
+    "@cap-js/cds-types": "^0.13.0",
+    "@resolid/keyv-sqlite": "^5.0.1",
+    "@keyv/postgres": "~2.2.3",
+    "pgpass": "~1.0.5"
   },
   "scripts": {
     "start": "cds-serve"
@@ -56,6 +59,42 @@
         "credentials": {
           "url": "https://services.odata.org/Experimental/OData/OData.svc/"
         }
+      },
+      "caching-postgres": {
+        "impl": "cds-caching",
+        "namespace": "postgres",
+        "store": "postgres",
+        "credentials": {
+          "url": "postgresql://postgres:postgres@localhost:5432/postgres",
+          "schema": "public",
+          "table": "cache"
+        }
+      },
+      "caching-redis": {
+        "impl": "cds-caching",
+        "namespace": "redis",
+        "store": "redis",
+        "credentials": {
+          "socket": {
+            "host": "localhost",
+            "port": 6379,
+            "keepAlive": true,
+            "pingInterval": 1000
+          }
+        }
+      },
+      "caching-sqlite": {
+        "impl": "cds-caching",
+        "namespace": "sqlite",
+        "store": "sqlite",
+        "credentials": {
+          "url": "file::memory:"
+        }
+      },
+      "caching-in-memory": {
+        "impl": "cds-caching",
+        "namespace": "in-memory",
+        "store": "memory"
       }
     }
   }

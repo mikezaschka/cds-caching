@@ -34,7 +34,33 @@
     "release": "release-it"
   },
   "peerDependencies": {
-    "@sap/cds": ">=8"
+    "@sap/cds": ">=8",
+    "@keyv/compress-gzip": "^2.0.3",
+    "@keyv/compress-lz4": "^1.0.1",
+    "@keyv/redis": "^5.0.0",
+    "@keyv/sqlite": "^4.0.5",
+    "@resolid/keyv-sqlite": "^4.0.5",
+    "@keyv/postgres": "^4.0.5"
+  },
+  "peerDependenciesMeta": {
+    "@keyv/redis": {
+      "optional": true
+    },
+    "@keyv/sqlite": {
+      "optional": true
+    },
+    "@keyv/compress-lz4": {
+      "optional": true
+    },
+    "@keyv/compress-gzip": {
+      "optional": true
+    },
+    "@resolid/keyv-sqlite": {
+      "optional": true
+    },
+    "@keyv/postgres": {
+      "optional": true
+    }
   },
   "workspaces": [
     ".",
@@ -43,21 +69,22 @@
     "examples/app"
   ],
   "dependencies": {
-    "@keyv/compress-gzip": "^2.0.3",
-    "@keyv/compress-lz4": "^1.0.1",
-    "@keyv/redis": "^5.0.0",
-    "@keyv/sqlite": "^4.0.5",
-    "keyv": "^5.4.0"
+    "keyv": "^5.6.0"
   },
   "devDependencies": {
-    "@cap-js/cds-test": "^0.4.0",
-    "@release-it/conventional-changelog": "^10.0.1",
-    "eslint": "^9.32.0",
+    "@cap-js/cds-test": "^0.4.1",
+    "@release-it/conventional-changelog": "^10.0.5",
+    "eslint": "^10.0.0",
     "husky": "^9.1.7",
-    "jest": "^30.0.5",
-    "release-it": "^19.0.4"
+    "jest": "^30.2.0",
+    "release-it": "^19.2.4",
+    "@resolid/keyv-sqlite": "~5.0.1",
+    "@keyv/sqlite": "~4.0.8",
+    "@keyv/compress-lz4": "~1.0.1",
+    "@keyv/compress-gzip": "~2.0.3",
+    "@keyv/postgres": "~2.2.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }

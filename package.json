@@ -36,6 +36,7 @@
   },
   "peerDependencies": {
     "@sap/cds": ">=8",
+    "@sap/cds-dk": ">=9",
     "@keyv/compress-gzip": "^2.0.3",
     "@keyv/compress-lz4": "^1.0.1",
     "@keyv/redis": "^5.0.0",

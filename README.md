@@ -471,7 +471,20 @@ Now, caching will be handled by Redis instead of in-memory storage during develo
 
 #### Production Deployment on SAP BTP
 
-![Redis on SAP BTP](./docs/caching-btp.png)
+##### Redis on SAP BTP
+
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+    end
+    Redis[("redis-cache (Redis)")]
+  end
+
+  App -- "service binding" --> Redis
+  App -- "get / set / delete" --> Redis
+```
 
 For production deployments on SAP BTP, Redis can be provisioned as a managed service through the Redis on SAP BTP hyperscaler option. An instance can be provisioned via trial or even as a Free Tier to explore the service. However, for production scenarios the size of the Redis instance should match your caching requirements.
 
@@ -498,6 +511,19 @@ resources:
 > 👉 **Tip**: There is a detailed [blog series on Redis in SAP BTP](https://community.sap.com/t5/technology-blogs-by-sap/redis-on-sap-btp-understanding-service-entitlements-and-metrics/ba-p/13738371) explaining how to set up Redis and connect via SSH for local/hybrid testing, as this is by default not possible.
 
 #### PostgreSQL on SAP BTP
+
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+    end
+    PG[("postgresql-db (PostgreSQL)")]
+  end
+
+  App -- "service binding" --> PG
+  App -- "get / set / delete" --> PG
+```
 
 PostgreSQL is available on SAP BTP as a hyperscaler option. The credentials are automatically injected via service bindings.
 
@@ -550,6 +576,25 @@ resources:
 On SAP BTP, the bound credentials (including `uri`, `hostname`, `port`, `username`, `password`, etc.) are automatically resolved by CAP into `cds.requires.caching.credentials`. No `[production]` credentials block is needed.
 
 #### SAP HANA on SAP BTP
+
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+      Deployer[HDI Deployer]
+    end
+    subgraph HDI ["hdi-container (SAP HANA)"]
+      CacheTable["KEYV (cache table)"]
+      AppTables["App tables / views"]
+    end
+  end
+
+  Deployer -- "deploys .hdbtable" --> CacheTable
+  Deployer -- "deploys .hdbtable / .hdbview" --> AppTables
+  App -- "service binding" --> HDI
+  App -- "get / set / delete" --> CacheTable
+```
 
 SAP HANA Cloud is available on SAP BTP and is the standard database for CAP applications. When using HANA as a cache store, the caching table is deployed as an HDI artifact alongside your other database artifacts.
 

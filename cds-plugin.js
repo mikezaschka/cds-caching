@@ -10,8 +10,8 @@ const LOG = cds.log("cds-caching");
 cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.Plugin {
     static taskDefaults = { src: cds.env.folders.db }
 
-    init() {}
-    clean () {}
+    init() { }
+    clean() { }
 
     static hasTask() {
         const requires = cds.env.requires || {};
@@ -23,17 +23,18 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     async build() {
         const requires = cds.env.requires || {};
         for (const [, config] of Object.entries(requires)) {
-            if (config.impl !== 'cds-caching' || config.store !== 'hana') continue;
-            const table = config.credentials?.table || 'KEYV';
-            const keySize = config.credentials?.keySize || 255;
-            const content = [
-                `COLUMN TABLE "${table}" (`,
-                `  "ID" NVARCHAR(${keySize}) PRIMARY KEY,`,
-                `  "VALUE" NCLOB`,
-                `)`,
-            ].join('\n');
-            await this.write(content).to(`src/gen/${table}.hdbtable`);
-            LOG.info('Building cds-caching hana table', { table, keySize });
+            if (config.impl === 'cds-caching' && config.store === 'hana') {
+                const table = config.credentials?.table || 'KEYV';
+                const keySize = config.credentials?.keySize || 255;
+                const content = [
+                    `COLUMN TABLE "${table}" (`,
+                    `  "ID" NVARCHAR(${keySize}) PRIMARY KEY,`,
+                    `  "VALUE" NCLOB`,
+                    `)`,
+                ].join('\n');
+                await this.write(content).to(`src/gen/${table}.hdbtable`);
+                LOG.info('Building cds-caching hana table', { table, keySize });
+            }
         }
     }
 });

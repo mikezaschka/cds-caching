@@ -54,6 +54,7 @@ Install the package(s) matching your configured `store` / `compression`:
 | `store` | `"redis"` | `@keyv/redis` |
 | `store` | `"sqlite"` | `@resolid/keyv-sqlite` (recommended) **or** `@keyv/sqlite` |
 | `store` | `"postgres"` | `@keyv/postgres` |
+| `store` | `"hana"` | `keyv-hana` |
 | `compression` | `"lz4"` | `@keyv/compress-lz4` |
 | `compression` | `"gzip"` | `@keyv/compress-gzip` |
 
@@ -197,6 +198,12 @@ npm install @keyv/redis
 npm install @resolid/keyv-sqlite  # Preferred in CAP because of better-sqlite3 usage
 npm install @keyv/sqlite          # Alternative if you want to rely on the official adapter
 
+# SAP HANA
+npm install keyv-hana
+
+# PostgreSQL
+npm install @keyv/postgres
+
 # Compression
 npm install @keyv/compress-lz4   # for "lz4"
 npm install @keyv/compress-gzip  # for "gzip"
@@ -239,7 +246,7 @@ The cds-caching plugin supports comprehensive configuration through `package.jso
       "caching": {
         "impl": "cds-caching",
         "namespace": "caching",
-        "store": "in-memory", // "in-memory", "sqlite", or "redis"
+        "store": "in-memory", // "in-memory", "sqlite", "redis", "postgres", or "hana"
         "compression": "lz4", // "lz4" or "gzip"
         "throwOnErrors": false, // Whether basic operations should throw errors (default: false)
         "transactionalOperations": false, // When true, basic ops run in a dedicated cache tx (cache.tx())
@@ -381,7 +388,7 @@ annotate CachingApiService with @requires: 'authenticated-user';
 
 #### Storage Options
 
-cds-caching provides 3 storage options:
+cds-caching provides 5 storage options:
 
 ##### In-Memory Cache (for development / small-scale uses)
 - Simple and fast, but not persistent
@@ -403,6 +410,21 @@ cds-caching provides 3 storage options:
 - Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)
 - Even trial accounts provide Redis access
 - Redis will be non-blocking
+
+##### PostgreSQL (for production)
+- Requires installing the adapter package: `@keyv/postgres` (in your project)
+- Persistent and supports distributed caching
+- Works across multiple app instances
+- Available on SAP BTP as PostgreSQL on SAP BTP, hyperscaler option
+- Suitable when Redis is not available or PostgreSQL is already in use
+
+##### SAP HANA (for production / HDI deployments)
+- Requires installing the adapter package: `keyv-hana` and `@sap/hana-client` (in your project)
+- Persistent storage using SAP HANA column tables
+- Ideal for CAP applications already deployed on SAP HANA / HDI containers
+- Available on SAP BTP as SAP HANA Cloud
+- Supports HDI deployment via automatic `.hdbtable` generation during `cds build`
+- No additional infrastructure needed if HANA is already part of your landscape
 
 #### Redis Development Setup
 
@@ -449,7 +471,20 @@ Now, caching will be handled by Redis instead of in-memory storage during develo
 
 #### Production Deployment on SAP BTP
 
-![Redis on SAP BTP](./docs/caching-btp.png)
+##### Redis on SAP BTP
+
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+    end
+    Redis[("redis-cache (Redis)")]
+  end
+
+  App -- "service binding" --> Redis
+  App -- "get / set / delete" --> Redis
+```
 
 For production deployments on SAP BTP, Redis can be provisioned as a managed service through the Redis on SAP BTP hyperscaler option. An instance can be provisioned via trial or even as a Free Tier to explore the service. However, for production scenarios the size of the Redis instance should match your caching requirements.
 
@@ -475,7 +510,181 @@ resources:
 
 > 👉 **Tip**: There is a detailed [blog series on Redis in SAP BTP](https://community.sap.com/t5/technology-blogs-by-sap/redis-on-sap-btp-understanding-service-entitlements-and-metrics/ba-p/13738371) explaining how to set up Redis and connect via SSH for local/hybrid testing, as this is by default not possible.
 
+#### PostgreSQL on SAP BTP
 
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+    end
+    PG[("postgresql-db (PostgreSQL)")]
+  end
+
+  App -- "service binding" --> PG
+  App -- "get / set / delete" --> PG
+```
+
+PostgreSQL is available on SAP BTP as a hyperscaler option. The credentials are automatically injected via service bindings.
+
+##### Configuration
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "postgres",
+        "[development]": {
+          "credentials": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "postgres",
+            "password": "postgres",
+            "database": "cache"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+##### MTA Configuration
+
+Add the following to your `mta.yaml` to create a PostgreSQL service instance and bind it to your application:
+
+```yaml
+modules:
+  - name: cap-app-srv
+    # ... other module configuration ...
+    requires:
+      - name: postgres-cache
+
+resources:
+  - name: postgres-cache
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: postgresql-db
+      service-plan: trial
+      service-tags:
+        # Must match the kind property in the package.json
+        - cds-caching
+```
+
+On SAP BTP, the bound credentials (including `uri`, `hostname`, `port`, `username`, `password`, etc.) are automatically resolved by CAP into `cds.requires.caching.credentials`. No `[production]` credentials block is needed.
+
+#### SAP HANA on SAP BTP
+
+```mermaid
+flowchart LR
+  subgraph BTP [SAP BTP]
+    subgraph CF [Cloud Foundry / Kyma]
+      App[CAP Application]
+      Deployer[HDI Deployer]
+    end
+    subgraph HDI ["hdi-container (SAP HANA)"]
+      CacheTable["KEYV (cache table)"]
+      AppTables["App tables / views"]
+    end
+  end
+
+  Deployer -- "deploys .hdbtable" --> CacheTable
+  Deployer -- "deploys .hdbtable / .hdbview" --> AppTables
+  App -- "service binding" --> HDI
+  App -- "get / set / delete" --> CacheTable
+```
+
+SAP HANA Cloud is available on SAP BTP and is the standard database for CAP applications. When using HANA as a cache store, the caching table is deployed as an HDI artifact alongside your other database artifacts.
+
+##### Prerequisites
+
+Install the required adapter packages in your project:
+
+```bash
+npm install keyv-hana @sap/hana-client
+```
+
+##### Configuration
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "hana",
+        "[development]": {
+          "credentials": {
+            "host": "localhost",
+            "port": 30015,
+            "uid": "SYSTEM",
+            "pwd": "YourPassword",
+            "table": "KEYV",
+            "createTable": true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+For development, you can set `createTable: true` to have the adapter create the table automatically. For production HDI deployments, leave it as `false` (the default) and let the HDI deployer handle table creation.
+
+##### HDI Table Artifact
+
+When `store` is set to `"hana"`, `cds-caching` automatically registers a build plugin that generates the `.hdbtable` artifact during `cds build`. The generated file is placed in the db module's build output (`src/gen/`) and will be deployed by the HDI deployer.
+
+The table name and key size can be customized via credentials:
+
+| Option    | Default | Description                          |
+| --------- | ------- | ------------------------------------ |
+| `table`   | `KEYV`  | Name of the HANA column table       |
+| `keySize` | `255`   | Max key column length (NVARCHAR size)|
+
+The generated `.hdbtable` artifact looks like this:
+
+```sql
+COLUMN TABLE "KEYV" (
+  "ID" NVARCHAR(255) PRIMARY KEY,
+  "VALUE" NCLOB
+)
+```
+
+If you prefer to manage the table artifact manually (e.g. in an existing HDI project), create the file yourself in `db/src/` and the build plugin will not interfere.
+
+##### MTA Configuration
+
+Add the following to your `mta.yaml`. The caching service can share the same HANA HDI container as your main database, or use a dedicated one:
+
+**Shared HDI container** (recommended for most use cases):
+
+```yaml
+modules:
+  - name: cap-app-srv
+    # ... other module configuration ...
+    requires:
+      - name: hana-hdi
+
+  - name: cap-app-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: hana-hdi
+
+resources:
+  - name: hana-hdi
+    type: com.sap.xs.hdi-container
+    parameters:
+      service-tags:
+        - cds-caching
+```
+
+On SAP BTP, the bound HDI container credentials (including `host`, `port`, `user`, `password`, `schema`, `certificate`, etc.) are automatically resolved by CAP. The adapter maps BTP credential fields (`user`/`password`) to the HANA client fields (`uid`/`pwd`) and forwards TLS options automatically.
+
+> 👉 **Note**: Since `createTable` defaults to `false`, the adapter is HDI-ready out of the box. The runtime user (`_RT`) only performs DML operations; the HDI deployer handles all DDL via the design-time user (`_DT`).
 
 ### Usage Patterns
 

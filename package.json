@@ -12,6 +12,7 @@
     "cds",
     "caching",
     "redis",
+    "hana",
     "keyv"
   ],
   "author": "Mike Zaschka <opensource@mikezaschka.com>",
@@ -35,12 +36,14 @@
   },
   "peerDependencies": {
     "@sap/cds": ">=8",
+    "@sap/cds-dk": ">=9",
     "@keyv/compress-gzip": "^2.0.3",
     "@keyv/compress-lz4": "^1.0.1",
     "@keyv/redis": "^5.0.0",
     "@keyv/sqlite": "^4.0.5",
     "@resolid/keyv-sqlite": "^4.0.5",
-    "@keyv/postgres": "^4.0.5"
+    "@keyv/postgres": "^4.0.5",
+    "keyv-hana": ">=1.0.0"
   },
   "peerDependenciesMeta": {
     "@keyv/redis": {
@@ -59,6 +62,9 @@
       "optional": true
     },
     "@keyv/postgres": {
+      "optional": true
+    },
+    "keyv-hana": {
       "optional": true
     }
   },

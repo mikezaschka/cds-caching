@@ -15,7 +15,6 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
 
     static hasTask() {
         const requires = cds.env.requires || {};
-        LOG.info('Registering cds-caching build plugin');
         return Object.values(requires).some(
             r => r.impl === 'cds-caching' && r.store === 'hana'
         );
@@ -34,6 +33,7 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 `)`,
             ].join('\n');
             await this.write(content).to(`src/gen/${table}.hdbtable`);
+            LOG.info('Building cds-caching hana table', { table, keySize });
         }
     }
 });

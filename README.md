@@ -55,6 +55,19 @@ npm install cds-caching
 
 This uses the in-memory store — no additional setup needed for development.
 
+### Data Model
+
+The plugin ships CDS entity definitions for database-backed features. These are **auto-loaded conditionally** based on your configuration — no manual `model` property or `using from` needed:
+
+| Condition | Entities loaded | Purpose |
+|-----------|----------------|---------|
+| `statistics` block present | `Caches`, `Metrics`, `KeyMetrics` | Persist metrics and runtime config to the database |
+| `store: 'cds'` | `CacheStore` | Key-value table used by the CDS store adapter |
+| `using from 'cds-caching/index.cds'` | `CachingApiService` + statistics entities | OData API for the [dashboard](docs/example-app.md) |
+| None of the above | Nothing | Plugin works with external stores only |
+
+The auto-loading works by injecting the relevant CDS files into `cds.env.roots` at plugin load time, before CAP compiles the model. This means `cds deploy` and `cds build` automatically pick up the required tables.
+
 ### Basic Usage
 
 ```javascript
@@ -116,6 +129,10 @@ service MyService {
         "throwOnErrors": false,
         "transactionalOperations": false,
         "credentials": { },
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 60000
+        },
         "keyManagement": {
           "isUserAware": false,
           "isTenantAware": false,
@@ -134,6 +151,9 @@ service MyService {
 | `compression` | none | `"lz4"` or `"gzip"` |
 | `throwOnErrors` | `false` | Whether basic operations throw on cache errors |
 | `transactionalOperations` | `false` | Isolate basic ops in dedicated cache transactions |
+| `statistics` | none | When present, auto-loads the statistics data model and enables persistence (see [Statistics & Monitoring](#statistics--monitoring)) |
+| `statistics.enabled` | `false` | Enable metrics collection |
+| `statistics.persistenceInterval` | `60000` | Interval (ms) for persisting hourly stats to the database |
 | `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |
 | `keyManagement.isUserAware` | `false` | Include user in cache keys |
 | `keyManagement.isLocaleAware` | `false` | Include locale in cache keys |
@@ -161,15 +181,19 @@ service MyService {
 
 For detailed key configuration and deployment instructions, see [Key Management](docs/key-management.md) and [Deployment Guide](docs/deployment-guide.md).
 
-### Service Definition
+### Service Integration
 
-Add the following to your CDS model to expose the cache management OData API:
+The plugin includes `CachingApiService`, an OData service for managing caches, browsing entries, and viewing metrics. It powers the [dashboard application](docs/example-app.md) and can be consumed by any OData client.
+
+To expose this service, reference it in one of your `.cds` files so CAP serves it:
 
 ```cds
 using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
 annotate CachingApiService with @requires: 'authenticated-user';
 ```
+
+This automatically loads the required database entities (`Caches`, `Metrics`, `KeyMetrics`) via a transitive `using from` dependency — no additional configuration needed. Without this step, the service won't be served by CAP and the dashboard won't work.
 
 ## Multi-Tenancy (MTX)
 
@@ -287,7 +311,26 @@ For more usage patterns, error handling details, and TypeScript support, see [Pr
 
 ## Statistics & Monitoring
 
-Metrics are disabled by default. Enable at runtime:
+To persist metrics to the database, add a `statistics` block to your configuration. This automatically loads the required data model (`Caches`, `Metrics`, `KeyMetrics` tables):
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "redis",
+        "statistics": {
+          "enabled": true,
+          "persistenceInterval": 60000
+        }
+      }
+    }
+  }
+}
+```
+
+You can also enable metrics at runtime:
 
 ```javascript
 const cache = await cds.connect.to("caching")

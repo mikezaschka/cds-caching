@@ -24,6 +24,7 @@
   "main": "cds-plugin.js",
   "types": "lib/CachingService.d.ts",
   "files": [
+    "db/**",
     "srv/**",
     "index.cds",
     "lib/**"
@@ -103,5 +104,17 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "cds": {
+    "requires": {
+      "kinds": {
+        "cds-caching": {
+          "impl": "cds-caching"
+        },
+        "caching": {
+          "impl": "cds-caching"
+        }
+      }
+    }
   }
 }

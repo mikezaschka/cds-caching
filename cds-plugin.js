@@ -3,6 +3,17 @@ const { fs, path } = cds.utils;
 const CachingService = require('./lib/CachingService')
 const { scanCachingAnnotations } = require('./lib/util')
 
+// Auto-register plugin entity models based on service configuration.
+// Pushes absolute file paths (without extension) into cds.env.roots so that
+// cds.resolve('*') picks them up during model compilation — before cds.model is set.
+const cachingConfigs = Object.values(cds.env.requires ?? {}).filter(r => r?.impl === 'cds-caching');
+if (cachingConfigs.some(c => c.store === 'cds')) {
+    cds.env.roots.push(path.join(__dirname, 'db', 'cache-store'));
+}
+if (cachingConfigs.some(c => c.statistics)) {
+    cds.env.roots.push(path.join(__dirname, 'db', 'statistics'));
+}
+
 cds.on('served', scanCachingAnnotations)
 const LOG = cds.log("cds-caching");
 
@@ -14,6 +25,7 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     clean() { }
 
     static hasTask() {
+        cds.log('cds-caching').info('hasTask', cds.env.requires);
         const requires = cds.env.requires || {};
         const dbKind = requires.db?.kind || '';
         const isHanaDB = dbKind === 'hana' || dbKind === 'sql';

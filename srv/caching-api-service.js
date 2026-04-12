@@ -1,5 +1,6 @@
 const cds = require('@sap/cds')
 const { isMultitenantMode } = require('../lib/support/MultitenancyDetector')
+const { isPluginModelAvailable } = require('../lib/util')
 
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
@@ -131,7 +132,7 @@ class CachingApiService extends cds.ApplicationService {
      * Called lazily in MTX mode on first dashboard access.
      */
     async _ensureCacheEntries() {
-        if (this._cacheEntriesInitialized) return;
+        if (this._cacheEntriesInitialized || !isPluginModelAvailable()) return;
 
         try {
             const { Caches } = cds.entities('plugin.cds_caching');

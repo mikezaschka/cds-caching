@@ -1,9 +1,18 @@
 const cds = require('@sap/cds')
+const { isMultitenantMode } = require('../lib/support/MultitenancyDetector')
 
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
 
     async init() {
+
+        // In MTX mode, lazily create cache entries on first dashboard access
+        // (skipped at startup because there's no tenant context)
+        if (isMultitenantMode()) {
+            this.before('READ', 'Caches', async () => {
+                await this._ensureCacheEntries();
+            });
+        }
 
         // Handle setMetricsEnabled action
         this.on('setMetricsEnabled', async (req) => {
@@ -117,8 +126,39 @@ class CachingApiService extends cds.ApplicationService {
         await super.init()
     }
 
-   
+    /**
+     * Ensure cache entries exist in the current tenant's DB.
+     * Called lazily in MTX mode on first dashboard access.
+     */
+    async _ensureCacheEntries() {
+        if (this._cacheEntriesInitialized) return;
 
+        try {
+            const { Caches } = cds.entities('plugin.cds_caching');
+            const requires = cds.env.requires || {};
+
+            for (const [name, config] of Object.entries(requires)) {
+                if (config.impl === 'cds-caching') {
+                    const existing = await SELECT.one.from(Caches).where({ name });
+                    if (!existing) {
+                        await INSERT.into(Caches).entries({
+                            name,
+                            config: JSON.stringify({
+                                impl: config.impl,
+                                store: config.store || 'memory',
+                                namespace: config.namespace || name
+                            })
+                        });
+                        this.log.info(`Created cache entry for: ${name} (lazy init)`);
+                    }
+                }
+            }
+
+            this._cacheEntriesInitialized = true;
+        } catch (error) {
+            this.log.warn('Failed to lazily initialize cache entries:', error);
+        }
+    }
 }
 
-module.exports = CachingApiService 
+module.exports = CachingApiService

@@ -29,6 +29,7 @@
       },
       "caching": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "redisCache",
         "store": "redis",
         "statistics": {
@@ -47,6 +48,7 @@
       },
       "caching-northwind": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "northwind",
         "store": "sqlite",
         "credentials": {
@@ -62,6 +64,7 @@
       },
       "caching-postgres": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "postgres",
         "store": "postgres",
         "credentials": {
@@ -72,6 +75,7 @@
       },
       "caching-redis": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "redis",
         "store": "redis",
         "credentials": {
@@ -85,6 +89,7 @@
       },
       "caching-sqlite": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "sqlite",
         "store": "sqlite",
         "credentials": {
@@ -93,8 +98,15 @@
       },
       "caching-in-memory": {
         "impl": "cds-caching",
+        "kind": "cds-caching",
         "namespace": "in-memory",
         "store": "memory"
+      },
+      "caching-cds": {
+        "impl": "cds-caching",
+        "kind": "cds-caching",
+        "namespace": "cds-store",
+        "store": "cds"
       }
     }
   }

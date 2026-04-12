@@ -4,241 +4,105 @@
 
 ## Overview
 
-This plugin for the [SAP Cloud Application Programming Model (CAP)](https://cap.cloud.sap/docs/) provides a caching service to improve performance in CAP applications.
+A caching plugin for the [SAP Cloud Application Programming Model (CAP)](https://cap.cloud.sap/docs/) that improves performance by caching slow remote service calls, complex operations, and queries.
 
-While CAP in general performs well for most use cases, caching can help with:
-- Slow remote service calls
-- Complex operations
-- Slow queries
-- Other performance bottle necks
-
-While cds-caching can be a big helper, an additional caching layer also adds complexity and should be used judiciously.
-
-Please also read the introduction blog post in the SAP Community: [Boosting performance in SAP Cloud Application Programming Model (CAP) applications with cds-caching](https://community.sap.com/t5/technology-blogs-by-members/boosting-performance-in-sap-cloud-application-programming-model-cap/ba-p/14002015).
+Please also read the introduction blog post: [Boosting performance in SAP Cloud Application Programming Model (CAP) applications with cds-caching](https://community.sap.com/t5/technology-blogs-by-members/boosting-performance-in-sap-cloud-application-programming-model-cap/ba-p/14002015).
 
 ### Key Features
 
-* **Flexible Key-Value Store** – Store and retrieve data using simple key-based access.
-* **CachingService** – A cds.Service implementation with an intuitive API for seamless integration into CAP.
-* **Read-Through Capabilities** – Let the caching service handle the cache set and get operatios for you 
-* **CAP-specific Caching** – Effortlessly cache CQN queries or CAP cds.Requests using code or the @cache annotation.
-* **TTL Support** – Automatically manage data expiration with configurable time-to-live (TTL) settings.
-* **Tag Support** – Use dynamic tags for flexible cache invalidation options.
-* **Pluggable Storage Options** – Choose between in-memory caching, SQLite or Redis.
-* **Compression** – Compress cached data to save memory using LZ4 or GZIP.
-* **Integrated Metrics** – Monitor cache performance with hit rates, latencies, and more.
-* **API** – Access basic cache operations and metrics via API
-* **Event Handling** – Monitor and react to cache events, such as before/after storage and retrieval.
+* **Read-Through Caching** – Transparently cache CQN queries, CAP requests, or function calls
+* **Pluggable Storage** – In-memory, SQLite, Redis, PostgreSQL, SAP HANA, or CDS database
+* **Multi-Tenancy** – Automatic tenant isolation for SAP BTP MTX deployments
+* **TTL & Tag Support** – Time-based expiry and tag-based invalidation
+* **Compression** – LZ4 or GZIP compression for cached data
+* **Metrics & Monitoring** – Hit rates, latencies, key-level tracking, and an OData API
+* **Annotations** – Declarative caching via `@cache` annotations on entities and functions
 
-### Checkout detailed information on how to use cds-caching
+### Documentation
 
-> - [Programmatic API](docs/programmatic-api.md)
-> - [Key Management](docs/key-management.md)
-> - [Metrics Guide](docs/metrics-guide.md)
-> - [OpenTelemetry Integration](docs/telemetry.md)
-> - [OData API Reference](docs/odata-api.md)
+| Guide | Description |
+|-------|-------------|
+| [Programmatic API](docs/programmatic-api.md) | Full API reference for cache operations |
+| [Key Management](docs/key-management.md) | Key templates, context awareness, custom keys |
+| [Metrics Guide](docs/metrics-guide.md) | Statistics, monitoring, and performance tracking |
+| [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
+| [OData API](docs/odata-api.md) | REST endpoints for management and monitoring |
+| [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
+| [Migration Guide](docs/migration-guide.md) | Upgrading from 0.x to 1.x and 1.1 to 1.2 |
+| [Example Application](docs/example-app.md) | Sample app with dashboard |
 
-## 🚨 Breaking Changes: Migrating cds-caching
-
-> **⚠️ Important:** Version 1.x contains breaking changes. Please review the migration guide below.
-
-## Upgrading from 1.1.0 to 1.2.0
-
-From **1.2.0** onwards, storage/compression adapters are treated as **optional peer dependencies** and must be installed **explicitly in your consuming CAP project** (i.e. *your app*, not `cds-caching`). This avoids relying on transitive dependencies and makes adapter usage deterministic.
-
-### Required adapter packages (add to your app's `package.json`)
-
-Install the package(s) matching your configured `store` / `compression`:
-
-| Config | Value | Install in your app |
-|---|---|---|
-| `store` | `"redis"` | `@keyv/redis` |
-| `store` | `"sqlite"` | `@resolid/keyv-sqlite` (recommended) **or** `@keyv/sqlite` |
-| `store` | `"postgres"` | `@keyv/postgres` |
-| `store` | `"hana"` | `keyv-hana` |
-| `compression` | `"lz4"` | `@keyv/compress-lz4` |
-| `compression` | `"gzip"` | `@keyv/compress-gzip` |
-
-Example:
-
-```bash
-npm i @keyv/redis
-# or: npm i @resolid/keyv-sqlite
-# and optionally: npm i @keyv/compress-gzip
-```
-
-## Upgrading from 0.x to 1.x
-
-### 🔄 API Changes for read-through methods
-
-Version 1.x introduces new methods that provide more insights into the read-through caching as they also directly return the genrated cache `key` and some caching `metadata`. The should be preferrably used instead of the old methods.
-
-| **Old Method** | **New Method** | **Key Differences** |
-|----------------|----------------|---------------------|
-| `cache.run()` | `cache.rt.run()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
-| `cache.send()` | `cache.rt.send()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
-| `cache.wrap()` | `cache.rt.wrap()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
-| `cache.exec()` | `cache.rt.exec()` | Returns `{result, cacheKey, metadata}` instead of just `result` |
-
-### 🔑 Key Template Changes
-
-**Before (0.x):**
-```javascript
-// Old syntax - object with template property
-await cache.set(query, result, { 
-  key: { template: "user:{user}:{hash}" }
-})
-```
-
-**After (1.x):**
-```javascript
-// New syntax - direct string template
-await cache.set(query, result, { 
-  key: "user:{user}:{hash}"
-})
-```
-
-### 🌍 Context Awareness Changes
-
-**Default Behavior Changed:**
-- **0.x:** Context (user, tenant, locale) was automatically included in some cache keys (ODataRequests)
-- **1.x:** Context is **disabled by default** and can be enabled for **ALL** keys (unless overwritten)
-
-**To Enable Context Awareness:**
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        ...
-        "keyManagement": {
-          "isUserAware": true,      // Include user context in cache keys
-          "isTenantAware": true,    // Include tenant context in cache keys
-          "isLocaleAware": false    // Include locale context in cache keys
-        }
-      }
-    }
-  }
-} 
-```
-
-### 📚 Migration Examples
-
-**Example 1: Basic Caching**
-```javascript
-// ❌ Old way (deprecated, but will still work)
-const result = await cache.run(query, db)
-
-// ✅ New way
-const { result, cacheKey, metadata } = await cache.rt.run(query, db)
-```
-
-**Example 2: Function Wrapping**
-```javascript
-// ❌ Old way (deprecated, but will still work)
-const cachedFn = cache.wrap("key", expensiveOperation)
-const result = await cachedFn("param1", "param2")
-
-// ✅ New way
-const cachedFn = cache.rt.wrap("key", expensiveOperation)
-const { result, cacheKey, metadata } = await cachedFn("param1", "param2")
-```
-
-**Example 3: Custom Key Templates**
-```javascript
-// ❌ Old way (will not work anymore)
-await cache.set(data, value, { 
-  key: { template: "user:{user}:{hash}" }
-})
-
-// ✅ New way
-await cache.set(data, value, { 
-  key: "user:{user}:{hash}"
-})
-```
-
-### 🔍 What's New
-
-- **Enhanced Metadata:** All read-through operations now return cache keys and performance metadata
-- **Better Performance:** Context awareness is opt-in, reducing unnecessary key complexity
-- **Improved Debugging:** Access to generated cache keys for troubleshooting
-- **Flexible Configuration:** Global and per-operation key template control
-
-For detailed API documentation, see [Programmatic API Reference](docs/programmatic-api.md). 
-
-### Example Application
-
-The cds-caching plugin includes a comprehensive example application demonstrating various caching use cases and a UI5-based dashboard for monitoring cache performance.
-
-![Cache Dashboard](./docs/dashboard.jpg)
-
-The example consists of:
-- **Backend Application** (`examples/app/`) - A CAP application showing annotation-based and programmatic caching patterns
-- **Dashboard** (`examples/dashboard/`) - A UI5-based monitoring interface with real-time metrics, key-level analytics, and historical data
-
-[See the full Example Application Guide →](docs/example-app.md)
-
+## Getting Started
 
 ### Installation
-
-Installing and using cds-caching is straightforward since it's a CAP plugin. Simply run:
 
 ```bash
 npm install cds-caching
 ```
 
-#### Adapter packages (Redis / SQLite / Compression)
-
-`cds-caching` only ships with the in-memory store. If you configure a different store or compression, you must install the corresponding adapter package **in your consuming CAP project**:
-
-```bash
-# Redis store
-npm install @keyv/redis
-
-# SQLite store
-npm install @resolid/keyv-sqlite  # Preferred in CAP because of better-sqlite3 usage
-npm install @keyv/sqlite          # Alternative if you want to rely on the official adapter
-
-# SAP HANA
-npm install keyv-hana
-
-# PostgreSQL
-npm install @keyv/postgres
-
-# Compression
-npm install @keyv/compress-lz4   # for "lz4"
-npm install @keyv/compress-gzip  # for "gzip"
-```
-
-If you configure an adapter but don’t have its package installed, `cds-caching` will fail fast with a clear error telling you what to install.
-
-### Configuration
-
-The cds-caching plugin supports comprehensive configuration through `package.json`. Here are all available configuration options:
-
-#### Basic Service Configuration
-
-**Minimal setup** (in-memory cache for development):
+### Minimal Configuration
 
 ```json
 {
   "cds": {
     "requires": {
       "caching": {
-        "impl": "cds-caching",
-        "namespace": "caching"
-      },
-      // Recommended: Define a specific caching service for different caching requirements
-      "bp-caching": {
-        "impl": "cds-caching",
-        "namespace": "bp-caching"
+        "impl": "cds-caching"
       }
     }
   }
 }
 ```
 
-**Advanced configuration** with all options:
+This uses the in-memory store — no additional setup needed for development.
+
+### Basic Usage
+
+```javascript
+const cache = await cds.connect.to("caching")
+
+// Key-value operations
+await cache.set("bp:1000001", businessPartnerData, { ttl: 60000 })
+const data = await cache.get("bp:1000001")
+
+// Read-through caching for CQN queries
+const { result } = await cache.rt.run(query, db, { ttl: 30000 })
+
+// Read-through caching for remote services
+const { result } = await cache.rt.send(request, remoteService, { ttl: 10000 })
+
+// Function caching
+const cachedFn = cache.rt.wrap("expensive-op", expensiveFunction, { ttl: 3600 })
+const { result } = await cachedFn("param1")
+```
+
+### Annotation-Based Caching
+
+```cds
+service MyService {
+  @cache: { ttl: 10000 }
+  entity Products as projection on db.Products;
+
+  @cache: { ttl: 60000 }
+  function getRecommendations() returns array of Products;
+}
+```
+
+## Configuration
+
+### Store Types
+
+| Store | Config | Use Case | Adapter Package |
+|-------|--------|----------|-----------------|
+| In-Memory | `"memory"` | Development, small-scale | Built-in |
+| SQLite | `"sqlite"` | Medium-size, single instance | `@resolid/keyv-sqlite` or `@keyv/sqlite` |
+| Redis | `"redis"` | Production, distributed | `@keyv/redis` |
+| PostgreSQL | `"postgres"` | Production, when Redis unavailable | `@keyv/postgres` |
+| CDS Database | `"cds"` | Production, HANA, multi-tenant | None (uses app's DB) |
+| SAP HANA | `"hana"` | Direct HANA connection | `keyv-hana` |
+
+> **Recommendation**: Use `store: 'cds'` for CAP applications on SAP HANA — it reuses your app's DB connection, requires no extra packages, and supports multi-tenancy automatically. Use `store: 'redis'` for best performance in distributed setups.
+
+### Full Configuration Options
 
 ```json
 {
@@ -247,105 +111,34 @@ The cds-caching plugin supports comprehensive configuration through `package.jso
       "caching": {
         "impl": "cds-caching",
         "namespace": "caching",
-        "store": "in-memory", // "in-memory", "sqlite", "redis", "postgres", or "hana"
-        "compression": "lz4", // "lz4" or "gzip"
-        "throwOnErrors": false, // Whether basic operations should throw errors (default: false)
-        "transactionalOperations": false, // When true, basic ops run in a dedicated cache tx (cache.tx())
-        "credentials": {
-          // Redis configuration
-          "host": "localhost",
-          "port": 6379,
-          "password": "optional",
-          "url": "redis://..." // Alternative: Redis connection URI
-          
-          // SQLite configuration
-          "url": "sqlite://./cache.sqlite",
-          "table": "cache",
-          "busyTimeout": 10000
-        }
-      }
-    }
-  }
-}
-```
-
-#### Transaction isolation for basic operations (`transactionalOperations`)
-
-CAP can run multiple `before` handlers concurrently. If one handler fails and rolls back the request transaction, other concurrent handlers may still be running and can fail when they access the cache (typical error: “Transaction is rolled back, no subsequent .run allowed…”).
-
-To isolate **basic cache operations** (`get`, `set`, `delete`, `clear`, `deleteByTag`, `metadata`, `tags`, `getRaw`) from the request transaction, enable:
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "transactionalOperations": true
-      }
-    }
-  }
-}
-```
-
-In the background, the caching service opens a dedicated cache transaction via `cache.tx()`, executes the operation via `tx.send(...)`, and commits/rolls back the cache transaction per operation. This keeps cache calls working even if the surrounding request transaction is already rolled back.
-
-#### Read-Through (RT) Key Configuration
-
-Configure default key templates for read-through operations:
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        ...
+        "store": "redis",
+        "compression": "lz4",
+        "throwOnErrors": false,
+        "transactionalOperations": false,
+        "credentials": { },
         "keyManagement": {
-          "isUserAware": true,      // Include user context in cache keys
-          "isTenantAware": true,    // Include tenant context in cache keys
-          "isLocaleAware": false    // Include locale context in cache keys
+          "isUserAware": false,
+          "isTenantAware": false,
+          "isLocaleAware": false
         }
-      }
-    }
-  }
-}  
-```
-
-**Default behavior** (if not configured): All context elements are disabled by default.
-
-#### Error Handling Configuration
-
-Configure how the caching service handles errors:
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        ...
-        "throwOnErrors": true,      // Basic operations (set, get, delete, has) throw errors
-        // Default: false - operations return undefined/null instead of throwing
       }
     }
   }
 }
 ```
 
-**Error Handling Behavior:**
+| Option | Default | Description |
+|--------|---------|-------------|
+| `store` | `"memory"` | Storage backend (`memory`, `sqlite`, `redis`, `postgres`, `hana`, `cds`) |
+| `namespace` | service name | Key prefix for store isolation |
+| `compression` | none | `"lz4"` or `"gzip"` |
+| `throwOnErrors` | `false` | Whether basic operations throw on cache errors |
+| `transactionalOperations` | `false` | Isolate basic ops in dedicated cache transactions |
+| `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |
+| `keyManagement.isUserAware` | `false` | Include user in cache keys |
+| `keyManagement.isLocaleAware` | `false` | Include locale in cache keys |
 
-- **Basic Operations** (`set`, `get`, `delete`, `has`):
-  - When `throwOnErrors: false` (default): Operations return `undefined`/`null` on errors
-  - When `throwOnErrors: true`: Operations throw errors for connection issues, etc.
-
-- **Read-Through Operations** (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`):
-  - Never throw errors, regardless of `throwOnErrors` setting
-  - Include `cacheErrors` array in response when errors occur
-  - Always fetch from remote service when cache operations fail
-  - Log errors for monitoring and debugging
-
-#### Environment-Specific Configuration
-
-You can override settings for different environments:
+### Environment-Specific Configuration
 
 ```json
 {
@@ -355,15 +148,10 @@ You can override settings for different environments:
         "impl": "cds-caching",
         "store": "redis",
         "[development]": {
-          "credentials": {
-            "host": "localhost",
-            "port": 6379
-          }
+          "credentials": { "host": "localhost", "port": 6379 }
         },
         "[production]": {
-          "credentials": {
-            "url": "redis://production-redis:6379"
-          }
+          "credentials": { "url": "redis://production-redis:6379" }
         }
       }
     }
@@ -371,1130 +159,161 @@ You can override settings for different environments:
 }
 ```
 
-For detailed information on RT key generation and advanced configuration options, see [Key Management](docs/key-management.md) and [Programmatic API Reference](docs/programmatic-api.md).
+For detailed key configuration and deployment instructions, see [Key Management](docs/key-management.md) and [Deployment Guide](docs/deployment-guide.md).
 
 ### Service Definition
 
-Add the following cds definition to your data model:
+Add the following to your CDS model to expose the cache management OData API:
 
-```
+```cds
 using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
-// Don't forget to protect the service, e.g. 
 annotate CachingApiService with @requires: 'authenticated-user';
 ```
 
-### Real-World Usage and Deployment
+## Multi-Tenancy (MTX)
 
+cds-caching supports SAP BTP multi-tenant applications using `@sap/cds-mtxs`. When multitenancy is detected, the plugin automatically:
 
-#### Storage Options
+- Enables **tenant-aware cache keys** (`{tenant}:{hash}`)
+- **Defers database operations** to request-time (avoids startup crashes without tenant context)
+- **Guards statistics persistence** to only run within a tenant request context
 
-cds-caching provides 5 storage options:
+### Recommended Setup
 
-##### In-Memory Cache (for development / small-scale uses)
-- Simple and fast, but not persistent
-- Not suitable for production since Node.js runtime memory is limited
-- Data is lost when the application restarts
-- Memory on SAP BTP Cloud Foundry is limited (up to 16 GB) and produces costs
-
-##### SQLite (for medium-size use uses)
-- Requires installing the adapter package: `@keyv/sqlite` (in your project)
-- Data is stored in local SQLite database
-- Data is persited next to SAP BTP application with disk-quota up to 10 GB
-- Cache will be removed after each deployment to SAP BTP
-- No distributed cache between application instances (horizontal scaling)
-
-##### Redis Cache (recommended for production)
-- Requires installing the adapter package: `@keyv/redis` (in your project)
-- Persistent and supports distributed caching
-- Works across multiple app instances, making it ideal for scalable applications
-- Available on SAP BTP via hyperscaler options (e.g., AWS, Azure, Google Cloud)
-- Even trial accounts provide Redis access
-- Redis will be non-blocking
-
-##### PostgreSQL (for production)
-- Requires installing the adapter package: `@keyv/postgres` (in your project)
-- Persistent and supports distributed caching
-- Works across multiple app instances
-- Available on SAP BTP as PostgreSQL on SAP BTP, hyperscaler option
-- Suitable when Redis is not available or PostgreSQL is already in use
-
-##### SAP HANA (for production / HDI deployments)
-- Requires installing the adapter package: `keyv-hana` and `@sap/hana-client` (in your project)
-- Persistent storage using SAP HANA column tables
-- Ideal for CAP applications already deployed on SAP HANA / HDI containers
-- Available on SAP BTP as SAP HANA Cloud
-- Supports HDI deployment via automatic `.hdbtable` generation during `cds build`
-- No additional infrastructure needed if HANA is already part of your landscape
-
-#### Redis Development Setup
-
-##### Running Redis Locally via Docker
-For local development, Redis can be quickly set up using Docker. A simple docker-compose configuration provides a lightweight caching environment:
-
-1. Create a `docker-compose.yml` file:
-```yaml
-services:
-  redis:
-    image: redis:latest
-    container_name: local-redis
-    ports:
-      - "6379:6379"
-```
-
-2. Run Redis with: 
-```bash
-docker compose up -d
-```
-
-3. Modify the `package.json` configuration to connect to the local Redis instance:
 ```json
 {
   "cds": {
     "requires": {
+      "multitenancy": true,
       "caching": {
         "impl": "cds-caching",
-        "namespace": "myCache",
+        "store": "cds"
+      }
+    }
+  }
+}
+```
+
+With `store: 'cds'`, each tenant's cache data lives in its own HDI container — fully isolated by CAP's Service Manager.
+
+Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefixed keys:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "multitenancy": true,
+      "caching": {
+        "impl": "cds-caching",
         "store": "redis",
-        "[development]": {
-          "credentials": {
-            "host": "localhost",
-            "port": 6379
-          }
-        }
+        "credentials": { "socket": { "host": "localhost", "port": 6379 } }
       }
     }
   }
 }
 ```
 
-Now, caching will be handled by Redis instead of in-memory storage during development.
+> `isTenantAware` is automatically set to `true` in MTX mode. Set `"isTenantAware": false` in `keyManagement` to explicitly opt out.
 
-#### Production Deployment on SAP BTP
+## Usage Patterns
 
-##### Redis on SAP BTP
+> **Deprecation Notice**: `cache.run()`, `cache.send()`, `cache.wrap()`, `cache.exec()` are deprecated since v1.0. Use `cache.rt.run()`, `cache.rt.send()`, `cache.rt.wrap()`, `cache.rt.exec()` instead. See [Migration Guide](docs/migration-guide.md).
 
-```mermaid
-flowchart LR
-  subgraph BTP [SAP BTP]
-    subgraph CF [Cloud Foundry / Kyma]
-      App[CAP Application]
-    end
-    Redis[("redis-cache (Redis)")]
-  end
+### Read-Through Query Caching
 
-  App -- "service binding" --> Redis
-  App -- "get / set / delete" --> Redis
-```
-
-For production deployments on SAP BTP, Redis can be provisioned as a managed service through the Redis on SAP BTP hyperscaler option. An instance can be provisioned via trial or even as a Free Tier to explore the service. However, for production scenarios the size of the Redis instance should match your caching requirements.
-
-To bind Redis to your CAP application on SAP BTP, add the following configuration in `mta.yaml`. This will automatically create the service instance and bind your application to it. Since the credentials will automatically be fetched by CAP, make sure to maintain the service-tags to match the kind property of your cds-caching service(s) in the package.json:
-
-```yaml
-modules:
-  - name: cap-app-srv
-    # ... other module configuration ...
-    requires:
-      - name: redis-cache
-
-resources:
-  - name: redis-cache
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: redis-cache
-      service-plan: trial
-      service-tags:
-        # Must match the kind property in the package.json
-        - cds-caching
-```
-
-> 👉 **Tip**: There is a detailed [blog series on Redis in SAP BTP](https://community.sap.com/t5/technology-blogs-by-sap/redis-on-sap-btp-understanding-service-entitlements-and-metrics/ba-p/13738371) explaining how to set up Redis and connect via SSH for local/hybrid testing, as this is by default not possible.
-
-#### PostgreSQL on SAP BTP
-
-```mermaid
-flowchart LR
-  subgraph BTP [SAP BTP]
-    subgraph CF [Cloud Foundry / Kyma]
-      App[CAP Application]
-    end
-    PG[("postgresql-db (PostgreSQL)")]
-  end
-
-  App -- "service binding" --> PG
-  App -- "get / set / delete" --> PG
-```
-
-PostgreSQL is available on SAP BTP as a hyperscaler option. The credentials are automatically injected via service bindings.
-
-##### Configuration
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "store": "postgres",
-        "[development]": {
-          "credentials": {
-            "host": "localhost",
-            "port": 5432,
-            "user": "postgres",
-            "password": "postgres",
-            "database": "cache"
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-##### MTA Configuration
-
-Add the following to your `mta.yaml` to create a PostgreSQL service instance and bind it to your application:
-
-```yaml
-modules:
-  - name: cap-app-srv
-    # ... other module configuration ...
-    requires:
-      - name: postgres-cache
-
-resources:
-  - name: postgres-cache
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: postgresql-db
-      service-plan: trial
-      service-tags:
-        # Must match the kind property in the package.json
-        - cds-caching
-```
-
-On SAP BTP, the bound credentials (including `uri`, `hostname`, `port`, `username`, `password`, etc.) are automatically resolved by CAP into `cds.requires.caching.credentials`. No `[production]` credentials block is needed.
-
-#### SAP HANA on SAP BTP
-
-```mermaid
-flowchart LR
-  subgraph BTP [SAP BTP]
-    subgraph CF [Cloud Foundry / Kyma]
-      App[CAP Application]
-      Deployer[HDI Deployer]
-    end
-    subgraph HDI ["hdi-container (SAP HANA)"]
-      CacheTable["KEYV (cache table)"]
-      AppTables["App tables / views"]
-    end
-  end
-
-  Deployer -- "deploys .hdbtable" --> CacheTable
-  Deployer -- "deploys .hdbtable / .hdbview" --> AppTables
-  App -- "service binding" --> HDI
-  App -- "get / set / delete" --> CacheTable
-```
-
-SAP HANA Cloud is available on SAP BTP and is the standard database for CAP applications. When using HANA as a cache store, the caching table is deployed as an HDI artifact alongside your other database artifacts.
-
-##### Prerequisites
-
-Install the required adapter packages in your project:
-
-```bash
-npm install keyv-hana @sap/hana-client
-```
-
-##### Configuration
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "store": "hana",
-        "[development]": {
-          "credentials": {
-            "host": "localhost",
-            "port": 30015,
-            "uid": "SYSTEM",
-            "pwd": "YourPassword",
-            "table": "KEYV",
-            "createTable": true
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-For development, you can set `createTable: true` to have the adapter create the table automatically. For production HDI deployments, leave it as `false` (the default) and let the HDI deployer handle table creation.
-
-##### HDI Table Artifact
-
-When `store` is set to `"hana"`, `cds-caching` automatically registers a build plugin that generates the `.hdbtable` artifact during `cds build`. The generated file is placed in the db module's build output (`src/gen/`) and will be deployed by the HDI deployer.
-
-The table name and key size can be customized via credentials:
-
-| Option    | Default | Description                          |
-| --------- | ------- | ------------------------------------ |
-| `table`   | `KEYV`  | Name of the HANA column table       |
-| `keySize` | `255`   | Max key column length (NVARCHAR size)|
-
-The generated `.hdbtable` artifact looks like this:
-
-```sql
-COLUMN TABLE "KEYV" (
-  "ID" NVARCHAR(255) PRIMARY KEY,
-  "VALUE" NCLOB
+```javascript
+const { result } = await cache.rt.run(
+  SELECT.from(BusinessPartners).where({ type: '2' }), 
+  db, 
+  { ttl: 30000 }
 )
 ```
 
-If you prefer to manage the table artifact manually (e.g. in an existing HDI project), create the file yourself in `db/src/` and the build plugin will not interfere.
-
-##### MTA Configuration
-
-Add the following to your `mta.yaml`. The caching service can share the same HANA HDI container as your main database, or use a dedicated one:
-
-**Shared HDI container** (recommended for most use cases):
-
-```yaml
-modules:
-  - name: cap-app-srv
-    # ... other module configuration ...
-    requires:
-      - name: hana-hdi
-
-  - name: cap-app-db-deployer
-    type: hdb
-    path: gen/db
-    requires:
-      - name: hana-hdi
-
-resources:
-  - name: hana-hdi
-    type: com.sap.xs.hdi-container
-    parameters:
-      service-tags:
-        - cds-caching
-```
-
-On SAP BTP, the bound HDI container credentials (including `host`, `port`, `user`, `password`, `schema`, `certificate`, etc.) are automatically resolved by CAP. The adapter maps BTP credential fields (`user`/`password`) to the HANA client fields (`uid`/`pwd`) and forwards TLS options automatically.
-
-> 👉 **Note**: Since `createTable` defaults to `false`, the adapter is HDI-ready out of the box. The runtime user (`_RT`) only performs DML operations; the HDI deployer handles all DDL via the design-time user (`_DT`).
-
-### Usage Patterns
-
-> ⚠️ **Deprecation Notice**: The following methods are deprecated since version 1.0 and will be removed in a future version:
-> - `cache.run()` - use `cache.rt.run()` instead
-> - `cache.exec()` - use `cache.rt.exec()` instead  
-> - `cache.wrap()` - use `cache.rt.wrap()` instead
-> - `cache.send()` - use `cache.rt.send()` instead
->
-> The `rt.xxx` methods provide enhanced functionality including:
-> - **Read-through metadata**: Information about cache hits/misses and latency
-> - **Consistent return format**: All methods return `{ result, cacheKey, metadata }` by default
->
-> **Migration**: Simply replace `cache.method()` with `cache.rt.method()` and access the result via `.result` property if needed.
-
-The caching service provides a flexible API for caching data in CAP applications ([full API](docs/programmatic-api.md)). Here are the key usage patterns:
-#### 1. Low-Level Key-Value API for Read-Aside Caching
-
-The most basic way to use cds-caching is through its key-value API:
+### Read-Through Remote Service Caching
 
 ```javascript
-// Connect to the caching service
-const cache = await cds.connect.to("caching")
+this.on('READ', BusinessPartners, async (req, next) => {
+  const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
+  const { result } = await cache.rt.run(req, bupa, { ttl: 30000 })
+  return result
+})
+```
 
-// Store a value (can be any object)
-await cache.set("bp:1000001", businessPartnerData)
+### ApplicationService Caching with `prepend`
 
-// Retrieve the value
-await cache.get("bp:1000001") // => businessPartnerData
+```javascript
+this.prepend(() => {
+  this.on('READ', MyEntity, async (req, next) => {
+    const cache = await cds.connect.to("caching")
+    const { result } = await cache.rt.run(req, next)
+    return result
+  })
+})
+```
 
-// Check if the key exists
-await cache.has("bp:1000001") // => true/false
+### Function Caching
 
-// Delete the key
+```javascript
+// Wrap: create a cached version of a function
+const cachedFn = cache.rt.wrap("bp-data", fetchBPData, { ttl: 3600, tags: ['bp'] })
+const { result } = await cachedFn("1000001", true)
+
+// Exec: immediate one-off execution with caching
+const { result } = await cache.rt.exec("product", fetchProduct, ["1000001"], { ttl: 3600 })
+```
+
+### Cache Invalidation
+
+```javascript
+// Time-based (TTL)
+await cache.set("key", value, { ttl: 60000 })
+
+// Key-based
 await cache.delete("bp:1000001")
 
-// Clear the whole cache
-await cache.clear()
-```
+// Tag-based
+await cache.set("bp:1000001", data, { tags: [{ value: "bp-list" }] })
+await cache.set("bp:1000002", data, { tags: [{ value: "bp-list" }] })
+await cache.deleteByTag("bp-list")
 
-**Error Handling for Basic Operations:**
-
-```javascript
-// With throwOnErrors: false (default)
-try {
-  const value = await cache.get("bp:1000001")
-  if (value === undefined) {
-    // Handle cache miss or error
-    console.log("Value not found or cache error occurred")
-  }
-} catch (error) {
-  // Only thrown for non-cache related errors
-  console.error("Unexpected error:", error)
-}
-
-// With throwOnErrors: true
-try {
-  const value = await cache.get("bp:1000001")
-  // Value will be undefined if not found, but errors will be thrown
-} catch (error) {
-  // Errors thrown for connection issues, etc.
-  console.error("Cache error:", error)
-}
-```
-
-#### 2. CQN Query Caching
-
-For more advanced CAP integration, cache CAP's CQN queries directly. By passing in the query, a dynamic key is generated based on the CQN structure of the query. Note, that passing in queries with dynamic parameters (e.g. `SELECT.from(Foo).where({id: 1})`) will result in a different key for each query execution.
-
-```javascript
-// Create and execute a CQN query
-const query = SELECT.from(BusinessPartners).where({ businessPartnerType: '2' })
-const result = await db.run(query)
-
-// Cache the result
-await cache.set(query, result)
-
-// Retrieve from cache using the same query
-const cachedResult = await cache.get(query)
-```
-Handling the cache manually via read-aside pattern is possible, but the caching service provides a more convenient way to cache and retrieve CQN queries. By using the `rt.run` method, the caching service will transparently cache the result of the query and return the cached result if available for all further requests.
-
-```javascript
-const query = SELECT.from(BusinessPartners).where({ businessPartnerType: '2' })
-
-// Runs the query internally and caches the result
-const { result } = await cache.rt.run(query, db)
-```
-
-
-Because the cache key has been dynamically created at runtime, it will also be returned:
-
-```javascript
-// Access the cacheKey for later usage
-const { result, cacheKey } = await cache.rt.run(query, db)
-```
-
-**Error Handling for Read-Through Operations:**
-
-Read-through operations never throw errors, even when cache operations fail. Instead, they include error information in the response:
-
-```javascript
-// Read-through operations always return a result, even on cache errors
-const { result, cacheKey, metadata, cacheErrors } = await cache.rt.run(query, db)
-
-if (cacheErrors && cacheErrors.length > 0) {
-  console.log("Cache errors occurred:", cacheErrors)
-  // Result will be fetched from remote service despite cache errors
-}
-
-// The result is always available, regardless of cache errors
-return result
-```
-
-#### 3. RemoteService Request-Level Caching
-
-Cache entire CAP requests with context awareness (e.g. user, tenant, locale, etc.), which is useful for caching slow remote service calls or even application services. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale (if not configured otherwise).
-
-```javascript
-// Cache the requests to an exposed external entity
-this.on('READ', BusinessPartners, async (req, next) => {
-  const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-  let value = await cache.get(req)
-  if(!value) {
-    value = await bupa.run(req)
-    await cache.set(req, value, { ttl: 30000 })
-  }
-  return value
+// Dynamic tags from data
+await cache.set("bp-list", bpArray, { 
+  tags: [{ data: "businessPartner", prefix: "bp-" }] 
 })
 ```
 
-Alternatively use read-through caching via the `rt.run` method to let the caching service handle the caching transparently:
+For more usage patterns, error handling details, and TypeScript support, see [Programmatic API](docs/programmatic-api.md).
+
+## Statistics & Monitoring
+
+Metrics are disabled by default. Enable at runtime:
 
 ```javascript
-this.on('READ', BusinessPartners, async (req, next) => {
-  const bupa = await cds.connect.to('API_BUSINESS_PARTNER')
-  const { result } = await cache.rt.run(req, bupa)
-  return result
-})
+const cache = await cds.connect.to("caching")
+await cache.setMetricsEnabled(true)
+await cache.setKeyMetricsEnabled(true)
 
+const stats = await cache.getCurrentMetrics()
 ```
 
-This will transparently cache the result of the request and return the cached result if available for all further requests.
+The plugin includes an [example dashboard](docs/example-app.md) for visualizing cache performance:
 
-### 4. ApplicationService Request-Level Caching
-
-
-> Caching an entire entity should be used with caution, as it will cache all permutations of requests ($select, $filter, $expand, $orderby, etc.) on the entity, which may lead to a huge number of cache entries. Use this only for entities where you can guarantee a low number of different queries.
-
-
-But not only external services can be cached, it's also possible to cache requests against an ApplicationService.
-Here, you should make use of the [`prepend`](https://cap.cloud.sap/docs/node.js/core-services#srv-prepend) function, to register the `on` handler before the default handler. Thus, it is possible to first check for the cache entries and only execute the default behavior if necessary.
-
-
-```javascript
-class MyService extends cds.ApplicationService {
-  async init() {
-
-    // Read-through caching for the full entity
-    this.prepend(() => {
-      const { MyEntity } = this.entities;
-      this.on('READ', MyEntity, async (req, next) => {
-        const cache = cds.connect.to("caching");
-        const { result } = await cache.rt.run(req, next)
-        return result;
-      });
-    });
-    return super.init()
-  }
-}
-```
-
-#### 5. ApplicationService Request-Level Caching with Annotations
-
-Alternatively to doing this via code, you can use annotations to enable caching on service entities or OData functions. The caching service will automatically generate a key for the request based on the request object and the current user, tenant and locale. 
-
-```
-service MyService {
-  @cache: {     
-    ttl: 10000 // 10 seconds
-  }
-  entity BusinessPartners as projection on BusinessPartner {
-    // ... entity definition
-  }
-
-
-  @cache: {
-    ttl: 100000, // 10 seconds
-    tags: [{
-      template: 'user-{user}'
-    }]
-  }
-  function getUserPreferences() returns array of Preferences;
-}
-```
-
-#### 5. Function Caching
-
-While not directly related to CAP functionality, the caching service provides two methods for read-through caching of JavaScript functions:
-
-```javascript
-// Using wrap() to create a cached version of a function
-const fetchBusinessPartnerData = async (businessPartnerId, includeAddresses) => {
-  // ... some expensive computation to fetch BP data
-  return businessPartnerData
-}
-
-// Creates a cached version of the function.
-const cachedBpOperation = cache.rt.wrap("bp-data", fetchBusinessPartnerData, { 
-  ttl: 3600,
-  tags: ['business-partner']
-})
-
-// Each call checks cache first, only executes if cache miss
-const result = await cachedBpOperation("1000001", true)
-
-// Using exec() for immediate execution with caching
-const result = await cache.rt.exec("product-data", async (productId) => {
-  // ... some expensive computation to fetch product data
-  return productData
-}, ["1000001"], { 
-  ttl: 3600,
-  tags: ['product']
-})
-```
-
-The key differences between `rt.wrap()` and `rt.exec()`:
-- `rt.wrap()` returns a new function that includes caching logic
-- `rt.exec()` immediately executes the function and caches the result
-- Use `rt.wrap()` when you need to reuse the cached function multiple times
-- Use `rt.exec()` for one-off executions with caching
-
-#### Dynamic Key Generation
-
-All `rt.xxx` methods automatically generate dynamic cache keys based on function arguments (`wrap`, `exec`) and request/query parameters. This ensures that different function calls with different arguments are cached separately.
-
-```javascript
-// Different arguments = different cache keys
-const result1 = await cachedBpOperation("1000001", true)  // Cache key: "bp-data:1000001:true"
-const result2 = await cachedBpOperation("1000002", false)  // Cache key: "bp-data:1000002:false"
-```
-
-You can override this behavior by providing a custom key template:
-
-```javascript
-const cachedOperation = cache.rt.wrap("bp-profile", fetchBusinessPartnerData, {
-  key: "profile:{args[0]}:{args[1]}"
-})
-```
-
-For detailed information on how read-through keys are generated and configured, see [Key Management](docs/key-management.md).
-
-### Cache Invalidation Strategies
-
-The caching service provides different strategies to invalidate cached values.
-
-**IMPORTANT: You should not use cds-caching without a proper invalidation strategy.**
-
-#### 1. Time-Based (TTL)
-
-The most basic strategy is to use a time-to-live (TTL) for the cache. The caching service will automatically delete the value from the cache after the specified TTL has expired.
-The TTL can be specified for individually through all cache methods (e.g. `set`, `run`, `send`, `wrap`, `exec`).
-
-```javascript
-// Store with 60 seconds TTL
-await cache.set("key", "value", { ttl: 60000 })
-
-// Run with 30 seconds TTL
-const { result } = await cache.rt.run(query, db, { ttl: 30000 })
-
-// Send with 10 seconds TTL
-const { result } = await cache.rt.send(request, service, { ttl: 10000 })
-
-// Wrap with 10 seconds TTL
-const cachedOperation = cache.rt.wrap("key", expensiveOperation, { ttl: 10000 })
-
-// Exec with 10 seconds TTL
-const { result } = await cache.rt.exec("key", async () => {
-  // ... some expensive computation
-  return result
-}, [] { 
-  ttl: 10000
-})
-```
-
-#### 2. Key-Based
-
-Key-based invalidation is a way to invalidate cache entries based on a specific key.
-
-```javascript
-await cache.delete("key")
-```
-
-Keys are critical for cache invalidation. To allow custom key management, you can override the auto-generated key. This option is available for all essential methods (e.g cache.set, cache.rt.run, cache.rt.send, cache.createKey) and for the annotations.
-
-**Read-Through (RT) Methods**: All `rt.xxx` methods automatically generate dynamic cache keys and return them in the response. The generated keys include configurable context (user, tenant, locale) and a content hash. For detailed information on RT key generation, see [Key Management](docs/key-management.md).
- 
-```javascript
-// No key override given, string will just be used as keys
-await cache.set('bp:1000001', businessPartnerData) // key: bp:1000001
-
-// No key override given, objects will be smartly hashed 
-await cache.set(SELECT.from(BusinessPartners)) // key: bd3f3690d3e96a569bd89d9e207a89af
-
-// Automatically build the key for retrieval/deletion
-cache.createKey(SELECT.from(BusinessPartners)) // key: bd3f3690d3e96a569bd89d9e207a89af
-
-// Override and use your own key based on a fixed value
-await cache.set(SELECT.from(BusinessPartners, 1000001), { key: "bp:1000001" })
-
-// RT methods return the generated cache key
-const { result, cacheKey } = await cache.rt.run(query, db)
-console.log('Generated key:', cacheKey) // e.g., "tenant-acme:user-john:locale-en:hash-abc123"
-
-// Override RT key template for requests
-await cache.rt.run(req, remoteService, { key: "mykey:{tenant}:{user}:{locale}:{hash}" })
-
-// This requests will be cached for all users and for each locale 
-await cache.rt.run(req, remoteService, { key: "mykey:{user}:{locale}:{hash}" })
-
-// Function wrapping with custom key template
-const cachedFunction = cache.rt.wrap("user-data", expensiveOperation, {
-  key: "user:{user}:{args[0]}"
-})
-```
-
-#### 3. Tag-Based
-
-Tags are a way to invalidate cache entries based on a specific tag. Tags need to be provided explicitly when storing a value in the cache and are supported for all cache methods (e.g. `set`, `rt.run`, `rt.send`, `rt.wrap`, `rt.exec`).
-Tags can be provided as an array of strings or as an array of objects with the following properties:
-- `value`: The value to use for the tag.
-- `data`: A field from the value to use for the tag. This is working for objects and arrays of objects.
-- `prefix`: A prefix that will be added to the tag.
-- `suffix`: A suffix that will be added to the tag.
-- `template`: A template string that will be used to generate the tag (e.g. `{tenant}-{locale}-{user}-{hash}`). This is useful for dynamic tags based on cds.Requests. 
-Templates support the following properties:
-  - `{user}`: The current user
-  - `{tenant}`: The current tenant
-  - `{locale}`: The current locale
-  - `{hash}`: The hash of the current query
-
-
-
-```javascript
-// Store with static tag
-await cache.set("bp:1000001", businessPartnerData, { 
-  tags: [{ value: "bp-1000001" }] 
-})
-
-// Store with template tag (will generate a tag like "tenant-global-user-anonymous")
-await cache.set("bp:1000001", businessPartnerData, { 
-  tags: [{ template: "tenant-{tenant}-user-{user}" }] 
-})
-
-// Store with data-based tag
-await cache.set("product:1000001", { productId: 1000001, name: "Laptop Computer" }, { 
-  tags: [{ data: "productId", prefix: "product-" }] 
-})
-
-// Invalidate by tag
-await cache.deleteByTag('bp-1000001')
-```
-This is really useful for invalidating cache entries based on a specific attribute or context.
-
-#### 3. Dynamic Tags
-
-Dynamic tags using data `data` property are a way to invalidate cache entries based on the data itself. The caching service will automatically generate a tag for the value and invalidate the cache entry when the value changes.
-
-```javascript
-
-const businessPartners = [
-  {
-    businessPartner: 1000001,
-    name: 'Acme Corporation'
-  },
-  {
-    businessPartner: 1000002,
-    name: 'Tech Solutions Ltd'
-  }
-]
-
-// Store with dynamic tags
-await cache.set("bp-list", businessPartners, { 
-  tags: [
-    { data: 'businessPartner', prefix: 'bp-' },
-    { value: "businessPartner" }
-  ]
-})
-
-// Introspect the tags
-const tags = await cache.tags("bp-list") // => ["bp-1000001", "bp-1000002", "businessPartner"]
-
-// Invalidate by tag
-await cache.deleteByTag('bp-1000001')
-await cache.deleteByTag('bp-1000002')
-```
-
-This is really usefull for caching results with multiple rows where you can't predict the tags beforehand or when you want to invalidate cache entries based on the data itself. This is also possible for the `rt.run` method.
-
-```javascript
-const result = await cache.rt.run(query, db, { 
-  tags: [{ data: 'businessPartner', prefix: 'bp-' }]
-})
-```
-
-This will transparently cache the result of the query and create a tag for each business partner in the result. If you use the same technique in other places and you want to invalidate the cache entries for a specific business partner, you can do this by simply invalidating the tag `bp-1`.
-
-### Cache Iteration
-
-The caching service provides an iterator interface to traverse all cache entries:
-
-```javascript
-const iterator = await cache.iterator()
-
-for await (const entry of iterator) {
-  console.log(entry)
-}
-```
-
-This will return an iterator over all cache entries. You can use this to traverse all cache entries and invalidate them based on a specific condition. You should only use this for small caches (e.g. by using multiple caching services with different namespaces).
-
-### TypeScript Support
-
-cds-caching includes comprehensive TypeScript definitions. The library is written in JavaScript but provides full TypeScript support for better development experience.
-
-#### Basic Usage with TypeScript
-
-```typescript
-import { CachingService, CacheOptions, ReadThroughResult } from 'cds-caching';
-
-const cache = await cds.connect.to('caching') as CachingService;
-
-// Basic cache operations
-await cache.set('my-key', { data: 'value' }, { ttl: 3600 });
-const value = await cache.get('my-key');
-
-// Read-through operations with full type safety
-const { result, cacheKey, metadata } = await cache.rt.send(request, service, {
-  ttl: 1800,
-  tags: ['user-data']
-});
-
-// Function wrapping with type inference
-const cachedFunction = cache.rt.wrap('expensive-operation', async (id: string) => {
-  return await this.performExpensiveOperation(id);
-});
-
-const { result: operationResult } = await cachedFunction('user-123');
-
-```
-
-### OData Service Caching Considerations
-
-While caching individual requests can improve performance, **caching an entire OData service is generally not recommended**. Here's why:
-
-1. **Data Consistency**: OData services expose live business data that frequently changes. Caching responses without an appropriate invalidation strategy can lead to outdated or incorrect data being served.
-
-2. **Query Complexity**: OData allows dynamic query parameters ($filter, $expand, $orderby, etc.), making it difficult to cache efficiently without storing excessive variations.
-
-3. **Payload Size**: Full OData responses can be significantly large, consuming cache memory inefficiently compared to caching targeted CQN queries or specific request results.
-
-Instead of caching entire OData service responses, focus on:
-- Specific queries or request results
-- Static master data
-- Computed results
-- Remote service calls with stable data
-
-### Best Practices
-
-1. **Cache Selectively**: Not all data benefits from caching. Focus on:
-   - Frequently accessed, rarely changed data
-   - Computationally expensive operations
-   - Remote service calls with stable data
-
-2. **Use Appropriate TTLs**: Set TTLs based on data volatility:
-   - Short TTLs (seconds/minutes) for frequently changing data
-   - Longer TTLs (hours/days) for stable reference data
-
-3. **Implement Cache Tags**: Use tags for granular cache invalidation:
-   - Group related cache entries
-   - Enable targeted invalidation
-   - Use dynamic tags for user/tenant-specific caching
-
-4. **Monitor Cache Performance**: Regularly check cache statistics:
-   - Hit rates
-   - Memory usage
-   - Response times
-   - Error rates
-
-### Limitations and Considerations
-
-1. **Memory Usage**: Monitor cache size, especially with in-memory storage
-2. **Consistency**: Consider data freshness requirements when setting TTLs
-3. **Multi-Tenant**: Use appropriate namespacing and key strategies
-4. **Redis Setup**: Ensure proper configuration for production use
-
-## Enhanced Statistics & Monitoring
-
-The plugin now includes comprehensive statistics and monitoring capabilities that provide deep insights into cache performance and help optimize cache usage.
+![Cache Dashboard](./docs/dashboard.jpg)
 
 [See the full Metrics Guide →](docs/metrics-guide.md)
 
-### Key Features
-
-- **Real-time Metrics**: Monitor cache performance with detailed hit rates, latencies, and throughput
-- **Key-level Tracking**: Track performance metrics for individual cache keys
-- **Historical Data**: Store and analyze metrics over time (hourly/daily periods)
-- **Performance Analytics**: Calculate cache efficiency, error rates, and response times
-- **Runtime Configuration**: Enable/disable metrics at runtime without restart
-- **API Access**: Access metrics programmatically or via OData service
-
-### Metrics Overview
-
-cds-caching provides two types of metrics:
-
-#### 1. General Cache Metrics
-Track overall cache performance including:
-- **Hit/Miss Statistics**: Total hits, misses, and hit ratios
-- **Latency Metrics**: Average, min, max, and percentile latencies for hits and misses
-- **Performance Metrics**: Throughput (requests/second), error rates, cache efficiency
-- **Memory Usage**: Current memory consumption and item count
-- **Native Operations**: Counts of direct cache operations (set, get, delete, etc.)
-
-#### 2. Key-level Metrics
-Track performance for individual cache keys including:
-- **Key-specific Statistics**: Hits, misses, and hit ratios per key
-- **Context Information**: Data type, service name, entity name, operation type
-- **Enhanced Metadata**: Query text, request info, function names, user/tenant context
-- **Performance Tracking**: Latency and throughput metrics per key
-
-### Enabling Metrics
-
-Metrics are disabled by default to minimize performance impact. They can only be enabled/disabled via the programmatic API or OData API at runtime, not through package.json configuration.
-
-To enable metrics programmatically:
-
-```javascript
-// Connect to the caching service
-const cache = await cds.connect.to("caching")
-
-// Enable metrics at runtime
-await cache.setMetricsEnabled(true)
-await cache.setKeyMetricsEnabled(true)
-```
-
-Or via OData API:
-
-```http
-### Enable general metrics
-POST http://localhost:4004/odata/v4/caching-api/Caches('caching')/setMetricsEnabled
-Content-Type: application/json
-
-{
-  "enabled": true
-}
-
-### Enable key-level metrics
-POST http://localhost:4004/odata/v4/caching-api/Caches('caching')/setKeyMetricsEnabled
-Content-Type: application/json
-
-{
-  "enabled": true
-}
-```
-
-### Accessing Metrics via Caching Service
-
-The caching service provides comprehensive metrics collection and persistence capabilities. Metrics are automatically collected during cache operations and can be accessed both in real-time and from historical data.
-
-#### Metrics Persistence
-
-**Transient Metrics**: Current statistics are kept in memory and provide real-time insights into cache performance:
-- Hit/miss ratios
-- Current latency statistics
-- Active cache entries
-- Key-level performance data
-
-**Persisted Metrics**: Historical data is automatically stored in the database for long-term analysis:
-- Hourly aggregated statistics
-- Key-level metrics over time
-- Performance trends and patterns
-- Cache efficiency analysis
-
-#### Current Statistics
-
-```javascript
-// Connect to the caching service
-const cache = await cds.connect.to("caching")
-
-// Get current statistics
-const stats = await cache.getCurrentStats()
-console.log('Hit ratio:', stats.hitRatio)
-console.log('Average hit latency:', stats.avgHitLatency)
-console.log('Throughput:', stats.throughput)
-
-// Get current key metrics
-const keyMetrics = await cache.getCurrentKeyMetrics()
-for (const [key, metrics] of keyMetrics) {
-    console.log(`Key ${key}:`, {
-        hits: metrics.hits,
-        misses: metrics.misses,
-        hitRatio: metrics.hitRatio,
-        avgHitLatency: metrics.avgHitLatency
-    })
-}
-```
-
-#### Historical Metrics
-
-```javascript
-// Get metrics for a specific time period
-const from = new Date('2024-01-01')
-const to = new Date('2024-01-31')
-const historicalStats = await cache.getMetrics(from, to)
-
-// Get key-specific metrics
-const keyStats = await cache.getKeyMetrics('my-cache-key', from, to)
-```
-
-#### Runtime Configuration
-
-```javascript
-// Enable/disable metrics at runtime
-await cache.setMetricsEnabled(true)
-await cache.setKeyMetricsEnabled(true)
-
-// Get current configuration
-const config = await cache.getRuntimeConfiguration()
-console.log('Metrics enabled:', config.metricsEnabled)
-console.log('Key metrics enabled:', config.keyMetricsEnabled)
-
-// Clear metrics
-await cache.clearMetrics()
-await cache.clearKeyMetrics()
-```
-
-### Metrics Data Structure
-
-#### General Cache Statistics (Metrics Entity)
-
-```javascript
-{
-  // Entity identification
-  ID: "daily:2024-01-15",           // Unique identifier (period:date)
-  cache: "caching",                  // Cache name
-  timestamp: "2024-01-15T10:30:00Z", // When metrics were recorded
-  period: "daily",                   // Aggregation period (hourly/daily/monthly)
-  
-  // Read-through metrics
-  hits: 1500,                        // Number of cache hits
-  misses: 300,                       // Number of cache misses
-  errors: 5,                         // Number of errors
-  totalRequests: 1800,               // Total read-through requests
-  
-  // Read-through latency metrics (milliseconds)
-  avgHitLatency: 2.5,                // Average hit latency
-  minHitLatency: 0.1,                // Minimum hit latency
-  maxHitLatency: 15.2,               // Maximum hit latency
-  avgMissLatency: 45.8,              // Average miss latency
-  minMissLatency: 12.3,              // Minimum miss latency
-  maxMissLatency: 120.5,             // Maximum miss latency
-  avgReadThroughLatency: 8.9,        // Average read-through latency
-  
-  // Read-through performance metrics
-  hitRatio: 0.833,                   // Hit ratio as percentage (83.3%)
-  throughput: 25.5,                  // Requests per second
-  errorRate: 0.003,                  // Error rate as percentage (0.3%)
-  cacheEfficiency: 18.3,             // Miss latency / hit latency ratio
-  
-  // Native operation metrics
-  nativeSets: 200,                   // Number of direct set operations
-  nativeGets: 800,                   // Number of direct get operations
-  nativeDeletes: 50,                 // Number of direct delete operations
-  nativeClears: 2,                   // Number of clear operations
-  nativeDeleteByTags: 10,            // Number of delete-by-tag operations
-  nativeErrors: 1,                   // Number of native operation errors
-  totalNativeOperations: 1063,       // Total native operations
-  nativeThroughput: 17.7,            // Native operations per second
-  nativeErrorRate: 0.001,            // Native operation error rate (0.1%)
-  
-  // System metrics
-  memoryUsage: 52428800,             // Memory usage in bytes
-  itemCount: 150,                    // Number of items in cache
-  uptimeMs: 7200000                  // Cache uptime in milliseconds
-}
-```
-
-#### Key-level Metrics (KeyMetrics Entity)
-
-```javascript
-{
-  // Entity identification
-  ID: "key:user-preferences:123",    // Unique identifier
-  cache: "caching",                  // Cache name
-  keyName: "user-preferences:123",   // Cache key name
-  lastAccess: "2024-01-15T10:30:00Z", // Last access time
-  period: "current",                 // Period type (current/hourly/daily)
-  operationType: "read_through",     // Operation category (read_through/native/mixed)
-  
-  // Read-through metrics
-  hits: 45,                          // Number of hits for this key
-  misses: 5,                         // Number of misses for this key
-  errors: 0,                         // Number of errors for this key
-  totalRequests: 50,                 // Total requests for this key
-  hitRatio: 0.9,                     // Hit ratio for this key (90%)
-  cacheEfficiency: 21.2,             // Cache efficiency for this key
-  
-  // Read-through latency metrics (milliseconds)
-  avgHitLatency: 1.2,                // Average hit latency for this key
-  minHitLatency: 0.5,                // Minimum hit latency for this key
-  maxHitLatency: 3.1,                // Maximum hit latency for this key
-  avgMissLatency: 25.4,              // Average miss latency for this key
-  minMissLatency: 15.2,              // Minimum miss latency for this key
-  maxMissLatency: 45.8,              // Maximum miss latency for this key
-  avgReadThroughLatency: 3.8,        // Average read-through latency for this key
-  
-  // Read-through performance metrics
-  throughput: 2.5,                   // Requests per second for this key
-  errorRate: 0.0,                    // Error rate for this key (0%)
-  
-  // Native operation metrics for this key
-  nativeHits: 10,                    // Native hits for this key
-  nativeMisses: 2,                   // Native misses for this key
-  nativeSets: 5,                     // Native sets for this key
-  nativeDeletes: 1,                  // Native deletes for this key
-  nativeClears: 0,                   // Native clears for this key
-  nativeDeleteByTags: 0,             // Native delete-by-tags for this key
-  nativeErrors: 0,                   // Native errors for this key
-  totalNativeOperations: 18,         // Total native operations for this key
-  nativeThroughput: 0.5,             // Native operations per second for this key
-  nativeErrorRate: 0.0,              // Native error rate for this key
-  
-  // Context and metadata
-  dataType: "request",               // Type of data (query/request/function/custom)
-  operation: "READ",                 // Cache operation type
-  metadata: '{"ttl":3600}',          // JSON string with additional metadata
-  context: '{"user":"john.doe","tenant":"acme"}', // JSON string with context
-  query: "SELECT * FROM UserPreferences WHERE userId = '123'", // CQL query text
-  subject: '{"entity":"UserPreferences"}', // JSON string with subject info
-  target: "UserService",             // Target service name
-  tenant: "acme",                    // Tenant information
-  user: "john.doe",                  // User information
-  locale: "en-US",                   // Locale information
-  cacheOptions: '{"ttl":3600}',      // JSON string with cache options
-  timestamp: "2024-01-15T09:00:00Z"  // When this key was first accessed
-}
-```
-
-### Best Practices for Metrics
-
-1. **Enable Selectively**: Only enable metrics when needed for monitoring or debugging
-2. **Monitor Memory Usage**: Key metrics can consume significant memory for large caches
-3. **Set Appropriate Intervals**: Balance persistence frequency with performance impact
-4. **Use Historical Data**: Analyze trends over time to optimize cache configuration
-5. **Monitor Error Rates**: High error rates may indicate configuration issues
-6. **Track Cache Efficiency**: Aim for high cache efficiency (miss latency >> hit latency)
-
 ## API Reference
 
-The cds-caching plugin provides two APIs for managing cache operations:
+| API | Description |
+|-----|-------------|
+| [Programmatic API](docs/programmatic-api.md) | JavaScript methods for cache operations |
+| [OData API](docs/odata-api.md) | REST endpoints for monitoring and management |
 
-- **Programmatic API** - JavaScript methods for use within your CAP application code
-- **OData API** - REST endpoints for external applications and monitoring tools
+## Contributing
 
-### Programmatic API
+Contributions are welcome! Please submit pull requests to the [repository](https://github.com/mikezaschka/cds-caching).
 
-The programmatic API provides methods for direct cache operations within your CAP application:
-
-```javascript
-// Connect to the caching service
-const cache = await cds.connect.to("caching")
-
-// Basic operations
-await cache.set("key", "value")
-const value = await cache.get("key")
-await cache.delete("key")
-
-// Read-through operations
-const result = await cache.rt.run(query, db)
-const result = await cache.rt.send(request, service)
-
-// Metrics and statistics
-const stats = await cache.getCurrentStats()
-const keyMetrics = await cache.getCurrentKeyMetrics()
-```
-
-[See the full Programmatic API Reference →](docs/programmatic-api.md)
-
-### OData API
-
-The OData API provides REST endpoints for external applications, monitoring tools, and administrative interfaces:
-
-```http
-### Get cache statistics
-GET /odata/v4/caching-api/Metrics?$filter=cache eq 'mycache'
-
-### Get cache entries
-GET /odata/v4/caching-api/Caches('mycache')/getEntries()
-
-### Clear cache
-POST /odata/v4/caching-api/Caches('mycache')/clear()
-```
-
-[See the full OData API Reference →](docs/odata-api.md)
-
-### Contributing
-
-Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
-
-### License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

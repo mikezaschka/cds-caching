@@ -15,8 +15,10 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
 
     static hasTask() {
         const requires = cds.env.requires || {};
+        const dbKind = requires.db?.kind || '';
+        const isHanaDB = dbKind === 'hana' || dbKind === 'sql';
         return Object.values(requires).some(
-            r => r.impl === 'cds-caching' && r.store === 'hana'
+            r => r.impl === 'cds-caching' && (r.store === 'hana' || (r.store === 'cds' && isHanaDB))
         );
     }
 
@@ -35,6 +37,9 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 await this.write(content).to(`src/gen/${table}.hdbtable`);
                 LOG.info('Building cds-caching hana table', { table, keySize });
             }
+            // For store: 'cds' with HANA, the CacheStore entity from index.cds
+            // is deployed automatically by the HDI deployer — no manual .hdbtable needed.
+            // For SQLite/Postgres, CAP's cds deploy handles table creation from the CDS model.
         }
     }
 });

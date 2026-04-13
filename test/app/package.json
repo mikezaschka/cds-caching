@@ -29,20 +29,12 @@
       },
       "caching": {
         "impl": "cds-caching",
-        "namespace": "redisCache",
-        "store": "redis",
+        "namespace": "testCache",
+        "store": "memory",
         "statistics": {
           "enabled": true,
           "persistenceInterval": 10000,
           "maxLatencies": 1000
-        },
-        "credentials": {
-          "socket": {
-            "host": "localhost",
-            "port": 6379,
-            "keepAlive": true,
-            "pingInterval": 1000
-          }
         }
       },
       "caching-northwind": {
@@ -95,6 +87,11 @@
         "impl": "cds-caching",
         "namespace": "in-memory",
         "store": "memory"
+      },
+      "caching-cds": {
+        "impl": "cds-caching",
+        "namespace": "cds-store",
+        "store": "cds"
       }
     }
   }

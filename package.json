@@ -1,6 +1,6 @@
 {
   "name": "cds-caching",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "A caching plugin for SAP CAP applications",
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
   "main": "cds-plugin.js",
   "types": "lib/CachingService.d.ts",
   "files": [
+    "db/**",
     "srv/**",
     "index.cds",
     "lib/**"
@@ -31,6 +32,9 @@
   "scripts": {
     "test": "jest --runInBand --silent",
     "test:watch": "jest --watch",
+    "test:docker:start": "docker compose -f test/docker/docker-compose.yaml up -d --wait",
+    "test:docker:stop": "docker compose -f test/docker/docker-compose.yaml down",
+    "test:all": "npm run test:docker:start && npm test; status=$?; npm run test:docker:stop; exit $status",
     "lint": "eslint .",
     "release": "release-it"
   },
@@ -100,5 +104,17 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "cds": {
+    "requires": {
+      "kinds": {
+        "cds-caching": {
+          "impl": "cds-caching"
+        },
+        "caching": {
+          "impl": "cds-caching"
+        }
+      }
+    }
   }
 }

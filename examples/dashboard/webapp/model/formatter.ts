@@ -117,6 +117,7 @@ export default {
 		if (!dateString) {
 			return "";
 		}
+
 		const date = new Date(dateString);
 		return date.toLocaleString();
 	},

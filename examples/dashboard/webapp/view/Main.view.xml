@@ -43,8 +43,8 @@
 					<ColumnListItem type="Navigation">
 						<cells>
 							<Text text="{name}" />
-							<Text text="{path: 'metricsEnabled', formatter: 'formatter.booleanToText'}" />
-							<Text text="{path: 'keyMetricsEnabled', formatter: 'formatter.booleanToText'}" />
+							<Text text="{path: 'metricsEnabled' }" />
+							<Text text="{path: 'keyMetricsEnabled' }" />
 						</cells>
 
 					</ColumnListItem>

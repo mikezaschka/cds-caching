@@ -6,6 +6,9 @@ sap.ui.define(["sap/m/library"], function (sap_m_library) {
    * Formatter utility for cache statistics dashboard
    */
   var __exports = {
+    booleanToText(value) {
+      return value ? "Yes" : "No";
+    },
     formatIntegerValue(value) {
       if (value === null || value === undefined || value === 0) {
         return "0";

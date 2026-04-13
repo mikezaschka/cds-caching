@@ -7,9 +7,17 @@ resources:
     paths:
       webapp: dist
 framework:
-  name: OpenUI5
+  name: SAPUI5
   version: "1.136.1"
   libraries:
     - name: sap.m
+    - name: sap.f
+    - name: sap.ui.comp
+    - name: sap.tnt
     - name: sap.ui.core
+    - name: sap.ui.layout
+    - name: sap.ui.table
+    - name: sap.ui.unified
+    - name: sap.ui.ux3
+    - name: sap.viz
     - name: themelib_sap_horizon

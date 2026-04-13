@@ -5,6 +5,10 @@ import { ValueColor } from "sap/m/library";
  */
 export default {
 
+	booleanToText(value: boolean): string {
+		return value ? "Yes" : "No";
+	},
+
 	formatIntegerValue(value: number): string {
 		if (value === null || value === undefined || value === 0) {
 			return "0";
@@ -117,6 +121,7 @@ export default {
 		if (!dateString) {
 			return "";
 		}
+
 		const date = new Date(dateString);
 		return date.toLocaleString();
 	},

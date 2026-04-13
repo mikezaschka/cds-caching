@@ -177,7 +177,7 @@
 										<Text text="Timestamp" />
 									</ui:label>
 									<ui:template>
-										<Text text="{formatter: 'formatter.formatDate', path: 'timestamp'}" />
+										<Text text="{ path: 'timestamp'}" />
 									</ui:template>
 								</ui:Column>
 
@@ -706,7 +706,7 @@
 										<Text text="Last Access" />
 									</ui:multiLabels>
 									<ui:template>
-										<Text text="{formatter: 'formatter.formatDate', path: 'lastAccess'}" />
+										<Text text="{ path: 'lastAccess'}" />
 									</ui:template>
 								</ui:Column>
 								<ui:Column width="150px" sortProperty="timestamp" filterProperty="timestamp">
@@ -715,7 +715,7 @@
 										<Text text="First Access" />
 									</ui:multiLabels>
 									<ui:template>
-										<Text text="{formatter: 'formatter.formatDate', path: 'timestamp'}" />
+										<Text text="{ path: 'timestamp'}" />
 									</ui:template>
 								</ui:Column>
 							</ui:columns>
@@ -757,7 +757,7 @@
 														<Text text="{ui>entryKey}" tooltip="{ui>entryKey}" />
 														<Text text="{ui>value}" tooltip="{ui>value}" />
 														<Text text="{ui>tags}" />
-														<Text text="{formatter: 'formatter.formatDate', path: 'ui>timestamp'}" />
+														<Text text="{ path: 'ui>timestamp'}" />
 													</cells>
 												</ColumnListItem>
 											</items>

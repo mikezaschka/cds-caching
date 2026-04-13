@@ -387,6 +387,155 @@ describe('Telemetry integration (span creation)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Suite 4 — Integration: span decoration in BasicOperations
+// ---------------------------------------------------------------------------
+describe('Telemetry integration (BasicOperations span decoration)', () => {
+
+    let spanExporter, tracerProvider;
+    let BasicOperations;
+
+    function makeMocks(sendResult = null) {
+        const cache = {
+            options: { throwOnErrors: false },
+            cache: {
+                has: jest.fn().mockResolvedValue(false),
+                iterator: jest.fn().mockImplementation(async function* () {}),
+            },
+            send: jest.fn().mockResolvedValue(sendResult),
+            name: 'test-cache',
+        };
+        const keyManager = { createKey: jest.fn().mockReturnValue('resolved-key') };
+        const tagResolver = { resolveTags: jest.fn().mockReturnValue([]) };
+        const statistics = {
+            recordNativeSet: jest.fn(),
+            recordNativeGet: jest.fn(),
+            recordNativeDelete: jest.fn(),
+            recordNativeClear: jest.fn(),
+            recordNativeDeleteByTag: jest.fn(),
+        };
+        return { cache, keyManager, tagResolver, statistics };
+    }
+
+    beforeAll(async () => {
+        jest.restoreAllMocks();
+        jest.resetModules();
+
+        spanExporter = new InMemorySpanExporter();
+        tracerProvider = new NodeTracerProvider({
+            spanProcessors: [new SimpleSpanProcessor(spanExporter)]
+        });
+        tracerProvider.register();
+
+        BasicOperations = require('../lib/operations/BasicOperations');
+    });
+
+    afterAll(async () => {
+        await tracerProvider.shutdown();
+        otelApi.trace.disable();
+    });
+
+    beforeEach(() => {
+        spanExporter.reset();
+    });
+
+    it('set() decorates the active span with cache attributes', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks();
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        const tracer = otelApi.trace.getTracer('test');
+        await tracer.startActiveSpan('parent-set', async (span) => {
+            await ops.set('my-key', 'my-value', { ttl: 5000 });
+            span.end();
+        });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.operation']).toBe('set');
+        expect(spans[0].attributes['cache.operation_type']).toBe('basic');
+        expect(spans[0].attributes['cache.key']).toBe('resolved-key');
+        expect(spans[0].attributes['cache.ttl_ms']).toBe(5000);
+    });
+
+    it('get() decorates the active span with cache.hit=false on cache miss', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks(null);
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        const tracer = otelApi.trace.getTracer('test');
+        await tracer.startActiveSpan('parent-get-miss', async (span) => {
+            await ops.get('my-key');
+            span.end();
+        });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.operation']).toBe('get');
+        expect(spans[0].attributes['cache.operation_type']).toBe('basic');
+        expect(spans[0].attributes['cache.key']).toBe('resolved-key');
+        expect(spans[0].attributes['cache.hit']).toBe(false);
+    });
+
+    it('get() decorates the active span with cache.hit=true on cache hit', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks({ value: 'cached', tags: [], timestamp: Date.now() });
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        const tracer = otelApi.trace.getTracer('test');
+        await tracer.startActiveSpan('parent-get-hit', async (span) => {
+            await ops.get('my-key');
+            span.end();
+        });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.hit']).toBe(true);
+        expect(spans[0].attributes['cache.operation']).toBe('get');
+    });
+
+    it('delete() decorates the active span with cache attributes', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks();
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        const tracer = otelApi.trace.getTracer('test');
+        await tracer.startActiveSpan('parent-delete', async (span) => {
+            await ops.delete('my-key');
+            span.end();
+        });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.operation']).toBe('delete');
+        expect(spans[0].attributes['cache.operation_type']).toBe('basic');
+        expect(spans[0].attributes['cache.key']).toBe('resolved-key');
+    });
+
+    it('clear() decorates the active span with cache attributes', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks();
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        const tracer = otelApi.trace.getTracer('test');
+        await tracer.startActiveSpan('parent-clear', async (span) => {
+            await ops.clear();
+            span.end();
+        });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.operation']).toBe('clear');
+        expect(spans[0].attributes['cache.operation_type']).toBe('basic');
+    });
+
+    it('does not throw when no active span exists', async () => {
+        const { cache, keyManager, tagResolver, statistics } = makeMocks();
+        const ops = new BasicOperations(cache, keyManager, tagResolver, statistics);
+
+        // Running outside any active span context should not throw
+        await ops.set('key', 'value');
+        await ops.get('key');
+        await ops.delete('key');
+        await ops.clear();
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Suite 2 — Telemetry.js when @opentelemetry/api is absent (no-op mode)
 // ---------------------------------------------------------------------------
 describe('Telemetry (OTel absent / no-op)', () => {

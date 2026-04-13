@@ -14,6 +14,8 @@ if (cachingConfigs.some(c => c.statistics)) {
     cds.env.roots.push(path.join(__dirname, 'db', 'statistics'));
 }
 
+cds.add?.register?.('caching-dashboard', require('./lib/add'))
+
 cds.on('served', scanCachingAnnotations)
 const LOG = cds.log("cds-caching");
 

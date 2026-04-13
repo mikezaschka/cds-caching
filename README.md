@@ -27,9 +27,10 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Metrics Guide](docs/metrics-guide.md) | Statistics, monitoring, and performance tracking |
 | [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
 | [OData API](docs/odata-api.md) | REST endpoints for management and monitoring |
+| [Dashboard](docs/dashboard.md) | Setup and usage of the monitoring dashboard |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
 | [Migration Guide](docs/migration-guide.md) | Upgrading from 0.x to 1.x, 1.1 to 1.2, and 1.2.x to 1.3.0 |
-| [Example Application](docs/example-app.md) | Sample app with dashboard |
+| [Example Application](docs/example-app.md) | Sample app with caching patterns |
 
 ## Getting Started
 
@@ -63,7 +64,7 @@ The plugin ships CDS entity definitions for database-backed features. These are 
 |-----------|----------------|---------|
 | `statistics` block present | `Caches`, `Metrics`, `KeyMetrics` | Persist metrics and runtime config to the database |
 | `store: 'cds'` | `CacheStore` | Key-value table used by the CDS store adapter |
-| `using from 'cds-caching/index.cds'` | `CachingApiService` + statistics entities | OData API for the [dashboard](docs/example-app.md) |
+| `using from 'cds-caching/index.cds'` | `CachingApiService` + statistics entities | OData API for the [dashboard](docs/dashboard.md) |
 | None of the above | Nothing | Plugin works with external stores only |
 
 The auto-loading works by injecting the relevant CDS files into `cds.env.roots` at plugin load time, before CAP compiles the model. This means `cds deploy` and `cds build` automatically pick up the required tables.
@@ -183,9 +184,9 @@ For detailed key configuration and deployment instructions, see [Key Management]
 
 ### Service Integration
 
-The plugin includes `CachingApiService`, an OData service for managing caches, browsing entries, and viewing metrics. It powers the [dashboard application](docs/example-app.md) and can be consumed by any OData client.
+The plugin includes `CachingApiService`, an OData service for managing caches, browsing entries, and viewing metrics. It powers the [dashboard](docs/dashboard.md) and can be consumed by any OData client.
 
-To expose this service, reference it in one of your `.cds` files so CAP serves it:
+The easiest way to set this up is `cds add caching-dashboard`, which creates both the service exposure and the dashboard UI. To expose only the service without the dashboard, reference it in one of your `.cds` files:
 
 ```cds
 using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
@@ -340,9 +341,17 @@ await cache.setKeyMetricsEnabled(true)
 const stats = await cache.getCurrentMetrics()
 ```
 
-The plugin includes an [example dashboard](docs/example-app.md) for visualizing cache performance:
+To add the monitoring dashboard to your project, run:
+
+```bash
+cds add caching-dashboard
+```
+
+This copies a pre-built UI5 dashboard into your `app/` folder and exposes the `CachingApiService`. After running `cds watch`, the dashboard is available at `/caching-dashboard/index.html`.
 
 ![Cache Dashboard](./docs/dashboard.jpg)
+
+See the [Dashboard Guide](docs/dashboard.md) for details on features, security, and customization.
 
 [See the full Metrics Guide →](docs/metrics-guide.md)
 

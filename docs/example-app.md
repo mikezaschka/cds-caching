@@ -1,17 +1,14 @@
 # Example Application
 
-The cds-caching plugin includes a comprehensive example application that demonstrates various caching use cases and provides a UI5-based dashboard for monitoring cache performance.
+The cds-caching plugin includes a comprehensive example application that demonstrates various caching use cases.
+
+For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md).
 
 ## Example App Overview
 
-The example application consists of two main components:
+The example application lives in `examples/app/` and is a CAP application demonstrating caching patterns with annotation-based and programmatic approaches.
 
-1. **Backend Application** (`examples/app/`) - A CAP application demonstrating caching patterns
-2. **Dashboard** (`examples/dashboard/`) - A UI5-based monitoring interface
-
-![Cache Dashboard](./dashboard.jpg)
-
-## Backend Application Use Cases
+## Use Cases
 
 The example app demonstrates several caching scenarios:
 
@@ -63,16 +60,6 @@ class AppService extends cds.ApplicationService {
 }
 ```
 
-## UI5 Dashboard Features
-
-The dashboard provides comprehensive monitoring capabilities:
-
-- **Real-time Metrics**: View cache hit rates, latencies, and throughput
-- **Key-level Analytics**: Monitor performance for individual cache keys
-- **Historical Data**: Analyze trends over time with hourly/daily aggregations
-- **Cache Management**: Clear caches, view entries, and manage configurations
-- **Multi-cache Support**: Monitor multiple caching services simultaneously
-
 ## Running the Example
 
 ### 1. Deploy the Backend
@@ -82,22 +69,16 @@ cd examples/app
 cds deploy
 ```
 
-### 2. Start the Dashboard
+### 2. Start the Example App with Dashboard
 
 ```bash
 cd examples/dashboard
 DEBUG=cds-caching npm start
 ```
 
-### 3. Access the Dashboard
+Open http://localhost:8080/index.html to access the dashboard.
 
-Open http://localhost:8080/index.html
-
-### 4. Activate Metrics
-
-Enable key tracking for caches `caching` and `caching-northwind` through the dashboard or API.
-
-### 5. Test Caching
+### 3. Test Caching
 
 Use the provided `requests.http` file to create requests that trigger cache operations, or start a REPL session:
 

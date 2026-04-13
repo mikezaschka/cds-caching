@@ -27,7 +27,8 @@
     "db/**",
     "srv/**",
     "index.cds",
-    "lib/**"
+    "lib/**",
+    "app/dashboard/**"
   ],
   "scripts": {
     "test": "jest --runInBand --silent",
@@ -36,7 +37,8 @@
     "test:docker:stop": "docker compose -f test/docker/docker-compose.yaml down",
     "test:all": "npm run test:docker:start && npm test; status=$?; npm run test:docker:stop; exit $status",
     "lint": "eslint .",
-    "release": "release-it"
+    "release": "release-it",
+    "prepublishOnly": "cd examples/dashboard && npx ui5 build self-contained --clean-dest --dest ../../app/dashboard"
   },
   "peerDependencies": {
     "@keyv/compress-gzip": "^2.0.3",

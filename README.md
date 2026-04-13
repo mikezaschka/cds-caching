@@ -35,6 +35,7 @@ Please also read the introduction blog post in the SAP Community: [Boosting perf
 > - [Programmatic API](docs/programmatic-api.md)
 > - [Key Management](docs/key-management.md)
 > - [Metrics Guide](docs/metrics-guide.md)
+> - [OpenTelemetry Integration](docs/telemetry.md)
 > - [OData API Reference](docs/odata-api.md)
 
 ## 🚨 Breaking Changes: Migrating cds-caching

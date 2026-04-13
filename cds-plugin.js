@@ -25,12 +25,9 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     clean() { }
 
     static hasTask() {
-        cds.log('cds-caching').info('hasTask', cds.env.requires);
         const requires = cds.env.requires || {};
-        const dbKind = requires.db?.kind || '';
-        const isHanaDB = dbKind === 'hana' || dbKind === 'sql';
         return Object.values(requires).some(
-            r => r.impl === 'cds-caching' && (r.store === 'hana' || (r.store === 'cds' && isHanaDB))
+            r => r.impl === 'cds-caching' && r.store === 'hana'
         );
     }
 
@@ -49,9 +46,10 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 await this.write(content).to(`src/gen/${table}.hdbtable`);
                 LOG.info('Building cds-caching hana table', { table, keySize });
             }
-            // For store: 'cds' with HANA, the CacheStore entity from index.cds
-            // is deployed automatically by the HDI deployer — no manual .hdbtable needed.
-            // For SQLite/Postgres, CAP's cds deploy handles table creation from the CDS model.
+            // For store: 'cds' with HANA, the CacheStore entity from db/cache-store.cds
+            // is loaded via cds.env.roots and deployed automatically by the HDI deployer —
+            // no manual .hdbtable needed. For SQLite/Postgres, CAP's cds deploy handles
+            // table creation from the CDS model.
         }
     }
 });

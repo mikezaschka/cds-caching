@@ -28,7 +28,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
 | [OData API](docs/odata-api.md) | REST endpoints for management and monitoring |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
-| [Migration Guide](docs/migration-guide.md) | Upgrading from 0.x to 1.x and 1.1 to 1.2 |
+| [Migration Guide](docs/migration-guide.md) | Upgrading from 0.x to 1.x, 1.1 to 1.2, and 1.2.x to 1.3.0 |
 | [Example Application](docs/example-app.md) | Sample app with dashboard |
 
 ## Getting Started

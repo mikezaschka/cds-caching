@@ -262,7 +262,7 @@ The CDS store adapter (`store: 'cds'`) uses CAP's managed database connection. N
 
 ### How it works
 
-- The `CacheStore` entity is defined in the plugin's `index.cds` and becomes part of your CDS model
+- The `CacheStore` entity is defined in `db/cache-store.cds` and is added to your effective CDS model via `cds.env.roots` injection when `store: 'cds'` is configured
 - **SQLite**: Table created automatically by `cds deploy`
 - **SAP HANA**: Table deployed by the HDI deployer as part of your regular `cds build` / deploy pipeline
 - **PostgreSQL**: Table created automatically by the `@cap-js/postgres` adapter

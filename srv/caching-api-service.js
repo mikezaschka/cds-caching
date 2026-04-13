@@ -2,6 +2,8 @@ const cds = require('@sap/cds')
 const { isMultitenantMode } = require('../lib/support/MultitenancyDetector')
 const { isPluginModelAvailable } = require('../lib/util')
 
+const DEFAULT_TENANT = '_default';
+
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
 
@@ -132,7 +134,9 @@ class CachingApiService extends cds.ApplicationService {
      * Called lazily in MTX mode on first dashboard access.
      */
     async _ensureCacheEntries() {
-        if (this._cacheEntriesInitialized || !isPluginModelAvailable()) return;
+        const tenant = cds.context?.tenant ?? DEFAULT_TENANT;
+        if (!this._cacheEntriesInitialized) this._cacheEntriesInitialized = new Set();
+        if (this._cacheEntriesInitialized.has(tenant) || !isPluginModelAvailable()) return;
 
         try {
             const { Caches } = cds.entities('plugin.cds_caching');
@@ -155,7 +159,7 @@ class CachingApiService extends cds.ApplicationService {
                 }
             }
 
-            this._cacheEntriesInitialized = true;
+            this._cacheEntriesInitialized.add(tenant);
         } catch (error) {
             this.log.warn('Failed to lazily initialize cache entries:', error);
         }

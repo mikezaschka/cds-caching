@@ -226,6 +226,7 @@ describe('Telemetry integration (span creation)', () => {
     let spanExporter, tracerProvider;
     let metricExporter, metricReader, meterProvider;
     let AsyncOperations;
+    let _originalCds;
 
     function mockCache() {
         return {
@@ -260,6 +261,7 @@ describe('Telemetry integration (span creation)', () => {
 
         // AsyncOperations uses `cds` as a global (provided by CAP runtime).
         // Provide a minimal stub so the class can be instantiated standalone.
+        _originalCds = globalThis.cds;
         globalThis.cds = { context: {} };
 
         spanExporter = new InMemorySpanExporter();
@@ -284,6 +286,11 @@ describe('Telemetry integration (span creation)', () => {
         await metricReader.shutdown();
         otelApi.metrics.disable();
         otelApi.trace.disable();
+        if (_originalCds === undefined) {
+            delete globalThis.cds;
+        } else {
+            globalThis.cds = _originalCds;
+        }
     });
 
     beforeEach(() => {
@@ -536,6 +543,158 @@ describe('Telemetry integration (BasicOperations span decoration)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Suite 5 — Integration: span creation in CapOperations.send()
+// ---------------------------------------------------------------------------
+describe('Telemetry integration (CapOperations span creation)', () => {
+
+    let spanExporter, tracerProvider;
+    let CapOperations;
+    let _originalCds;
+
+    function makeRequest(method = 'GET') {
+        return {
+            method,
+            path: '/Test',
+            data: null,
+            params: null,
+            query: null,
+            event: null,
+            headers: {},
+            user: { id: 'test-user' },
+            tenant: 'test-tenant',
+            locale: 'en',
+            target: { name: 'Test' },
+        };
+    }
+
+    function makeService(sendImpl) {
+        return {
+            name: 'TestService',
+            send: sendImpl || jest.fn().mockResolvedValue({ data: 'response' }),
+        };
+    }
+
+    function makeMocks({ hasResult = false, getValue = null } = {}) {
+        const cache = {
+            has: jest.fn().mockResolvedValue(hasResult),
+            send: jest.fn().mockImplementation(async (op) => {
+                if (op === 'GET') return getValue;
+                return undefined;
+            }),
+            options: { throwOnErrors: false },
+        };
+        const keyManager = {
+            createKey: jest.fn().mockReturnValue('cap-key'),
+            createContentHash: jest.fn().mockReturnValue('hash'),
+        };
+        const statistics = {
+            recordHit: jest.fn(),
+            recordMiss: jest.fn(),
+            recordSet: jest.fn(),
+            recordError: jest.fn(),
+        };
+        const log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        return { cache, keyManager, statistics, log };
+    }
+
+    beforeAll(async () => {
+        jest.restoreAllMocks();
+        jest.resetModules();
+
+        _originalCds = globalThis.cds;
+        globalThis.cds = { context: { user: { id: 'u1' }, tenant: 't1', locale: 'en' } };
+
+        spanExporter = new InMemorySpanExporter();
+        tracerProvider = new NodeTracerProvider({
+            spanProcessors: [new SimpleSpanProcessor(spanExporter)]
+        });
+        tracerProvider.register();
+
+        CapOperations = require('../lib/operations/CapOperations');
+    });
+
+    afterAll(async () => {
+        await tracerProvider.shutdown();
+        otelApi.trace.disable();
+        if (_originalCds === undefined) {
+            delete globalThis.cds;
+        } else {
+            globalThis.cds = _originalCds;
+        }
+    });
+
+    beforeEach(() => {
+        spanExporter.reset();
+    });
+
+    it('creates a span named "cds-caching - send" on cache miss', async () => {
+        const { cache, keyManager, statistics, log } = makeMocks({ hasResult: false });
+        const service = makeService();
+        const ops = new CapOperations(cache, keyManager, statistics, log);
+
+        await ops.send(makeRequest('GET'), service, { ttl: 3000 });
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].name).toBe('cds-caching - send');
+        expect(spans[0].attributes['cache.hit']).toBe(false);
+        expect(spans[0].attributes['cache.key']).toBe('cap-key');
+        expect(spans[0].attributes['cache.operation']).toBe('send');
+        expect(spans[0].attributes['cache.operation_type']).toBe('read_through');
+        expect(spans[0].attributes['cache.ttl_ms']).toBe(3000);
+    });
+
+    it('creates a span with cache.hit=true on cache hit', async () => {
+        const cachedValue = { value: 'cached-data', tags: [], timestamp: Date.now() };
+        const { cache, keyManager, statistics, log } = makeMocks({
+            hasResult: true,
+            getValue: cachedValue,
+        });
+        const service = makeService();
+        const ops = new CapOperations(cache, keyManager, statistics, log);
+
+        await ops.send(makeRequest('GET'), service, {});
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].name).toBe('cds-caching - send');
+        expect(spans[0].attributes['cache.hit']).toBe(true);
+        expect(spans[0].attributes['cache.key']).toBe('cap-key');
+        expect(spans[0].attributes['cache.operation']).toBe('send');
+        // ttl_ms should NOT be set on a cache hit
+        expect(spans[0].attributes['cache.ttl_ms']).toBeUndefined();
+    });
+
+    it('does not set cache.key on non-cacheable requests (POST)', async () => {
+        const { cache, keyManager, statistics, log } = makeMocks();
+        const service = makeService();
+        const ops = new CapOperations(cache, keyManager, statistics, log);
+
+        await ops.send(makeRequest('POST'), service, {});
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].attributes['cache.hit']).toBe(false);
+        // cacheKey is null for POST — must not appear as a span attribute
+        expect(spans[0].attributes['cache.key']).toBeUndefined();
+        expect(spans[0].attributes['cache.ttl_ms']).toBeUndefined();
+    });
+
+    it('sets span error status when the underlying service throws', async () => {
+        const { cache, keyManager, statistics, log } = makeMocks({ hasResult: false });
+        const service = makeService(jest.fn().mockRejectedValue(new Error('service-error')));
+        const ops = new CapOperations(cache, keyManager, statistics, log);
+
+        await expect(ops.send(makeRequest('GET'), service, {})).rejects.toThrow('service-error');
+
+        const spans = spanExporter.getFinishedSpans();
+        expect(spans.length).toBe(1);
+        expect(spans[0].status.code).toBe(otelApi.SpanStatusCode.ERROR);
+        expect(spans[0].status.message).toBe('service-error');
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Suite 2 — Telemetry.js when @opentelemetry/api is absent (no-op mode)
 // ---------------------------------------------------------------------------
 describe('Telemetry (OTel absent / no-op)', () => {
@@ -544,7 +703,11 @@ describe('Telemetry (OTel absent / no-op)', () => {
 
     beforeAll(() => {
         jest.resetModules();
-        jest.mock('@opentelemetry/api', () => { throw new Error('not installed'); });
+        jest.mock('@opentelemetry/api', () => {
+            const err = new Error('Cannot find module \'@opentelemetry/api\'');
+            err.code = 'MODULE_NOT_FOUND';
+            throw err;
+        });
         telemetry = require('../lib/support/Telemetry');
     });
 

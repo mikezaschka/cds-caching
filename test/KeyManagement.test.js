@@ -264,6 +264,231 @@ describe('Key Management - Testing', () => {
         })
     })
 
+    describe("cds.ql prototype-based where (root cause)", () => {
+
+        // NoaRequest ("New OData Adapter Request", @sap/cds/libx/odata/ODataAdapter.js)
+        // carries cds.ql queries where SELECT.where lives on the prototype, not as an
+        // own property. JSON.stringify only serializes own enumerable properties, so the
+        // where clause is silently dropped. These tests reproduce this exact behavior.
+
+        class Request {
+            constructor(props) { Object.assign(this, props); }
+        }
+
+        function createCqnWithPrototypeWhere(where) {
+            const selectProto = { where };
+            const select = Object.create(selectProto);
+            select.from = { ref: ['CachedFoo'] };
+            select.columns = [{ ref: ['*'] }];
+            return { SELECT: select };
+        }
+
+        it("should demonstrate that prototype-based where is invisible to JSON.stringify", () => {
+            const cqn = createCqnWithPrototypeWhere([{ ref: ['ID'] }, '=', { val: 1 }]);
+
+            expect(cqn.SELECT.where).to.deep.equal([{ ref: ['ID'] }, '=', { val: 1 }]);
+            expect(Object.getOwnPropertyNames(cqn.SELECT)).to.not.include('where');
+            expect(JSON.stringify(cqn.SELECT)).to.not.include('where');
+        })
+
+        it("should produce the SAME hash for queries with and without prototype-where (the bug)", () => {
+            const cqnWithWhere = createCqnWithPrototypeWhere([{ ref: ['ID'] }, '=', { val: 1 }]);
+            const cqnWithoutWhere = { SELECT: { from: { ref: ['CachedFoo'] }, columns: [{ ref: ['*'] }] } };
+
+            const hash1 = cache.keyManager.createHash({ query: cqnWithWhere });
+            const hash2 = cache.keyManager.createHash({ query: cqnWithoutWhere });
+
+            // This IS the bug: both produce the same hash because JSON.stringify
+            // drops prototype-based `where`, making filtered and unfiltered
+            // queries indistinguishable.
+            expect(hash1).to.equal(hash2);
+        })
+
+        it("should produce different hashes when URL captures the filter (the fix)", () => {
+            const cqnWithPrototypeWhere = createCqnWithPrototypeWhere([{ ref: ['ID'] }, '=', { val: 1 }]);
+
+            const reqWithFilter = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$filter=ID eq 1", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: cqnWithPrototypeWhere,
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+            const reqWithoutFilter = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: { SELECT: { from: { ref: ['CachedFoo'] }, columns: [{ ref: ['*'] }] } },
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+
+            const key1 = cache.keyManager.createContentHash(reqWithFilter);
+            const key2 = cache.keyManager.createContentHash(reqWithoutFilter);
+
+            // The URL-based fix distinguishes these correctly even though
+            // JSON.stringify(req.query) would produce the same output for both.
+            expect(key1).to.not.equal(key2);
+        })
+    })
+
+    describe("URL Normalization and Hash Inclusion", () => {
+
+        class Request {
+            constructor(props) { Object.assign(this, props); }
+        }
+
+        it("should include the HTTP URL in the content hash", () => {
+            const reqWithUrl = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$filter=ID eq 1", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+            const reqWithoutUrl = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+
+            const key1 = cache.keyManager.createContentHash(reqWithUrl);
+            const key2 = cache.keyManager.createContentHash(reqWithoutUrl);
+            expect(key1).to.not.equal(key2);
+        })
+
+        it("should produce the same hash regardless of URL parameter order", () => {
+            const req1 = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$filter=ID eq 1&$select=ID,name", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+            const req2 = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$select=ID,name&$filter=ID eq 1", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+
+            const key1 = cache.keyManager.createContentHash(req1);
+            const key2 = cache.keyManager.createContentHash(req2);
+            expect(key1).to.equal(key2);
+        })
+
+        it("should produce different hashes when filter is in URL but not in query", () => {
+            const reqWithFilter = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$filter=ID eq 1", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+            const reqWithoutFilter = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+
+            const key1 = cache.keyManager.createContentHash(reqWithFilter);
+            const key2 = cache.keyManager.createContentHash(reqWithoutFilter);
+            expect(key1).to.not.equal(key2);
+        })
+
+        it("should prefer _.req.url over http.req.url", () => {
+            const req = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                _: { req: { url: "/CachedFoo?$filter=ID eq 1" } },
+                http: { req: { url: "/CachedFoo?$filter=ID eq 2", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+            const reqMatchingUnderscore = new Request({
+                method: "GET",
+                path: "/CachedFoo",
+                http: { req: { url: "/CachedFoo?$filter=ID eq 1", path: "/CachedFoo" } },
+                data: null,
+                params: [],
+                query: {},
+                event: null,
+                target: { name: "CachedFoo" }
+            });
+
+            const key1 = cache.keyManager.createContentHash(req);
+            const key2 = cache.keyManager.createContentHash(reqMatchingUnderscore);
+            expect(key1).to.equal(key2);
+        })
+
+        describe("normalizeUrl edge cases", () => {
+
+            it("should return undefined for null input", () => {
+                expect(cache.keyManager.normalizeUrl(null)).to.be.undefined;
+            })
+
+            it("should return undefined for undefined input", () => {
+                expect(cache.keyManager.normalizeUrl(undefined)).to.be.undefined;
+            })
+
+            it("should return undefined for empty string", () => {
+                expect(cache.keyManager.normalizeUrl("")).to.be.undefined;
+            })
+
+            it("should handle URL with no query string", () => {
+                const result = cache.keyManager.normalizeUrl("/CachedFoo");
+                expect(result).to.equal("/CachedFoo");
+            })
+
+            it("should sort query parameters alphabetically", () => {
+                const result = cache.keyManager.normalizeUrl("/CachedFoo?$select=ID&$filter=ID eq 1&$orderby=ID asc");
+                expect(result).to.equal("/CachedFoo?%24filter=ID+eq+1&%24orderby=ID+asc&%24select=ID");
+            })
+
+            it("should produce identical output for same params in different order", () => {
+                const url1 = cache.keyManager.normalizeUrl("/test?b=2&a=1&c=3");
+                const url2 = cache.keyManager.normalizeUrl("/test?c=3&a=1&b=2");
+                expect(url1).to.equal(url2);
+            })
+
+            it("should handle URL with special characters", () => {
+                const result = cache.keyManager.normalizeUrl("/CachedFoo?$filter=name eq 'Foo Bar'");
+                expect(result).to.be.a("string");
+                expect(result).to.include("/CachedFoo");
+            })
+        })
+    })
+
     describe("Global Configuration Tests", () => {
 
         beforeEach(async () => {

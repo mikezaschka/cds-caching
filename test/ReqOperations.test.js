@@ -57,7 +57,7 @@ describe('Read-Through Request Caching', () => {
 
         it("should respect the cache key template", async () => {
             const { headers } = await GET`/odata/v4/app/CachedFoo`
-            expect(headers['x-sap-cap-cache-key']).to.equal('a524e82e8d19746f5b3dadda5f390cfd_anonymous');
+            expect(headers['x-sap-cap-cache-key']).to.equal('56691dd9158c66b8225fb44e4177e3b6_anonymous');
         })
 
         it("should cache a request for an annotated entity of an ApplicationService", async () => {
@@ -129,6 +129,69 @@ describe('Read-Through Request Caching', () => {
                         
             expect(data.value).to.equal("cached value for 1 and data test");
             expect(data.value).to.equal(cacheData);
+        })
+
+        it("should always have $filter available in the HTTP URL inside service.prepend()", async () => {
+            const inspection = new Promise((resolve, reject) => {
+                AppService.prepend(function () {
+                    this.on('READ', ManualCachedFoo, async (req, next) => {
+                        const httpUrl = req._.req?.url || req.http?.req?.url;
+                        const constructorName = req.constructor.name;
+                        const sel = req.query?.SELECT;
+                        resolve({
+                            httpUrl,
+                            constructorName,
+                            hasWhereInQuery: !!sel?.where,
+                            whereIsOwnProperty: sel ? Object.getOwnPropertyNames(sel).includes('where') : null,
+                            selectOwnKeys: sel ? Object.getOwnPropertyNames(sel) : [],
+                            stringifiedQuery: JSON.stringify(req.query),
+                        });
+                        return next();
+                    })
+                })
+            })
+
+            await GET`/odata/v4/app/ManualCachedFoo?$filter=ID eq 1`
+            const { httpUrl, constructorName, hasWhereInQuery, whereIsOwnProperty, selectOwnKeys, stringifiedQuery } = await inspection;
+
+            // The HTTP URL always contains $filter — it's the reliable source.
+            expect(httpUrl).to.be.a('string');
+            expect(httpUrl).to.include('$filter');
+
+            // Root cause documentation:
+            // NoaRequest (New OData Adapter Request, @sap/cds/libx/odata/ODataAdapter.js)
+            // carries cds.ql queries where SELECT.where lives on the prototype, not as
+            // an own property. JSON.stringify only serializes own enumerable properties,
+            // so `where` is silently dropped from the hash.
+            //
+            // In this test env the request type is ODataRequest (cds v9), which may
+            // populate `where` as an own property. We log the actual behavior here.
+            // The fix (using the HTTP URL) is correct regardless — it never relies on
+            // JSON.stringify capturing prototype-inherited query properties.
+            expect(constructorName).to.equal('ODataRequest');
+            expect(hasWhereInQuery).to.be.true;
+        })
+
+        it("should generate different cache keys for requests with and without $filter when using service.prepend()", async () => {
+            const keys = [];
+            const collected = new Promise((resolve) => {
+                let count = 0;
+                AppService.prepend(function () {
+                    this.on('READ', ManualCachedFoo, async (req, next) => {
+                        const key = cache.keyManager.createContentHash(req);
+                        keys.push(key);
+                        count++;
+                        if (count === 2) resolve();
+                        return next();
+                    })
+                })
+            })
+
+            await GET`/odata/v4/app/ManualCachedFoo`
+            await GET`/odata/v4/app/ManualCachedFoo?$filter=ID eq 1`
+            await collected;
+
+            expect(keys[0]).to.not.equal(keys[1]);
         })
 
     })
@@ -440,15 +503,15 @@ describe('Read-Through Request Caching', () => {
                 expect(headers).to.have.property('x-sap-cap-cache-key');
             })
 
-            it("should cache requests with different parameter orders separately", async () => {
+            it("should produce the same cache key regardless of parameter order", async () => {
                 const cache = await cds.connect.to('caching');
                 
                 // Same parameters, different order
                 const { data: data1, headers: headers1 } = await GET`/odata/v4/app/CachedFoo?$filter=ID eq 1&$select=ID,name`
                 const { data: data2, headers: headers2 } = await GET`/odata/v4/app/CachedFoo?$select=ID,name&$filter=ID eq 1`
                 
-                // Should have different cache keys due to parameter order
-                expect(headers1['x-sap-cap-cache-key']).to.not.equal(headers2['x-sap-cap-cache-key']);
+                // Should have the same cache key — URL params are sorted before hashing
+                expect(headers1['x-sap-cap-cache-key']).to.equal(headers2['x-sap-cap-cache-key']);
             })
 
         })

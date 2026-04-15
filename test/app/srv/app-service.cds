@@ -57,6 +57,13 @@ service AppService {
     entity Categories      as projection on Northwind.Categories;
 
     @cache: {
+        service          : 'caching',
+        ttl              : 5000,
+        invalidateOnWrite: true
+    }
+    entity AutoInvalidatedFoo as projection on Foo;
+
+    @cache: {
         service: 'caching',
         tags   : ['getCachedValue'],
         ttl    : 0

@@ -96,10 +96,15 @@ service MyService {
   @cache: { ttl: 10000 }
   entity Products as projection on db.Products;
 
+  @cache: { ttl: 10000, invalidateOnWrite: true }
+  entity Orders as projection on db.Orders;
+
   @cache: { ttl: 60000 }
   function getRecommendations() returns array of Products;
 }
 ```
+
+When `invalidateOnWrite` is set, the cache for that entity is automatically cleared after any CREATE, UPDATE, or DELETE operation, so subsequent reads always return fresh data.
 
 ## Configuration
 
@@ -307,6 +312,17 @@ await cache.set("bp-list", bpArray, {
   tags: [{ data: "businessPartner", prefix: "bp-" }] 
 })
 ```
+
+#### Automatic Invalidation on Write
+
+For annotation-based entity caching, use `invalidateOnWrite` to automatically clear all cached queries for an entity whenever its data changes:
+
+```cds
+@cache: { ttl: 10000, invalidateOnWrite: true }
+entity CachedProducts as projection on db.Products;
+```
+
+This registers `after` handlers for CREATE, UPDATE, and DELETE that call `deleteByTag` with an entity-level tag. All cached variants (filtered, sorted, paginated, single-entity) are invalidated at once.
 
 For more usage patterns, error handling details, and TypeScript support, see [Programmatic API](docs/programmatic-api.md).
 

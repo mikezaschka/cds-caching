@@ -325,10 +325,15 @@ const config = await cache.getRuntimeConfiguration()
 console.log('Metrics enabled:', config.metricsEnabled)
 console.log('Key metrics enabled:', config.keyMetricsEnabled)
 
-// Clear metrics
+// Clear metrics independently (does not affect cached data)
 await cache.clearMetrics()
 await cache.clearKeyMetrics()
+
+// Or clear the cache and metrics together
+await cache.clear({ clearStatistics: true })
 ```
+
+> **Note:** `cache.clear()` without `{ clearStatistics: true }` only empties the cache store and resets in-memory counters. Persisted metrics are preserved so you can retain historical trend data across cache clears.
 
 ### API Access
 

@@ -268,16 +268,29 @@ await cache.delete(query)
 
 ---
 
-### `await cache.clear()`
+### `await cache.clear([options: object])`
 
-Clears the whole cache.
+Clears the whole cache. In-memory statistics counters are always reset, but persisted metrics are preserved by default. To also delete persisted metrics and key metrics, pass `{ clearStatistics: true }`.
+
+#### Parameters
+
+- `options: object` (optional) - Object literal containing clear options.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `clearStatistics` | boolean | `false` | Also delete persisted metrics and key metrics from the database |
 
 #### Examples
 
 ```javascript
-// Clear all cache entries
+// Clear all cache entries (preserves persisted metrics)
 await cache.clear()
+
+// Clear all cache entries and delete persisted metrics
+await cache.clear({ clearStatistics: true })
 ```
+
+> **Note:** To clear metrics independently without clearing the cache, use [`cache.clearMetrics()`](#await-cacheclearmetrics) and [`cache.clearKeyMetrics()`](#await-cacheclearkeymetrics).
 
 ---
 

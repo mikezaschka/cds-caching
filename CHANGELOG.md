@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/mikezaschka/cds-caching/compare/1.3.0...1.3.1) (2026-04-15)
+
+### Features
+
+* enhance cache clear functionality and update documentation ([7e92948](https://github.com/mikezaschka/cds-caching/commit/7e92948c93f1ba6ba53e42963d73c4bc7298eff0))
+* enhance KeyManager to include HTTP URL in cache key generation ([1b1ed6b](https://github.com/mikezaschka/cds-caching/commit/1b1ed6b6eae5b31af8414769fbc71f7e52bc9c0d))
+
 ## [1.3.0](https://github.com/mikezaschka/cds-caching/compare/1.2.1...1.3.0) (2026-04-13)
 
 ### Features

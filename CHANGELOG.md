@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.2](https://github.com/mikezaschka/cds-caching/compare/1.3.1...1.3.2) (2026-04-24)
+
+### Features
+
+* enhance caching plugin with runtime model integration ([ce0666d](https://github.com/mikezaschka/cds-caching/commit/ce0666dd4ec1eea6c01768ed9d3cbca80053f9d5))
+* implement automatic cache invalidation on write ([6f5f9d4](https://github.com/mikezaschka/cds-caching/commit/6f5f9d4588c0941b20393897bf21768efa855b0e))
+* integrate i18n support in dashboard ([c480648](https://github.com/mikezaschka/cds-caching/commit/c4806489903e7350cc0120dbbdc4b9454f1b3962))
+* refactor caching plugin for improved HANA build integration ([dacc012](https://github.com/mikezaschka/cds-caching/commit/dacc012cd48934e204a3543ab2a8192ec42d3272))
+
+### Bug Fixes
+
+* add main export for caching service in cds-plugin ([c1cf253](https://github.com/mikezaschka/cds-caching/commit/c1cf2530ea6579668adf913d8217106f813c25b2))
+
 ## [1.3.1](https://github.com/mikezaschka/cds-caching/compare/1.3.0...1.3.1) (2026-04-15)
 
 ### Features

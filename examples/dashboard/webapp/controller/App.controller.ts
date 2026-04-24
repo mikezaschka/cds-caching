@@ -57,7 +57,7 @@ export default class App extends BaseController {
 		const cacheName = this.getModel("app").getProperty("/selectedCache");
 		
 		if (!cacheName) {
-			MessageBox.warning("No cache selected");
+			MessageBox.warning(await this.i18nText("msgNoCacheSelected"));
 			// Revert the switch
 			(this.getModel("app") as JSONModel).setProperty("/enableStatistics", !enabled);
 			return;
@@ -65,21 +65,21 @@ export default class App extends BaseController {
 
 		try {
 			// Show loading state
-			MessageToast.show("Updating statistics configuration...");
+			MessageToast.show(await this.i18nText("msgUpdatingStatsConfig"));
 			
 			const success = await this.statisticsService.setStatisticsEnabled(cacheName, enabled);
 			if (success) {
-				MessageToast.show(`Statistics ${enabled ? 'enabled' : 'disabled'} successfully`);
+				MessageToast.show(await this.i18nText(enabled ? "msgStatsEnabled" : "msgStatsDisabled"));
 				// Reload the configuration to reflect the change
 				await this.loadRuntimeConfiguration(cacheName);
 			} else {
-				MessageToast.show("Failed to update statistics configuration");
+				MessageToast.show(await this.i18nText("msgFailedUpdateStatsConfig"));
 				// Revert the switch
 				(this.getModel("app") as JSONModel).setProperty("/enableStatistics", !enabled);
 			}
 		} catch (error) {
 			console.error("Error updating statistics configuration:", error);
-			MessageToast.show("Error updating statistics configuration");
+			MessageToast.show(await this.i18nText("msgErrorUpdateStatsConfig"));
 			// Revert the switch
 			(this.getModel("app") as JSONModel).setProperty("/enableStatistics", !enabled);
 		}
@@ -93,7 +93,7 @@ export default class App extends BaseController {
 		const cacheName = this.getModel("app").getProperty("/selectedCache");
 		
 		if (!cacheName) {
-			MessageBox.warning("No cache selected");
+			MessageBox.warning(await this.i18nText("msgNoCacheSelected"));
 			// Revert the switch
 			(this.getModel("app") as JSONModel).setProperty("/enableKeyTracking", !enabled);
 			return;
@@ -101,21 +101,21 @@ export default class App extends BaseController {
 
 		try {
 			// Show loading state
-			MessageToast.show("Updating key tracking configuration...");
+			MessageToast.show(await this.i18nText("msgUpdatingKeyTracking"));
 			
 			const success = await this.statisticsService.setKeyTrackingEnabled(cacheName, enabled);
 			if (success) {
-				MessageToast.show(`Key tracking ${enabled ? 'enabled' : 'disabled'} successfully`);
+				MessageToast.show(await this.i18nText(enabled ? "msgKeyTrackingEnabled" : "msgKeyTrackingDisabled"));
 				// Reload the configuration to reflect the change
 				await this.loadRuntimeConfiguration(cacheName);
 			} else {
-				MessageToast.show("Failed to update key tracking configuration");
+				MessageToast.show(await this.i18nText("msgFailedKeyTracking"));
 				// Revert the switch
 				(this.getModel("app") as JSONModel).setProperty("/enableKeyTracking", !enabled);
 			}
 		} catch (error) {
 			console.error("Error updating key tracking configuration:", error);
-			MessageToast.show("Error updating key tracking configuration");
+			MessageToast.show(await this.i18nText("msgErrorKeyTracking"));
 			// Revert the switch
 			(this.getModel("app") as JSONModel).setProperty("/enableKeyTracking", !enabled);
 		}
@@ -128,19 +128,19 @@ export default class App extends BaseController {
 		try {
 			const cacheName = this.getModel("app").getProperty("/selectedCache");
 			if (!cacheName) {
-				MessageBox.warning("No cache selected");
+				MessageBox.warning(await this.i18nText("msgNoCacheSelected"));
 				return;
 			}
 
 			const success = await this.statisticsService.persistStatistics(cacheName);
 			if (success) {
-				MessageToast.show("Statistics persisted successfully");
+				MessageToast.show(await this.i18nText("msgStatsPersisted"));
 			} else {
-				MessageToast.show("Failed to persist statistics");
+				MessageToast.show(await this.i18nText("msgFailedPersistStats"));
 			}
 		} catch (error) {
 			console.error("Error persisting statistics:", error);
-			MessageToast.show("Error persisting statistics");
+			MessageToast.show(await this.i18nText("msgErrorPersistStats"));
 		}
 	}
 

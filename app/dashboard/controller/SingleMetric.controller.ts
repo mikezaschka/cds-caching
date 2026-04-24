@@ -3,6 +3,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import MessageBox from "sap/m/MessageBox";
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 
 /**
  * @namespace cds.plugin.caching.dashboard.controller
@@ -76,6 +77,7 @@ export default class SingleMetric extends BaseController {
     private async loadMetric(cacheName: string, metricId: string): Promise<void> {
         try {
             const model = this.getModel() as ODataModel;
+            const rb = await this.getResourceBundle();
 
             // Try to get the metric from the Metrics entity
             const context = model.bindContext(`/Metrics(ID='${metricId}',cache='${cacheName}')`);
@@ -120,35 +122,36 @@ export default class SingleMetric extends BaseController {
                 this.uiModel.setProperty("/uniqueKeys", 0); // TODO: Get from key metrics data
 
                 // Generate chart data
-                this.generateLatencyChartData(metric);
-                this.generateCacheThroughChartData(metric);
-                this.generateNativeChartData(metric);
+                this.generateLatencyChartData(metric, rb);
+                this.generateCacheThroughChartData(metric, rb);
+                this.generateNativeChartData(metric, rb);
 
             } else {
-                MessageBox.error("Metric not found");
+                MessageBox.error(await this.i18nText("msgMetricNotFound"));
             }
 
         } catch (error) {
             console.error("Error loading metric:", error);
-            MessageBox.error("Failed to load metric details");
+            MessageBox.error(await this.i18nText("msgLoadMetricFailed"));
         }
     }
 
     /**
      * Generate latency data for the chart
      */
-    private generateLatencyChartData(metric: any): void {
+    private generateLatencyChartData(metric: any, rb: ResourceBundle): void {
+        const t = (k: string) => rb.getText(k);
         const latencyData = [
             {
-                operation: "Average Hit Latency",
+                operation: t("chartOpAvgHitLatency"),
                 latency: metric.avgHitLatency || 0
             },
             {
-                operation: "Average Miss Latency",
+                operation: t("chartOpAvgMissLatency"),
                 latency: metric.avgMissLatency || 0
             },
             {
-                operation: "Average Read-Through Latency",
+                operation: t("chartOpAvgReadThroughLatency"),
                 latency: metric.avgReadThroughLatency || 0
             }
         ];
@@ -159,18 +162,19 @@ export default class SingleMetric extends BaseController {
     /**
      * Generate Read-Through operations data for pie chart
      */
-    private generateCacheThroughChartData(metric: any): void {
+    private generateCacheThroughChartData(metric: any, rb: ResourceBundle): void {
+        const t = (k: string) => rb.getText(k);
         const cacheThroughData = [
             {
-                operation: "Hits",
+                operation: t("chartOpHits"),
                 count: metric.hits || 0
             },
             {
-                operation: "Misses",
+                operation: t("chartOpMisses"),
                 count: metric.misses || 0
             },
             {
-                operation: "Errors",
+                operation: t("chartOpErrors"),
                 count: metric.errors || 0
             }
         ];
@@ -181,30 +185,31 @@ export default class SingleMetric extends BaseController {
     /**
      * Generate Native Function operations data for pie chart
      */
-    private generateNativeChartData(metric: any): void {
+    private generateNativeChartData(metric: any, rb: ResourceBundle): void {
+        const t = (k: string) => rb.getText(k);
         const nativeData = [
             {
-                operation: "Sets",
+                operation: t("chartOpSets"),
                 count: metric.nativeSets || 0
             },
             {
-                operation: "Gets",
+                operation: t("chartOpGets"),
                 count: metric.nativeGets || 0
             },
             {
-                operation: "Deletes",
+                operation: t("chartOpDeletes"),
                 count: metric.nativeDeletes || 0
             },
             {
-                operation: "Clears",
+                operation: t("chartOpClears"),
                 count: metric.nativeClears || 0
             },
             {
-                operation: "Delete By Tags",
+                operation: t("chartOpDeleteByTags"),
                 count: metric.nativeDeleteByTags || 0
             },
             {
-                operation: "Errors",
+                operation: t("chartOpErrors"),
                 count: metric.nativeErrors || 0
             }
         ];
@@ -216,7 +221,8 @@ export default class SingleMetric extends BaseController {
         // Format latency chart (bar chart)
         const latencyChart = this.getView().byId("metricLatencyChart") as any;
         if (latencyChart) {
-            latencyChart.setVizProperties({
+            void this.getResourceBundle().then((rb) => {
+                latencyChart.setVizProperties({
                 legend: {
                     visible: false
                 },
@@ -250,8 +256,9 @@ export default class SingleMetric extends BaseController {
                 },
                 title: {
                     visible: false,
-                    text: 'Latency by Operation'
+                    text: rb.getText("chartTitleLatencyByOperation")
                 }
+            });
             });
         }
 

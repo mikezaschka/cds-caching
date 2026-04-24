@@ -110,7 +110,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         this.uiModel.setProperty("/cacheEntries", entries);
       } catch (error) {
         console.error("Error loading cache entries:", error);
-        MessageBox.error("Failed to load cache entries");
+        MessageBox.error(await this.i18nText("msgLoadEntriesFailed"));
       } finally {
         this.uiModel.setProperty("/loadingEntries", false);
       }
@@ -143,7 +143,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
       const value = this.uiModel.getProperty("/createValue");
       const ttl = this.uiModel.getProperty("/createTtl");
       if (!key || !value) {
-        MessageBox.error("Please provide both key and value");
+        MessageBox.error(await this.i18nText("msgProvideKeyValue"));
         return;
       }
       try {
@@ -153,7 +153,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         context.setParameter("value", value);
         context.setParameter("ttl", ttl);
         await context.invoke();
-        MessageToast.show("Cache entry created successfully");
+        MessageToast.show(await this.i18nText("msgEntryCreated"));
 
         // Clear form
         this.uiModel.setProperty("/createKey", "");
@@ -161,7 +161,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         this.uiModel.setProperty("/createTtl", 3600);
       } catch (error) {
         console.error("Error setting cache entry:", error);
-        MessageBox.error("Failed to create cache entry");
+        MessageBox.error(await this.i18nText("msgCreateEntryFailed"));
       }
     },
     /**
@@ -171,7 +171,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
       const cacheContext = this.getView().getElementBinding().getBoundContext();
       const key = this.uiModel.getProperty("/getKey");
       if (!key) {
-        MessageBox.error("Please provide a key");
+        MessageBox.error(await this.i18nText("msgProvideKey"));
         return;
       }
       try {
@@ -180,10 +180,10 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         action.setParameter("key", key);
         await action.invoke();
         const result = await action.requestObject();
-        this.uiModel.setProperty("/getValue", result.value || "Not found");
+        this.uiModel.setProperty("/getValue", result.value || (await this.i18nText("msgNotFound")));
       } catch (error) {
         console.error("Error getting cache entry:", error);
-        this.uiModel.setProperty("/getValue", "Error: Entry not found or error occurred");
+        this.uiModel.setProperty("/getValue", await this.i18nText("msgGetEntryError"));
       }
     },
     /**
@@ -193,7 +193,7 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
       const cacheContext = this.getView().getElementBinding().getBoundContext();
       const key = this.uiModel.getProperty("/deleteKey");
       if (!key) {
-        MessageBox.error("Please provide a key");
+        MessageBox.error(await this.i18nText("msgProvideKey"));
         return;
       }
       try {
@@ -201,13 +201,13 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         const context = model.bindContext(`plugin.cds_caching.CachingApiService.deleteEntry(...)`, cacheContext);
         context.setParameter("key", key);
         await context.invoke();
-        MessageToast.show("Cache entry deleted successfully");
+        MessageToast.show(await this.i18nText("msgEntryDeleted"));
 
         // Clear form
         this.uiModel.setProperty("/deleteKey", "");
       } catch (error) {
         console.error("Error deleting cache entry:", error);
-        MessageBox.error("Failed to delete cache entry");
+        MessageBox.error(await this.i18nText("msgDeleteEntryFailed"));
       }
     },
     /**
@@ -221,10 +221,10 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         const context = model.bindContext(`plugin.cds_caching.CachingApiService.setMetricsEnabled(...)`, cacheContext);
         context.setParameter("enabled", enabled);
         await context.invoke();
-        MessageToast.show(`Metrics ${enabled ? 'enabled' : 'disabled'} successfully`);
+        MessageToast.show(await this.i18nText(enabled ? "msgMetricsEnabled" : "msgMetricsDisabled"));
       } catch (error) {
         console.error("Error setting metrics enabled:", error);
-        MessageBox.error("Failed to update metrics setting");
+        MessageBox.error(await this.i18nText("msgFailedUpdateMetrics"));
         // Revert the switch
         this.uiModel.setProperty("/enableMetrics", !enabled);
       }
@@ -240,10 +240,10 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         const context = model.bindContext(`plugin.cds_caching.CachingApiService.setKeyMetricsEnabled(...)`, cacheContext);
         context.setParameter("enabled", enabled);
         await context.invoke();
-        MessageToast.show(`Key metrics ${enabled ? 'enabled' : 'disabled'} successfully`);
+        MessageToast.show(await this.i18nText(enabled ? "msgKeyMetricsEnabled" : "msgKeyMetricsDisabled"));
       } catch (error) {
         console.error("Error setting key metrics enabled:", error);
-        MessageBox.error("Failed to update key metrics setting");
+        MessageBox.error(await this.i18nText("msgFailedKeyMetrics"));
         // Revert the switch
         this.uiModel.setProperty("/enableKeyMetrics", !enabled);
       }
@@ -253,7 +253,8 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
      */
     onClearCache: async function _onClearCache() {
       const cacheContext = this.getView().getElementBinding().getBoundContext();
-      MessageBox.confirm("Are you sure you want to clear this cache? This action cannot be undone.", {
+      const confirmMsg = await this.i18nText("msgConfirmClearCache");
+      MessageBox.confirm(confirmMsg, {
         actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
         emphasizedAction: MessageBox.Action.OK,
         onClose: async action => {
@@ -262,13 +263,13 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
               const model = this.getModel();
               const context = model.bindContext(`plugin.cds_caching.CachingApiService.clear(...)`, cacheContext);
               await context.invoke();
-              MessageBox.success("Cache cleared successfully");
+              MessageBox.success(await this.i18nText("msgCacheCleared"));
 
               // Refresh the data
               await this.onRefresh();
             } catch (error) {
               console.error("Error clearing cache:", error);
-              MessageBox.error("Failed to clear cache");
+              MessageBox.error(await this.i18nText("msgClearCacheFailed"));
             }
           }
         }
@@ -336,28 +337,33 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         cacheOptions: saveJson(context.getProperty("cacheOptions")),
         keyName: context.getProperty("keyName")
       });
+      const e = s => Cache.escapeFragmentXml(s);
+      const tabMeta = e(await this.i18nText("keyTabMetadata"));
+      const tabSub = e(await this.i18nText("keyTabSubject"));
+      const tabQ = e(await this.i18nText("keyTabQuery"));
+      const tabCo = e(await this.i18nText("keyTabCacheOptions"));
       const fragment = await Fragment.load({
         definition: `<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form">
                 <Popover title="{localData>/keyName}" placement="Bottom" contentWidth="30rem">
                     <content>
                         <IconTabBar>
                             <items>
-                                <IconTabFilter text="Metadata">
+                                <IconTabFilter text="${tabMeta}">
                                     <content>
                                         <TextArea value="{localData>/metadata}" rows="20" width="100%" editable="false" />
                                     </content>
                                 </IconTabFilter>
-                                <IconTabFilter text="Subject" >
+                                <IconTabFilter text="${tabSub}" >
                                     <content>
                                         <TextArea value="{localData>/subject}" rows="20" width="100%" editable="false" />
                                     </content>
                                 </IconTabFilter>
-                                <IconTabFilter text="Query" >
+                                <IconTabFilter text="${tabQ}" >
                                     <content>
                                         <TextArea value="{localData>/query}" rows="20" width="100%" editable="false" />
                                     </content>
                                 </IconTabFilter>
-                                <IconTabFilter text="Cache Options" >
+                                <IconTabFilter text="${tabCo}" >
                                     <content>
                                         <TextArea value="{localData>/cacheOptions}" rows="20" width="100%" editable="false" />
                                     </content>
@@ -385,13 +391,13 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         const model = this.getModel();
         const action = model.bindContext(`plugin.cds_caching.CachingApiService.clearMetrics(...)`, cacheContext);
         await action.invoke();
-        MessageToast.show("Metrics cleared successfully");
+        MessageToast.show(await this.i18nText("msgMetricsCleared"));
 
         // Refresh the data
         await this.onRefreshMetricsData();
       } catch (error) {
         console.error("Error clearing metrics:", error);
-        MessageBox.error("Failed to clear metrics");
+        MessageBox.error(await this.i18nText("msgFailedClearMetrics"));
       }
     },
     /**
@@ -406,16 +412,19 @@ sap.ui.define(["sap/m/MessageBox", "./BaseController", "sap/ui/model/json/JSONMo
         const model = this.getModel();
         const action = model.bindContext(`plugin.cds_caching.CachingApiService.clearKeyMetrics(...)`, cacheContext);
         await action.invoke();
-        MessageToast.show("Key metrics cleared successfully");
+        MessageToast.show(await this.i18nText("msgKeyMetricsCleared"));
 
         // Refresh the data
         await this.onRefreshKeyMetricsData();
       } catch (error) {
         console.error("Error clearing key metrics:", error);
-        MessageBox.error("Failed to clear key metrics");
+        MessageBox.error(await this.i18nText("msgFailedClearKeyMetrics"));
       }
     }
   });
+  Cache.escapeFragmentXml = function escapeFragmentXml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  };
   return Cache;
 });
 //# sourceMappingURL=Cache-dbg.controller.js.map

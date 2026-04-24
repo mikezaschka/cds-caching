@@ -73,6 +73,7 @@ sap.ui.define(["./BaseController", "sap/ui/model/json/JSONModel", "sap/m/Message
     loadMetric: async function _loadMetric(cacheName, metricId) {
       try {
         const model = this.getModel();
+        const rb = await this.getResourceBundle();
 
         // Try to get the metric from the Metrics entity
         const context = model.bindContext(`/Metrics(ID='${metricId}',cache='${cacheName}')`);
@@ -116,29 +117,30 @@ sap.ui.define(["./BaseController", "sap/ui/model/json/JSONModel", "sap/m/Message
           this.uiModel.setProperty("/uniqueKeys", 0); // TODO: Get from key metrics data
 
           // Generate chart data
-          this.generateLatencyChartData(metric);
-          this.generateCacheThroughChartData(metric);
-          this.generateNativeChartData(metric);
+          this.generateLatencyChartData(metric, rb);
+          this.generateCacheThroughChartData(metric, rb);
+          this.generateNativeChartData(metric, rb);
         } else {
-          MessageBox.error("Metric not found");
+          MessageBox.error(await this.i18nText("msgMetricNotFound"));
         }
       } catch (error) {
         console.error("Error loading metric:", error);
-        MessageBox.error("Failed to load metric details");
+        MessageBox.error(await this.i18nText("msgLoadMetricFailed"));
       }
     },
     /**
      * Generate latency data for the chart
      */
-    generateLatencyChartData: function _generateLatencyChartData(metric) {
+    generateLatencyChartData: function _generateLatencyChartData(metric, rb) {
+      const t = k => rb.getText(k);
       const latencyData = [{
-        operation: "Average Hit Latency",
+        operation: t("chartOpAvgHitLatency"),
         latency: metric.avgHitLatency || 0
       }, {
-        operation: "Average Miss Latency",
+        operation: t("chartOpAvgMissLatency"),
         latency: metric.avgMissLatency || 0
       }, {
-        operation: "Average Read-Through Latency",
+        operation: t("chartOpAvgReadThroughLatency"),
         latency: metric.avgReadThroughLatency || 0
       }];
       this.uiModel.setProperty("/latencyData", latencyData);
@@ -146,15 +148,16 @@ sap.ui.define(["./BaseController", "sap/ui/model/json/JSONModel", "sap/m/Message
     /**
      * Generate Read-Through operations data for pie chart
      */
-    generateCacheThroughChartData: function _generateCacheThroughChartData(metric) {
+    generateCacheThroughChartData: function _generateCacheThroughChartData(metric, rb) {
+      const t = k => rb.getText(k);
       const cacheThroughData = [{
-        operation: "Hits",
+        operation: t("chartOpHits"),
         count: metric.hits || 0
       }, {
-        operation: "Misses",
+        operation: t("chartOpMisses"),
         count: metric.misses || 0
       }, {
-        operation: "Errors",
+        operation: t("chartOpErrors"),
         count: metric.errors || 0
       }];
       this.uiModel.setProperty("/cacheThroughData", cacheThroughData);
@@ -162,24 +165,25 @@ sap.ui.define(["./BaseController", "sap/ui/model/json/JSONModel", "sap/m/Message
     /**
      * Generate Native Function operations data for pie chart
      */
-    generateNativeChartData: function _generateNativeChartData(metric) {
+    generateNativeChartData: function _generateNativeChartData(metric, rb) {
+      const t = k => rb.getText(k);
       const nativeData = [{
-        operation: "Sets",
+        operation: t("chartOpSets"),
         count: metric.nativeSets || 0
       }, {
-        operation: "Gets",
+        operation: t("chartOpGets"),
         count: metric.nativeGets || 0
       }, {
-        operation: "Deletes",
+        operation: t("chartOpDeletes"),
         count: metric.nativeDeletes || 0
       }, {
-        operation: "Clears",
+        operation: t("chartOpClears"),
         count: metric.nativeClears || 0
       }, {
-        operation: "Delete By Tags",
+        operation: t("chartOpDeleteByTags"),
         count: metric.nativeDeleteByTags || 0
       }, {
-        operation: "Errors",
+        operation: t("chartOpErrors"),
         count: metric.nativeErrors || 0
       }];
       this.uiModel.setProperty("/nativeData", nativeData);
@@ -188,42 +192,44 @@ sap.ui.define(["./BaseController", "sap/ui/model/json/JSONModel", "sap/m/Message
       // Format latency chart (bar chart)
       const latencyChart = this.getView().byId("metricLatencyChart");
       if (latencyChart) {
-        latencyChart.setVizProperties({
-          legend: {
-            visible: false
-          },
-          plotArea: {
-            dataLabel: {
-              visible: true,
-              formatString: "#,## ms"
-            },
-            gridline: {
-              visible: false
-            }
-          },
-          valueAxis: {
-            axisLine: {
+        void this.getResourceBundle().then(rb => {
+          latencyChart.setVizProperties({
+            legend: {
               visible: false
             },
-            axisTick: {
-              visible: false
+            plotArea: {
+              dataLabel: {
+                visible: true,
+                formatString: "#,## ms"
+              },
+              gridline: {
+                visible: false
+              }
             },
-            label: {
-              visible: false
+            valueAxis: {
+              axisLine: {
+                visible: false
+              },
+              axisTick: {
+                visible: false
+              },
+              label: {
+                visible: false
+              },
+              title: {
+                visible: false
+              }
+            },
+            categoryAxis: {
+              title: {
+                visible: false
+              }
             },
             title: {
-              visible: false
+              visible: false,
+              text: rb.getText("chartTitleLatencyByOperation")
             }
-          },
-          categoryAxis: {
-            title: {
-              visible: false
-            }
-          },
-          title: {
-            visible: false,
-            text: 'Latency by Operation'
-          }
+          });
         });
       }
 

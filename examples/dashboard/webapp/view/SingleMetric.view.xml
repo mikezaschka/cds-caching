@@ -14,19 +14,19 @@
 		formatter: 'cds/plugin/caching/dashboard/model/formatter'
 	}">
 
-	<f:DynamicPage title="Metric Details" showFooter="false">
+	<f:DynamicPage title="{i18n>metricDetailsPageTitle}" showFooter="false">
 		<f:title>
 			<f:DynamicPageTitle>
 				<f:heading>
-					<Title text="Metric: {ui>/metricId}" />
+					<Title text="{= ${i18n>metricPagePrefix} + ' ' + ${ui>/metricId} }" />
 				</f:heading>
 				<f:actions>
-					<Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press="onRefresh" />
+					<Button icon="sap-icon://refresh" text="{i18n>refreshButton}" type="Transparent" press="onRefresh" />
 				</f:actions>
 				<f:navigationActions>
-					<OverflowToolbarButton type="Transparent" icon="sap-icon://full-screen" press="handleFullScreen" tooltip="Enter Full Screen Mode" visible="{= ${app>/layout} !== 'EndColumnFullScreen' }"/>
-					<OverflowToolbarButton type="Transparent" icon="sap-icon://exit-full-screen" press="handleExitFullScreen" tooltip="Exit Full Screen Mode" visible="{= ${app>/layout} === 'EndColumnFullScreen' }"/>
-					<OverflowToolbarButton type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="Close end column"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://full-screen" press="handleFullScreen" tooltip="{i18n>ttFullScreenEnter}" visible="{= ${app>/layout} !== 'EndColumnFullScreen' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://exit-full-screen" press="handleExitFullScreen" tooltip="{i18n>ttFullScreenExit}" visible="{= ${app>/layout} === 'EndColumnFullScreen' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="{i18n>ttCloseEndColumn}"/>
 				</f:navigationActions>
 			</f:DynamicPageTitle>
 		</f:title>
@@ -43,10 +43,10 @@
 						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
 					</layoutData>
 
-					<Title text="Read-Through Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+					<Title text="{i18n>sectionReadThroughPerformance}" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
 
 					<f:GridContainer id="metricCacheThroughGrid" columnsChange=".onColumnsChange">
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Ratio" subheader="Cache Hit Rate">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>hitRatio}" subheader="{i18n>tileSubCacheHitRate}">
 							<TileContent unit="%">
 								<NumericContent valueColor="{formatter: 'formatter.formatHitRatioWithColor', path: 'ui>/hitRatio'}" value="{ path: 'ui>/hitRatio', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
 							</TileContent>
@@ -55,7 +55,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Efficiency" subheader="Performance Factor">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerCacheEfficiency}" subheader="{i18n>tileSubPerformanceFactor}">
 							<TileContent unit="x">
 								<NumericContent valueColor="{formatter: 'formatter.formatCacheEfficiencyWithColor', path: 'ui>/cacheEfficiency'}" value="{path: 'ui>/cacheEfficiency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
 							</TileContent>
@@ -64,7 +64,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Throughput" subheader="Requests per Second">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>throughput}" subheader="{i18n>tileSubReqPerSec}">
 							<TileContent unit="req/s">
 								<NumericContent value="{ path: 'ui>/throughput', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" withMargin="false" />
 							</TileContent>
@@ -73,7 +73,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Error Rate" subheader="Cache Errors">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerErrorRate}" subheader="{i18n>tileSubCacheErrors}">
 							<TileContent unit="%">
 								<NumericContent valueColor="{formatter: 'formatter.formatErrorRateWithColor', path: 'ui>/errorRate'}" value="{ path: 'ui>/errorRate', formatter: 'formatter.formatPercentageValue' }" />
 							</TileContent>
@@ -82,7 +82,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Total Requests" subheader="Cache Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>totalRequests}" subheader="{i18n>tileSubCacheOperations}">
 							<TileContent unit="req">
 								<NumericContent value="{= ${ui>/hits} + ${ui>/misses}}" withMargin="false" />
 							</TileContent>
@@ -91,7 +91,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Hits" subheader="Successful Retrievals">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerCacheHits}" subheader="{i18n>tileSubSuccessfulRetrievals}">
 							<TileContent unit="hits">
 								<NumericContent value="{ui>/hits}" withMargin="false" />
 							</TileContent>
@@ -100,7 +100,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Misses" subheader="Failed Retrievals">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerCacheMisses}" subheader="{i18n>tileSubFailedRetrievals}">
 							<TileContent unit="misses">
 								<NumericContent value="{ui>/misses}" withMargin="false" />
 							</TileContent>
@@ -110,7 +110,7 @@
 						</GenericTile>
 
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Cache Errors" subheader="Error Count">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerCacheErrors}" subheader="{i18n>tileSubErrorCount}">
 							<TileContent unit="errors">
 								<NumericContent value="{ui>/errors}" withMargin="false" />
 							</TileContent>
@@ -120,7 +120,7 @@
 						</GenericTile>
 
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Hit Latency" subheader="Cache Hit Response">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerHitLatency}" subheader="{i18n>tileSubCacheHitResponse}">
 							<TileContent unit="ms">
 								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgHitLatency'}" value="{ path: 'ui>/avgHitLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
 							</TileContent>
@@ -129,7 +129,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Miss Latency" subheader="Cache Miss Response">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerMissLatency}" subheader="{i18n>tileSubCacheMissResponse}">
 							<TileContent unit="ms">
 								<NumericContent valueColor="{formatter: 'formatter.formatLatencyWithColor', path: 'ui>/avgMissLatency'}" value="{ path: 'ui>/avgMissLatency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
 							</TileContent>
@@ -141,7 +141,7 @@
 						<!-- Read-Through Distribution Chart -->
 						<f:Card class="sapUiTinyMargin">
 							<f:header>
-								<card:Header title="Read-Through Operations" subtitle="Hit/Miss/Error Distribution" />
+								<card:Header title="{i18n>cardReadThroughOps}" subtitle="{i18n>cardReadThroughOpsSub}" />
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
@@ -175,7 +175,7 @@
 						<!-- Latency Chart -->
 						<f:Card class="sapUiTinyMargin">
 							<f:header>
-								<card:Header title="Latency Comparison" subtitle="Read-Through Latency Metrics" />
+								<card:Header title="{i18n>cardLatencyCompare}" subtitle="{i18n>cardLatencyCompareSub}" />
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">
@@ -214,10 +214,10 @@
 						<cssgrid:ResponsiveColumnItemLayoutData columns="24"/>
 					</layoutData>
 
-					<Title text="Native Function Performance" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
+					<Title text="{i18n>sectionNativeFunctionPerformance}" titleStyle="H5" class="sapUiMediumMarginTop sapUiTinyMarginBottom" />
 
 					<f:GridContainer id="metricNativeGrid" columnsChange=".onColumnsChange">
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Throughput" subheader="Operations per Second">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeThroughput}" subheader="{i18n>tileSubNativeOpsPerSec}">
 							<TileContent unit="ops/s">
 								<NumericContent value="{ path: 'ui>/nativeThroughput', formatter: 'formatter.formatNumberValue' }" withMargin="false" />
 							</TileContent>
@@ -226,7 +226,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Error Rate" subheader="Native Function Errors">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeErrorRate}" subheader="{i18n>tileSubCacheErrors}">
 							<TileContent unit="%">
 								<NumericContent valueColor="{formatter: 'formatter.formatErrorRateWithColor', path: 'ui>/nativeErrorRate'}" value="{ path: 'ui>/nativeErrorRate', formatter: 'formatter.formatPercentageValue' }" />
 							</TileContent>
@@ -235,7 +235,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Sets" subheader="Write Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeSets}" subheader="{i18n>tileSubWriteOps}">
 							<TileContent unit="sets">
 								<NumericContent value="{ui>/nativeSets}" withMargin="false" />
 							</TileContent>
@@ -244,7 +244,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Gets" subheader="Read Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeGets}" subheader="{i18n>tileSubReadOps}">
 							<TileContent unit="gets">
 								<NumericContent value="{ui>/nativeGets}" withMargin="false" />
 							</TileContent>
@@ -253,7 +253,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Deletes" subheader="Delete Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeDeletes}" subheader="{i18n>tileSubDeleteOps}">
 							<TileContent unit="deletes">
 								<NumericContent value="{ui>/nativeDeletes}" withMargin="false" />
 							</TileContent>
@@ -262,7 +262,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Clears" subheader="Clear Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeClears}" subheader="{i18n>tileSubClearOps}">
 							<TileContent unit="clears">
 								<NumericContent value="{ui>/nativeClears}" withMargin="false" />
 							</TileContent>
@@ -271,7 +271,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Delete By Tags" subheader="Tag-based Deletes">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerDeleteByTags}" subheader="{i18n>tileSubTagDeletes}">
 							<TileContent unit="deletes">
 								<NumericContent value="{ui>/nativeDeleteByTags}" withMargin="false" />
 							</TileContent>
@@ -280,7 +280,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Native Errors" subheader="Error Count">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerNativeErrors}" subheader="{i18n>tileSubErrorCount}">
 							<TileContent unit="errors">
 								<NumericContent value="{ui>/nativeErrors}" withMargin="false" />
 							</TileContent>
@@ -289,7 +289,7 @@
 							</layoutData>
 						</GenericTile>
 
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="Total Native Ops" subheader="All Operations">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerTotalNativeOps}" subheader="{i18n>tileSubAllOperations}">
 							<TileContent unit="ops">
 								<NumericContent value="{ui>/totalNativeOperations}" withMargin="false" />
 							</TileContent>
@@ -300,7 +300,7 @@
 						<!-- Native Function Distribution Chart -->
 						<f:Card class="sapUiTinyMargin">
 							<f:header>
-								<card:Header title="Native Function Operations" subtitle="Hit/Miss/Error Distribution" />
+								<card:Header title="{i18n>cardNativeFunctionOps}" subtitle="{i18n>cardReadThroughOpsSub}" />
 							</f:header>
 							<f:content>
 								<l:VerticalLayout width="100%">

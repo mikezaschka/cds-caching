@@ -42,6 +42,16 @@ export default abstract class BaseController extends Controller {
 	}
 
 	/**
+	 * Returns a translated string from the i18n bundle (ResourceModel is async).
+	 */
+	public async i18nText(sKey: string, aArgs?: (string | number)[]): Promise<string> {
+		const oBundle = await this.getResourceBundle();
+		return aArgs && aArgs.length
+			? oBundle.getText(sKey, aArgs)
+			: oBundle.getText(sKey);
+	}
+
+	/**
 	 * Convenience method for getting the view model by name in every controller of the application.
 	 * @param [sName] The model name
 	 * @returns The model instance

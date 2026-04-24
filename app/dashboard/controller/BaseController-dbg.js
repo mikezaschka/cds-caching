@@ -29,6 +29,13 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/core/UIComponent", "sap/ui/
       return oModel.getResourceBundle();
     },
     /**
+     * Returns a translated string from the i18n bundle (ResourceModel is async).
+     */
+    i18nText: async function _i18nText(sKey, aArgs) {
+      const oBundle = await this.getResourceBundle();
+      return aArgs && aArgs.length ? oBundle.getText(sKey, aArgs) : oBundle.getText(sKey);
+    },
+    /**
      * Convenience method for getting the view model by name in every controller of the application.
      * @param [sName] The model name
      * @returns The model instance

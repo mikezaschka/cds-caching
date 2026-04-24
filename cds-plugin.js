@@ -76,3 +76,7 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
         LOG.info('Built cds-caching CacheStore HANA artifacts from cache-store model');
     }
 });
+
+// CAP resolves `impl: 'cds-caching'` to this file; the main export must be the service class
+// so `cds.connect.to('<cache>')` returns CachingService (e.g. addCachableFunction).
+module.exports = CachingService

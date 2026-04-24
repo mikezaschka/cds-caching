@@ -36,8 +36,8 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
 
     async build() {
         const requires = cds.env.requires || {};
-            const compileOpts = { ...this.options(), sql_mapping: cds.env.sql.names };
-            let wroteCacheStore = false;
+        const compileOpts = { ...this.options(), sql_mapping: cds.env.sql.names };
+        let wroteCacheStore = false;
 
         for (const [, config] of Object.entries(requires)) {
             if (config.impl === 'cds-caching' && config.store === 'hana') {
@@ -57,18 +57,14 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 await this._buildCacheStoreHdbtables(compileOpts);
                 wroteCacheStore = true;
             }
-            // For store: 'cds' with HANA, the CacheStore entity from index.cds
-            // is deployed automatically by the HDI deployer — no manual .hdbtable needed.
-            // For SQLite/Postgres, CAP's cds deploy handles table creation from the CDS model.
-
         }
     }
 
     /**
-         * The HANA build task compiles only the app `db/` folder, so `plugin.cds_caching.CacheStore`
-         * from env.roots is not part of that CSN. Emit matching .hdbtable files here.
-         * Non-HANA DBs still get the table via normal CDS deploy / DDL.
-         */
+     * The HANA build task compiles only the app `db/` folder, so `plugin.cds_caching.CacheStore`
+     * from env.roots is not part of that CSN. Emit matching .hdbtable files here.
+     * Non-HANA DBs still get the table via normal CDS deploy / DDL.
+     */
     async _buildCacheStoreHdbtables(compileOpts) {
         const modelPath = path.join(__dirname, 'db', 'cache-store');
         const model = await cds.load(modelPath, { ...compileOpts, cwd: cds.root });

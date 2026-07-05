@@ -1,8 +1,7 @@
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 import BaseController from "./BaseController";
-import MessageBox from "sap/m/MessageBox";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import List from "sap/m/List";
 
 /**
  * @namespace cds.plugin.caching.dashboard.controller
@@ -13,10 +12,9 @@ export default class Main extends BaseController {
 		this.getRouter().getRoute("main").attachPatternMatched(this.onRouteMatched, this);
 	}
 
-	public onRouteMatched(event: Route$PatternMatchedEvent): void {
-		// Set layout to one column for main view
-		(<any>this.getModel("app")).setProperty("/layout", "OneColumn");
-		this.getView().byId("cachesList").getBinding("items").refresh();
+	public onRouteMatched(_event: Route$PatternMatchedEvent): void {
+		this.getAppModel().setProperty("/layout", "OneColumn");
+		(this.getView().byId("cachesList") as List).getBinding("items").refresh();
 	}
 
 	public onCacheSelect(event: ListBase$ItemPressEvent): void {
@@ -25,7 +23,7 @@ export default class Main extends BaseController {
 	}
 
 	public onRefresh(): void {
-		this.getView().byId("cachesList").getBinding("items").refresh();
+		(this.getView().byId("cachesList") as List).getBinding("items").refresh();
 	}
 
 }

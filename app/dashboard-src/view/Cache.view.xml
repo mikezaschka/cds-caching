@@ -44,7 +44,7 @@
 		</f:header>
 
 		<f:content>
-			<IconTabBar id="cacheStickySubheaderProvider" stretchContentHeight="true" expandable="false" headerMode="Inline" select=".onSelectionChange" selectedKey="{ui>/selectedTab}">
+			<IconTabBar id="cacheStickySubheaderProvider" stretchContentHeight="true" expandable="false" headerMode="Inline" selectedKey="{ui>/selectedTab}">
 				<items>
 					<IconTabFilter text="{i18n>tabOverview}" key="main">
 						<f:GridContainer snapToRow="true" allowDenseFill="true">
@@ -165,6 +165,11 @@
 						<ui:Table id="metricsTable" rows="{
 								  	path: '/Metrics',
 									suspended: true,
+									filters: [{
+										path: 'cache',
+										operator: 'EQ',
+										value1: '{app>/selectedCache}'
+									}],
 									sorter: {
 										path: 'timestamp',
 										descending: true
@@ -452,10 +457,17 @@
 						</Toolbar>
 						<ui:Table id="keyMetricsTable" rows="{
 								  	path: '/KeyMetrics',
-									suspended: true
+									suspended: true,
+									filters: [{
+										path: 'cache',
+										operator: 'EQ',
+										value1: '{app>/selectedCache}'
+									}]
 								  }" 
 								  rowMode="Auto" 
-								  selectionMode="None" 
+								  selectionMode="Single"
+								  selectionBehavior="RowOnly"
+								  rowSelectionChange=".onKeyMetricsRowSelect"
 								  enableColumnReordering="true">
 							<ui:columns>
 								<!-- Basic Information -->

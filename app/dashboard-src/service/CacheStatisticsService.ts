@@ -1,5 +1,10 @@
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import Sorter from "sap/ui/model/Sorter";
+import Context from "sap/ui/model/odata/v4/Context";
+import { cacheAndIdFilter, cacheNameFilter, periodFilter } from "../model/filters";
 
 export interface CacheStatistics {
     hits: number;
@@ -67,8 +72,7 @@ export interface HistoricalStatistics {
     cache: string;
     timestamp: string;
     period: string;
-    
-            // Read-through metrics (high value with latencies)
+
     hits: number;
     misses: number;
     sets: number;
@@ -76,7 +80,6 @@ export interface HistoricalStatistics {
     errors: number;
     totalRequests: number;
 
-            // Read-through latency metrics
     avgHitLatency: number;
     p95HitLatency: number;
     p99HitLatency: number;
@@ -90,13 +93,11 @@ export interface HistoricalStatistics {
     avgSetLatency: number;
     avgDeleteLatency: number;
 
-            // Read-through performance metrics
     hitRatio: number;
     throughput: number;
     errorRate: number;
     cacheEfficiency: number;
 
-    // Native function metrics (basic counts only)
     nativeSets: number;
     nativeGets: number;
     nativeDeletes: number;
@@ -105,11 +106,9 @@ export interface HistoricalStatistics {
     nativeErrors: number;
     totalNativeOperations: number;
 
-    // Native function performance metrics
     nativeThroughput: number;
     nativeErrorRate: number;
 
-    // Common metrics
     memoryUsage: number;
     itemCount: number;
     uptimeMs: number;
@@ -129,31 +128,26 @@ export default class CacheStatisticsService {
         });
     }
 
-    /**
-     * Get the OData model instance
-     */
     getModel(): ODataModel {
         return this.model;
     }
 
-    /**
-     * Get current cache metrics using entity set
-     */
     async getCurrentMetrics(cacheName: string): Promise<CacheStatistics | null> {
         try {
-            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
-                $filter: `period eq 'hourly' and cache eq '${cacheName}'`,
-                $orderby: "timestamp desc"
-            });
+            const binding = this.model.bindList(
+                "/Metrics",
+                undefined,
+                [new Sorter({ path: "timestamp", descending: true })],
+                [periodFilter("hourly"), cacheNameFilter(cacheName)]
+            );
 
             const data = await binding.requestContexts();
-            const results = data.map((item: any) => item.getObject());
+            const results = data.map((item: Context) => item.getObject());
 
-            if (results && results.length > 0) {
+            if (results.length > 0) {
                 return this.transformStatistics(results[0]);
-            } else {
-                return null;
             }
+            return null;
         } catch (error) {
             console.error("Error fetching current metrics:", error);
             MessageBox.error("Failed to load current metrics");
@@ -161,26 +155,25 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Get historical metrics using entity set
-     */
     async getHistoricalMetrics(cacheName: string, period: string = "hourly", from?: string, to?: string): Promise<HistoricalStatistics[]> {
         try {
-            let filter = `period eq '${period}' and cache eq '${cacheName}'`;
+            const filters: Filter[] = [periodFilter(period), cacheNameFilter(cacheName)];
             if (from) {
-                filter += ` and timestamp ge ${from}`;
+                filters.push(new Filter({ path: "timestamp", operator: FilterOperator.GE, value1: from }));
             }
             if (to) {
-                filter += ` and timestamp le ${to}`;
+                filters.push(new Filter({ path: "timestamp", operator: FilterOperator.LE, value1: to }));
             }
 
-            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
-                $filter: filter,
-                $orderby: "timestamp desc"
-            });
+            const binding = this.model.bindList(
+                "/Metrics",
+                undefined,
+                [new Sorter({ path: "timestamp", descending: true })],
+                filters
+            );
 
             const data = await binding.requestContexts();
-            return data.map((item: any) => item.getObject());
+            return data.map((item: Context) => item.getObject());
         } catch (error) {
             console.error("Error fetching historical metrics:", error);
             MessageBox.error("Failed to load historical metrics");
@@ -188,18 +181,17 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Get top accessed keys using entity set
-     */
-    async getTopKeys(cacheName: string, limit: number = 10): Promise<KeyAccess[]> {
+    async getTopKeys(cacheName: string): Promise<KeyAccess[]> {
         try {
-            const binding = this.model.bindList("/KeyMetrics", undefined, undefined, undefined, {
-                $filter: `period eq 'current' and cache eq '${cacheName}'`,
-                $orderby: "totalRequests desc"
-            });
+            const binding = this.model.bindList(
+                "/KeyMetrics",
+                undefined,
+                [new Sorter({ path: "totalRequests", descending: true })],
+                [periodFilter("current"), cacheNameFilter(cacheName)]
+            );
 
             const data = await binding.requestContexts();
-            return data.map((item: any) => item.getObject());
+            return data.map((item: Context) => item.getObject());
         } catch (error) {
             console.error("Error fetching top keys:", error);
             MessageBox.error("Failed to load top keys");
@@ -207,18 +199,17 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Get cold keys using entity set
-     */
-    async getColdKeys(cacheName: string, limit: number = 10): Promise<KeyAccess[]> {
+    async getColdKeys(cacheName: string): Promise<KeyAccess[]> {
         try {
-            const binding = this.model.bindList("/KeyMetrics", undefined, undefined, undefined, {
-                $filter: `period eq 'current' and cache eq '${cacheName}'`,
-                $orderby: "lastAccess asc"
-            });
+            const binding = this.model.bindList(
+                "/KeyMetrics",
+                undefined,
+                [new Sorter({ path: "lastAccess", descending: false })],
+                [periodFilter("current"), cacheNameFilter(cacheName)]
+            );
 
             const data = await binding.requestContexts();
-            return data.map((item: any) => item.getObject());
+            return data.map((item: Context) => item.getObject());
         } catch (error) {
             console.error("Error fetching cold keys:", error);
             MessageBox.error("Failed to load cold keys");
@@ -226,24 +217,11 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Persist statistics using action
-     */
-    async persistStatistics(cacheName: string): Promise<boolean> {
+    async persistStatistics(): Promise<boolean> {
         try {
-            // For actions, we'll use a simple approach with the model's submitBatch
             const context = this.model.bindContext("/persistStatistics(...)");
-
-            return new Promise((resolve, reject) => {
-                // Execute the action
-                context.execute().then(() => {
-                    resolve(true);
-                }).catch((error: any) => {
-                    console.error("Error persisting statistics:", error);
-                    MessageBox.error("Failed to persist statistics");
-                    reject(error);
-                });
-            });
+            await context.invoke();
+            return true;
         } catch (error) {
             console.error("Error persisting statistics:", error);
             MessageBox.error("Failed to persist statistics");
@@ -251,69 +229,60 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Transform statistics data from API format to internal format
-     */
-    private transformStatistics(data: any): CacheStatistics {
+    private transformStatistics(data: Record<string, unknown>): CacheStatistics {
         return {
-            hits: data.hits || 0,
-            misses: data.misses || 0,
-            sets: data.sets || 0,
-            deletes: data.deletes || 0,
-            errors: data.errors || 0,
+            hits: (data.hits as number) || 0,
+            misses: (data.misses as number) || 0,
+            sets: (data.sets as number) || 0,
+            deletes: (data.deletes as number) || 0,
+            errors: (data.errors as number) || 0,
 
-            // Overall latency metrics
-            avgLatency: data.avgLatency || 0,
-            p95Latency: data.p95Latency || 0,
-            p99Latency: data.p99Latency || 0,
-            minLatency: data.minLatency || 0,
-            maxLatency: data.maxLatency || 0,
+            avgLatency: (data.avgLatency as number) || 0,
+            p95Latency: (data.p95Latency as number) || 0,
+            p99Latency: (data.p99Latency as number) || 0,
+            minLatency: (data.minLatency as number) || 0,
+            maxLatency: (data.maxLatency as number) || 0,
 
-            // Hit-specific latency metrics
-            avgHitLatency: data.avgHitLatency || 0,
-            p95HitLatency: data.p95HitLatency || 0,
-            p99HitLatency: data.p99HitLatency || 0,
-            minHitLatency: data.minHitLatency || 0,
-            maxHitLatency: data.maxHitLatency || 0,
+            avgHitLatency: (data.avgHitLatency as number) || 0,
+            p95HitLatency: (data.p95HitLatency as number) || 0,
+            p99HitLatency: (data.p99HitLatency as number) || 0,
+            minHitLatency: (data.minHitLatency as number) || 0,
+            maxHitLatency: (data.maxHitLatency as number) || 0,
 
-            // Miss-specific latency metrics
-            avgMissLatency: data.avgMissLatency || 0,
-            p95MissLatency: data.p95MissLatency || 0,
-            p99MissLatency: data.p99MissLatency || 0,
-            minMissLatency: data.minMissLatency || 0,
-            maxMissLatency: data.maxMissLatency || 0,
+            avgMissLatency: (data.avgMissLatency as number) || 0,
+            p95MissLatency: (data.p95MissLatency as number) || 0,
+            p99MissLatency: (data.p99MissLatency as number) || 0,
+            minMissLatency: (data.minMissLatency as number) || 0,
+            maxMissLatency: (data.maxMissLatency as number) || 0,
 
-            // Set/Delete latency metrics
-            avgSetLatency: data.avgSetLatency || 0,
-            avgDeleteLatency: data.avgDeleteLatency || 0,
+            avgSetLatency: (data.avgSetLatency as number) || 0,
+            avgDeleteLatency: (data.avgDeleteLatency as number) || 0,
 
-            // Performance metrics
-            memoryUsage: data.memoryUsage || 0,
-            itemCount: data.itemCount || 0,
-            hitRatio: data.hitRatio || 0,
-            throughput: data.throughput || 0,
-            errorRate: data.errorRate || 0,
-            cacheEfficiency: data.cacheEfficiency || 0,
-            uptimeMs: data.uptimeMs || 0,
+            memoryUsage: (data.memoryUsage as number) || 0,
+            itemCount: (data.itemCount as number) || 0,
+            hitRatio: (data.hitRatio as number) || 0,
+            throughput: (data.throughput as number) || 0,
+            errorRate: (data.errorRate as number) || 0,
+            cacheEfficiency: (data.cacheEfficiency as number) || 0,
+            uptimeMs: (data.uptimeMs as number) || 0,
             uniqueKeys: 0,
             topKeys: [],
             coldKeys: [],
-            lastPersisted: data.lastPersisted || new Date().toISOString()
+            lastPersisted: (data.lastPersisted as string) || new Date().toISOString()
         };
     }
 
-    /**
-     * Get all available metrics for a cache
-     */
-    async getAvailableMetrics(cacheName: string): Promise<any[]> {
+    async getAvailableMetrics(cacheName: string): Promise<Record<string, unknown>[]> {
         try {
-            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
-                $filter: `cache eq '${cacheName}'`,
-                $orderby: "timestamp desc"
-            });
+            const binding = this.model.bindList(
+                "/Metrics",
+                undefined,
+                [new Sorter({ path: "timestamp", descending: true })],
+                [cacheNameFilter(cacheName)]
+            );
 
             const data = await binding.requestContexts();
-            return data.map((item: any) => item.getObject());
+            return data.map((item: Context) => item.getObject());
         } catch (error) {
             console.error("Error fetching available metrics:", error);
             MessageBox.error("Failed to load available metrics");
@@ -321,23 +290,22 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Get a specific metric by ID
-     */
     async getMetricById(cacheName: string, metricId: string): Promise<CacheStatistics | null> {
         try {
-            const binding = this.model.bindList("/Metrics", undefined, undefined, undefined, {
-                $filter: `ID eq '${metricId}' and cache eq '${cacheName}'`
-            });
+            const binding = this.model.bindList(
+                "/Metrics",
+                undefined,
+                undefined,
+                cacheAndIdFilter(cacheName, metricId)
+            );
 
             const data = await binding.requestContexts();
-            const results = data.map((item: any) => item.getObject());
+            const results = data.map((item: Context) => item.getObject());
 
-            if (results && results.length > 0) {
+            if (results.length > 0) {
                 return this.transformStatistics(results[0]);
-            } else {
-                return null;
             }
+            return null;
         } catch (error) {
             console.error("Error fetching metric by ID:", error);
             MessageBox.error("Failed to load metric");
@@ -345,24 +313,13 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Set metrics enabled/disabled
-     */
     async setMetricsEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
         try {
-            const context = this.model.bindContext(`/setMetricsEnabled(...)`);
+            const context = this.model.bindContext("/setMetricsEnabled(...)");
             context.setParameter("cache", cacheName);
             context.setParameter("enabled", enabled);
-            
-            return new Promise((resolve, reject) => {
-                context.execute().then(() => {
-                    resolve(true);
-                }).catch((error: any) => {
-                    console.error("Error setting metrics enabled:", error);
-                    MessageBox.error("Failed to update metrics configuration");
-                    reject(error);
-                });
-            });
+            await context.invoke();
+            return true;
         } catch (error) {
             console.error("Error setting metrics enabled:", error);
             MessageBox.error("Failed to update metrics configuration");
@@ -370,28 +327,17 @@ export default class CacheStatisticsService {
         }
     }
 
-    /**
-     * Set key metrics enabled/disabled
-     */
     async setKeyMetricsEnabled(cacheName: string, enabled: boolean): Promise<boolean> {
         try {
-            const context = this.model.bindContext(`/setKeyMetricsEnabled(...)`);
+            const context = this.model.bindContext("/setKeyMetricsEnabled(...)");
             context.setParameter("cache", cacheName);
             context.setParameter("enabled", enabled);
-            
-            return new Promise((resolve, reject) => {
-                context.execute().then(() => {
-                    resolve(true);
-                }).catch((error: any) => {
-                    console.error("Error setting key metrics enabled:", error);
-                    MessageBox.error("Failed to update key metrics configuration");
-                    reject(error);
-                });
-            });
+            await context.invoke();
+            return true;
         } catch (error) {
             console.error("Error setting key metrics enabled:", error);
             MessageBox.error("Failed to update key metrics configuration");
             return false;
         }
     }
-} 
+}

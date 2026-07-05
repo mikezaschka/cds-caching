@@ -14,8 +14,30 @@ if (cachingConfigs.some(c => c.statistics)) {
     cds.env.roots.push(path.join(__dirname, 'db', 'statistics'));
 }
 
+// Opt-in "reuse & compose" dashboard: when `dashboard: true` is set on a caching config,
+// the CachingApiService model is auto-served (via env.roots) and the pre-built UI is served
+// straight from the plugin at bootstrap — no `cds add` / file copy required. See docs/dashboard.md.
+const dashboardEnabled = cachingConfigs.some(c => c.dashboard);
+if (dashboardEnabled) {
+    cds.env.roots.push(path.join(__dirname, 'index'));
+}
+
 cds.on('served', scanCachingAnnotations)
 const LOG = cds.log("cds-caching");
+
+if (dashboardEnabled) {
+    cds.once('bootstrap', (app) => {
+        app.serve('/caching-dashboard').from('cds-caching', 'app/dashboard');
+        LOG.info("Serving cds-caching dashboard at /caching-dashboard");
+    });
+}
+
+// Register the `cds add caching-dashboard` facet. `cds.add` is only present under @sap/cds-dk
+// (i.e. while running `cds add`), so this — and the require of the dk-dependent module — is a
+// no-op during normal server bootstrap.
+if (cds.add?.register) {
+    cds.add.register('caching-dashboard', require('./lib/add'));
+}
 
 // Register HANA build plugin to generate .hdbtable artifacts during `cds build`
 cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.Plugin {

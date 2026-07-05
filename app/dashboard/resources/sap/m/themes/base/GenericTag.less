@@ -1,0 +1,212 @@
+/* ================================= */
+/* CSS for control sap.m/GenericTag  */
+/* Base theme                        */
+/* ================================= */
+
+@_sap_m_GenericTag_BorderWidth: 0.25rem;
+@_sap_m_GenericTag_PaddingLeft: 0.25rem;
+@_sap_m_GenericTag_StatusIconWidth: 1rem;
+@_sap_m_GenericTag_IconPaddingRight: 0.5rem;
+@_sap_m_GenericTag_TextMinWidth: 1.5625rem;
+@_sap_m_GenericTag_HeightCompact: 1.625rem;
+@_sap_m_GenericTag_HeightCozy: 2.5rem;
+
+.sapMGenericTag {
+	margin-top: 0.1875rem;
+	margin-bottom: 0.1875rem;
+	display: inline-block;
+	max-width: 100%;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:-moz-focus-inner {
+		padding: 0;
+		border: 0
+	}
+
+	&.sapMGenericTagOverflowToolbar {
+		margin-right: 0;
+		max-width: 20rem;
+
+		.sapMGenericTagWrap {
+			width: 100%;
+		}
+
+		.sap-phone & {
+			max-width: 100%;
+		}
+	}
+
+	.sapMBarChild& {
+
+		>.sapMGenericTagWrap {
+			display: flex;
+		}
+	}
+}
+
+html.sap-desktop .sapMGenericTag:focus {
+	position: relative;
+
+	&::before {
+		position: absolute;
+		content: ' ';
+		top: 1px;
+		right: 1px;
+		bottom: 1px;
+		left: 1px;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	&::after {
+		position: absolute;
+		content: ' ';
+		top: 1px;
+		right: 1px;
+		bottom: 1px;
+		left: 1px;
+		z-index: 2;
+		pointer-events: none;
+	}
+}
+
+.sapMGenericTagWrap {
+	background: var(--sapList_Background);
+	box-shadow: @sapUiShadowLevel0;
+	box-sizing: border-box;
+	border-radius: 0.125rem;
+	border-left-width: @_sap_m_GenericTag_BorderWidth;
+	border-left-style: solid;
+	padding: 0 0.5rem 0 @_sap_m_GenericTag_PaddingLeft;
+	display: inline-flex;
+	max-width: 100%;
+	flex-flow: row nowrap;
+	align-items: center;
+	page-break-after: auto;
+	height: @_sap_m_GenericTag_HeightCompact;
+	min-width: @_sap_m_GenericTag_BorderWidth + @_sap_m_GenericTag_PaddingLeft + @_sap_m_GenericTag_StatusIconWidth + @_sap_m_GenericTag_IconPaddingRight + @_sap_m_GenericTag_TextMinWidth;
+
+	.sapMGenericTagIcon {
+		width: 1rem;
+		padding-right: @_sap_m_GenericTag_IconPaddingRight;
+	}
+
+	.sapMGenericTagError & {
+		border-color: var(--sapErrorBorderColor);
+
+		.sapMGenericTagIcon {
+			color: var(--sapNegativeTextColor);
+		}
+	}
+
+	.sapMGenericTagWarning & {
+		border-color: var(--sapWarningBorderColor);
+
+		.sapMGenericTagIcon {
+			color: var(--sapCriticalTextColor);
+		}
+	}
+
+	.sapMGenericTagSuccess & {
+		border-color: var(--sapSuccessBorderColor);
+
+		.sapMGenericTagIcon {
+			color: var(--sapPositiveTextColor);
+		}
+	}
+
+	.sapMGenericTagInformation & {
+		border-color: var(--sapInformationBorderColor);
+
+		.sapMGenericTagIcon {
+			color: var(--sapInformativeTextColor);
+		}
+	}
+
+	.sapMGenericTagNone & {
+		border-color: var(--sapNeutralColor);
+
+		.sapMGenericTagIcon {
+			color: var(--sapNeutralTextColor);
+		}
+	}
+
+	&:hover {
+		box-shadow: 0 0 0 0.0625rem fade(@sapUiContentShadowColor, 30);
+		cursor: pointer;
+	}
+
+	.sapMGenericTagActive & {
+		background-color: var(--sapList_Active_Background);
+
+		.sapMGenericTagIcon,
+		.sapMGenericTagText,
+		.sapMGenericTagValue,
+		.sapMGenericTagErrorIcon {
+			color: var(--sapList_Active_TextColor);
+		}
+	}
+
+	.sapMGenericTagErrorIcon {
+		overflow: hidden;
+		color: var(--sapNegativeTextColor);
+		padding-left: 0.5rem;
+
+		&::before {
+			line-height: normal;
+		}
+	}
+
+	.sapMGenericTagText {
+		font-family: var(--sapFontFamily);
+		font-size: @sapMFontMediumSize;
+		font-weight: normal;
+		color: var(--sapTextColor);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		box-sizing: border-box;
+		flex: 1 10000 auto;
+		min-width: @_sap_m_GenericTag_TextMinWidth;
+	}
+
+	.sapMGenericTagValue {
+		display: flex;
+		flex: 0 0.5 auto;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		box-sizing: border-box;
+		align-items: center;
+		padding-left: 0.5rem;
+
+		.sapMObjectNumberText {
+			min-width: 0.75rem;
+
+			&::after {
+				/* simulate ObjectNumber's styling: The ObjectNumber value and unit are inline blocks and */
+				/* have an empty space between them. That's because the browser interprets the line-break and spaces */
+				/* in the HTML as content. Since we change the styling of the ObjectNumber we must have the same styling. */
+				content: '\00a0';
+			}
+		}
+
+		.sapMObjectNumberUnit {
+			min-width: 0.75rem;
+		}
+	}
+}
+
+.sapUiSizeCozy {
+
+	.sapMGenericTag {
+		margin: 0.25rem 0;
+
+		.sapMGenericTagWrap {
+			height: @_sap_m_GenericTag_HeightCozy;
+		}
+	}
+}

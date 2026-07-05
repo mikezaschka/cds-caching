@@ -1,0 +1,130 @@
+{
+  "_version": "1.21.0",
+  "sap.app": {
+    "id": "sap.ui.table",
+    "type": "library",
+    "embeds": [],
+    "applicationVersion": {
+      "version": "1.136.0"
+    },
+    "title": "Table-like controls, mainly for desktop scenarios.",
+    "description": "Table-like controls, mainly for desktop scenarios.",
+    "ach": "CA-UI5-TBL",
+    "resources": "resources.json",
+    "offline": true
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "supportedThemes": [
+      "base",
+      "sap_hcb"
+    ]
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.136",
+      "libs": {
+        "sap.ui.core": {
+          "minVersion": "1.136.0"
+        },
+        "sap.ui.unified": {
+          "minVersion": "1.136.0"
+        }
+      }
+    },
+    "library": {
+      "i18n": {
+        "bundleUrl": "messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cnr",
+          "cs",
+          "cy",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-GB",
+          "en-US-sappsd",
+          "en-US-saprigi",
+          "en-US-saptrc",
+          "es",
+          "es-MX",
+          "et",
+          "fi",
+          "fr",
+          "fr-CA",
+          "hi",
+          "hr",
+          "hu",
+          "id",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "mk",
+          "ms",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "pt-PT",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sr",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      "content": {
+        "controls": [
+          "sap.ui.table.AnalyticalColumnMenu",
+          "sap.ui.table.AnalyticalTable",
+          "sap.ui.table.ColumnMenu",
+          "sap.ui.table.CreationRow",
+          "sap.ui.table.Table",
+          "sap.ui.table.TreeTable",
+          "sap.ui.table.RowAction"
+        ],
+        "elements": [
+          "sap.ui.table.AnalyticalColumn",
+          "sap.ui.table.Column",
+          "sap.ui.table.Row",
+          "sap.ui.table.RowActionItem",
+          "sap.ui.table.RowSettings",
+          "sap.ui.table.rowmodes.RowMode",
+          "sap.ui.table.rowmodes.Fixed",
+          "sap.ui.table.rowmodes.Interactive",
+          "sap.ui.table.rowmodes.Auto",
+          "sap.ui.table.plugins.SelectionPlugin",
+          "sap.ui.table.plugins.MultiSelectionPlugin",
+          "sap.ui.table.plugins.ODataV4Selection"
+        ],
+        "types": [
+          "sap.ui.table.NavigationMode",
+          "sap.ui.table.RowActionType",
+          "sap.ui.table.SelectionBehavior",
+          "sap.ui.table.SelectionMode",
+          "sap.ui.table.SortOrder",
+          "sap.ui.table.VisibleRowCountMode",
+          "sap.ui.table.TreeAutoExpandMode"
+        ],
+        "interfaces": []
+      }
+    }
+  }
+}

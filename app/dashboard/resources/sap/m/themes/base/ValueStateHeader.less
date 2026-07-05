@@ -1,0 +1,64 @@
+/* ======================================= */
+/* CSS for control sap.m/ValueStateHeader  */
+/* Base theme                              */
+/* ======================================= */
+
+.sapMValueStateHeaderRoot {
+	width: auto;
+	padding: 0.5625rem 1rem;
+	box-sizing: border-box;
+	position: sticky;
+	top: 0;
+	z-index: 42;
+}
+
+/* When not on mobile (in sap.m.Dialog) the ValueStateHeader's width */
+/* must be 0 to get calculated correctly and set by the sap.m.Popover */
+html.sap-desktop .sapMValueStateHeaderRoot {
+	width: 0;
+}
+
+.sapMPseudoFocus {
+	outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+	outline-offset: -0.125rem;
+}
+
+.sapMValueStateHeaderText {
+	display: inline-block;
+	line-height: normal;
+	white-space: pre-line;
+	word-wrap: break-word;
+	font-size: var(--sapFontSmallSize);
+	color: var(--sapList_TextColor);
+
+	.sapMFT {
+		font-size: var(--sapFontSmallSize);
+	}
+}
+
+.sapMValueStateHeaderError,
+.sapMSuggestionsPopoverErrorState .sapMPopoverHeader {
+	background: var(--sapErrorBackground);
+	color: var(--sapTextColor);
+}
+
+.sapMValueStateHeaderInformation,
+.sapMSuggestionsPopoverInformationState .sapMPopoverHeader {
+	background: var(--sapInformationBackground);
+}
+
+.sapMValueStateHeaderSuccess,
+.sapMSuggestionsPopoverSuccessState .sapMPopoverHeader {
+	background: var(--sapSuccessBackground);
+	color: var(--sapTextColor);
+}
+
+.sapMValueStateHeaderWarning,
+.sapMSuggestionsPopoverWarningState .sapMPopoverHeader {
+	background: var(--sapWarningBackground);
+	color: var(--sapTextColor);
+}
+
+.sapMValueStateHeaderNone {
+	display: none;
+}

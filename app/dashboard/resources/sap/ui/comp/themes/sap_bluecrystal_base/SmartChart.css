@@ -1,0 +1,40 @@
+/* ======================================= */
+/* CSS for control sap.ui.comp/SmartChart  */
+/* Base theme                              */
+/* ======================================= */
+
+.sapUiCompSmartChart .sapUiCompSmartChartToolbar {
+	width: 100%;
+}
+
+.sapUiCompSmartChart .sapUiCompChartSegmented .sapUiCompChartArrowDwn.sapMSegBBtn .sapUiIcon {
+	font-size: 0.875rem;
+}
+
+.sapUiCompSmartChart .sapUiCompChartSegmented .sapMSegBBtn.sapMBtnTransparent {
+    background-color: transparent;
+}
+
+.sapUiCompSmartChart .sapUiCompChartSegmented .sapMSegBBtn.sapMBtnTransparent.sapMSegBBtnSel {
+    background-color: @sapUiSegmentedButtonSelectedBackground;
+}
+
+.sapUiCompSmartChartDetailsPopover .sapUiCompSmartChartDetailsScrollContainer {
+	height:auto;
+	max-height: 17rem;
+}
+
+.sapUiCompSmartChart .sapUiCompSmartChartBreadcrumbs {
+	padding-top: 0.5rem;
+	max-width: 60%;
+	width:auto;
+	margin-left: 1rem;
+}
+
+.sapUiCompSmartChartInnerChartHeight > div:last-child {
+	height:0;
+}
+
+.sapUiCompSmartChart.sapMFlexBox .sapMIBar .sapUiCompVarMngmt.sapMBarChild {
+    margin-left: 0.5rem;
+}

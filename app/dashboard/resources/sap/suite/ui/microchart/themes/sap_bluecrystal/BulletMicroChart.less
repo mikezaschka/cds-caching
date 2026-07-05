@@ -1,0 +1,88 @@
+/* ======================================================== */
+/* CSS for control sap.suite.ui.microchart/BulletMicroChart */
+/* Blue Crystal Theme                                       */
+/* ======================================================== */
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorNeutral {
+	background-color: @sapUiChartNeutral;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorGood {
+	background-color: @sapUiChartGood;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorCritical {
+	background-color: @sapUiChartCritical;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorError {
+	background-color: @sapUiChartBad;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorNeutral {
+	color: @sapUiLightText;
+}
+
+.sapSuiteBMCTargetValue {
+	color: @sapUiDarkText;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorNeutral {
+	background-color: lighten(@sapUiChartNeutral, 30);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorGood {
+	background-color: lighten(@sapUiChartGood, 30);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorCritical {
+	background-color: lighten(@sapUiChartCritical, 30);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorError {
+	background-color: lighten(@sapUiChartBad, 35);
+}
+
+/* Scale Colors Start */
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorLightest {
+	background-color: @sapUiLightestBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorExtraLight {
+	background-color: @sapUiExtraLightBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorLight {
+	background-color: @sapUiLightBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorMedium {
+	background-color: @sapUiMediumBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorMediumLight {
+	background-color: lighten(@sapUiChartNeutral, 38.5);
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorDark {
+	background-color: @sapUiDarkBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorExtraDark {
+	background-color: @sapUiExtraDarkBG;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorDarkest {
+	background-color: @sapUiDarkestBG;
+}
+
+/* Scale Colors End */

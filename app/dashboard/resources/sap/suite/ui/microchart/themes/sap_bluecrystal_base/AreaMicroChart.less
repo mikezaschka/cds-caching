@@ -1,0 +1,314 @@
+/* ====================================================== */
+/* CSS for control sap.suite.ui.microchart/AreaMicroChart */
+/* Base Theme                                             */
+/* ====================================================== */
+
+.sapSuiteAMC {
+	background-color: transparent;
+	position: relative;
+	outline: none;
+	display: flex;
+	align-items: center;
+}
+
+.sapSuiteAMCVerticalAlignmentContainer {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	max-height: 5.875rem;
+	min-height: 1.125rem;
+	min-width: 4rem;
+	max-width: 20rem;
+	display: flex;
+	flex-direction: column;
+}
+
+.sapSuiteAMCHorizontalContainer {
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+.sapSuiteAMCCanvasContainer {
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+
+.sapSuiteAMCCanvas {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	display: block;
+}
+
+// helper classes for canvas rendering
+.sapSuiteAMCTarget {
+	outline-style: dotted;
+	width: 2px;
+}
+
+.sapSuiteAMCChart {
+	width: 2px;
+}
+
+.sapSuiteAMCLine {
+	width: 2px;
+}
+
+.sapSuiteAMCThreshold {
+	width: 1px;
+}
+
+// focus
+html.sap-desktop .sapSuiteAMC:focus:not([tabindex]),
+.sapSuiteAMC:focus:not([tabindex]) {
+	outline: none;
+}
+
+html.sap-desktop .sapSuiteAMC:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+  	outline-offset: 1px;
+}
+
+// sizes
+.sapSuiteAMC.sapSuiteAMCSizeResponsive {
+	width: 100%;
+	height: 100%;
+}
+
+.sapSuiteAMC.sapSuiteAMCSizeL {
+	height: 5.875rem;
+	width: 12rem;
+}
+
+html.sapUiMedia-Std-Desktop .sapSuiteAMC.sapSuiteAMCSizeAuto,
+html.sapUiMedia-Std-Tablet .sapSuiteAMC.sapSuiteAMCSizeAuto,
+.sapSuiteAMC.sapSuiteAMCSizeM {
+	height: 4.5rem;
+	width: 10.5rem;
+}
+
+html.sapUiMedia-Std-Phone .sapSuiteAMC.sapSuiteAMCSizeAuto,
+.sapSuiteAMC.sapSuiteAMCSizeS {
+	height: 3.5rem;
+	width: 8.25rem;
+}
+
+.sapSuiteAMC.sapSuiteAMCSizeXS {
+	height: 1.125rem;
+	width: 6rem;
+}
+
+.sapSuiteAMC.sapSuiteAMCLookM {
+	.sapSuiteAMCLbl {
+		font-size: @sapMFontSmallSize;
+	}
+}
+
+.sapSuiteAMC.sapSuiteAMCLookS {
+	.sapSuiteAMCLbl {
+		font-size: @sapMFontSmallSize;
+	}
+}
+
+.sapSuiteAMC.sapSuiteAMCLookXS {
+	.sapSuiteAMCLabels,
+	.sapSuiteAMCSideLabels {
+		display: none;
+	}
+}
+
+// labels
+.sapSuiteAMCLabels {
+	display: flex;
+	flex: 0 0 auto;
+}
+
+.sapSuiteAMCSideLabels {
+	display: flex;
+	flex-direction: column;
+	flex: 0 1 auto;
+	justify-content: space-between;
+	min-width: 1px; // https://css-tricks.com/flexbox-truncated-text/
+}
+
+.sapSuiteAMCLbl {
+	font-size: @sapMFontMediumSize;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sapSuiteAMCLabels .sapSuiteAMCLbl {
+	flex: 1;
+}
+
+.sapSuiteAMCSideLabels.sapSuiteAMCPositionLeft {
+	margin-right: 0.5rem;
+}
+
+.sapSuiteAMCSideLabels.sapSuiteAMCPositionRight {
+	margin-left: 0.5rem
+}
+
+.sapSuiteAMCPositionTop {
+	margin-bottom: 0.125rem;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCPositionLeft {
+	text-align: start;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCPositionCenter {
+	text-align: center;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCPositionRight {
+	text-align: end;
+}
+
+.sapSuiteAMCWideMode {
+	.sapSuiteAMCPositionLeft {
+		text-align: end;
+	}
+
+	.sapSuiteAMCPositionRight {
+		text-align: start;
+	}
+
+	.sapSuiteAMCCanvasContainer {
+		flex: 1 0 4rem;
+	}
+}
+
+// for IE only, IE doesn't support text-align start/end
+// TODO can be removed when IE finally gets dropped
+html[data-sap-ui-browser^="ie"] {
+	.sapSuiteAMCLbl.sapSuiteAMCPositionLeft {
+		text-align: left;
+	}
+
+	.sapSuiteAMCLbl.sapSuiteAMCPositionRight {
+		text-align: right;
+	}
+
+	.sapSuiteAMCWideMode {
+		.sapSuiteAMCPositionLeft {
+			text-align: right;
+		}
+
+		.sapSuiteAMCPositionRight {
+			text-align: left;
+		}
+	}
+}
+
+html[dir=rtl][data-sap-ui-browser^="ie"] {
+	.sapSuiteAMCLbl.sapSuiteAMCPositionLeft {
+		text-align: right;
+	}
+
+	.sapSuiteAMCLbl.sapSuiteAMCPositionRight {
+		text-align: left;
+	}
+
+	.sapSuiteAMCWideMode {
+		.sapSuiteAMCPositionLeft {
+			text-align: left;
+		}
+
+		.sapSuiteAMCPositionRight {
+			text-align: right;
+		}
+	}
+}
+
+.sapSuiteAMCNoLabels {
+	.sapSuiteAMCLabels,
+	.sapSuiteAMCSideLabels {
+		display: none;
+	}
+}
+
+.sapSuiteAMCNoMinMaxLabels {
+	.sapSuiteAMCPositionCenter {
+		display: none;
+	}
+}
+
+.sapSuiteAMCNoTopLabels:not(.sapSuiteAMCWideMode) {
+	.sapSuiteAMCPositionTop,
+	.sapSuiteAMCPositionCenter {
+		display: none;
+	}
+}
+
+.sapSuiteAMCNoTopLabels.sapSuiteAMCWideMode {
+	.sapSuiteAMCSideLabels .sapSuiteAMCLbl:first-child {
+		visibility: hidden;
+	}
+}
+
+// colors
+.sapSuiteAMCTarget.sapSuiteAMCSemanticColorGood,
+.sapSuiteAMCChart.sapSuiteAMCSemanticColorGood,
+.sapSuiteAMCLine.sapSuiteAMCSemanticColorGood {
+	color: @sapUiPositiveElement;
+}
+
+.sapSuiteAMCTarget.sapSuiteAMCSemanticColorCritical,
+.sapSuiteAMCChart.sapSuiteAMCSemanticColorCritical,
+.sapSuiteAMCLine.sapSuiteAMCSemanticColorCritical {
+	color: @sapUiCriticalElement;
+}
+
+.sapSuiteAMCTarget.sapSuiteAMCSemanticColorError,
+.sapSuiteAMCChart.sapSuiteAMCSemanticColorError,
+.sapSuiteAMCLine.sapSuiteAMCSemanticColorError {
+	color: @sapUiNegativeElement;
+}
+
+.sapSuiteAMCTarget.sapSuiteAMCSemanticColorNeutral,
+.sapSuiteAMCChart.sapSuiteAMCSemanticColorNeutral,
+.sapSuiteAMCLine.sapSuiteAMCSemanticColorNeutral {
+	color: @sapUiChartDataLineColorWithBG;
+}
+
+.sapSuiteAMCTarget.sapSuiteAMCNeutralNoThreshold,
+.sapSuiteAMCChart.sapSuiteAMCNeutralNoThreshold,
+.sapSuiteAMCLine.sapSuiteAMCNeutralNoThreshold {
+	color: @sapUiChartDataLineColor;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCSemanticColorNeutral {
+	color: @sapUiChartCategoryAxisLabelFontColor;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCSemanticColorGood {
+	color: @sapUiPositiveText;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCSemanticColorCritical {
+	color: @sapUiCriticalText;
+}
+
+.sapSuiteAMCLbl.sapSuiteAMCSemanticColorError {
+	color: @sapUiNegativeText;
+}
+
+.sapSuiteAMCThreshold {
+	color: @sapUiChoroplethRegionBorder;
+}
+
+.sapSuiteAMCThreshold.sapSuiteAMCSemanticColorError {
+	background-color: @sapUiChartPaletteSemanticBadLight2;
+}
+
+.sapSuiteAMCThreshold.sapSuiteAMCSemanticColorGood {
+	background-color: @sapUiChartPaletteSemanticGoodLight2;
+}
+
+.sapSuiteAMCThreshold.sapSuiteAMCSemanticColorCritical {
+	background-color: @sapUiChartPaletteSemanticCriticalLight2;
+}

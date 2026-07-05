@@ -1,0 +1,165 @@
+/* ================================= */
+/* CSS for control sap.tnt/ToolPage  */
+/* Base theme                        */
+/* ================================= */
+
+/* ==========================================================================
+   Variables
+   ========================================================================== */
+@_sap_tnt_ToolPage_AnimationDuration : 0.3s;
+@_sap_tnt_ToolPage_Background: darken(@sapUiBaseBG, 4);
+@_sap_tnt_ToolPage_ContentBackgroundStandard: none;
+@_sap_tnt_ToolPage_ContentBackgroundSolid: none;
+@_sap_tnt_ToolPage_ContentBackgroundTransparent: none;
+@_sap_tnt_ToolPage_ContentBackgroundList: none;
+@_sap_tnt_ToolPage_AsideCollapsedPhoneTransform: -100%;
+@_sap_tnt_ToolPage_AsideCollapsedPhoneTransformRtl: 100%;
+@_sap_tnt_ToolPage_AsidePhoneTop: 0;
+@_sap_tnt_ToolPage_AsidePhoneWidth: auto;
+@_sap_tnt_ToolHeader_Shadow: none;
+
+/* ==========================================================================
+   Root element
+   ========================================================================== */
+.sapTntToolPage {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: @_sap_tnt_ToolPage_Background;
+}
+
+/* ==========================================================================
+   Header wrapper
+   ========================================================================== */
+.sapTntToolPageHeaderWrapper {
+  z-index: 3;
+  box-shadow: @_sap_tnt_ToolHeader_Shadow;
+}
+
+/* ==========================================================================
+   Content wrapper
+   ========================================================================== */
+.sapTntToolPageContentWrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0; // fixes flex chrome issue
+  position: relative;
+}
+
+/* Aside container
+   ========================================================================== */
+
+.sapTntToolPageAside {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  z-index: 2;
+}
+
+.sapTntToolPageAsideContent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+}
+
+html:not([data-sap-ui-animation='off']) .sapTntToolPageAside {
+  transition: transform @_sap_tnt_ToolPage_AnimationDuration;
+}
+
+html.sap-phone {
+
+  .sapTntToolPageAside {
+    z-index: 2;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    top: @_sap_tnt_ToolPage_AsidePhoneTop;
+    width:  @_sap_tnt_ToolPage_AsidePhoneWidth;
+  }
+
+  .sapTntToolPageAsideCollapsed {
+    .sapTntToolPageAside {
+      transform: translateX(@_sap_tnt_ToolPage_AsideCollapsedPhoneTransform);
+    }
+  }
+}
+
+/* Main container
+   ========================================================================== */
+
+.sapTntToolPageMain {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; // fixes flex chrome issue
+  overflow: hidden;
+  will-change: transform;
+  background: @_sap_tnt_ToolPage_ContentBackgroundStandard;
+}
+
+.sapTntToolPageMain.sapTntToolPageMainBackground-Solid {
+  background: @_sap_tnt_ToolPage_ContentBackgroundSolid;
+}
+
+.sapTntToolPageMain.sapTntToolPageMainBackground-Transparent {
+  background: @_sap_tnt_ToolPage_ContentBackgroundTransparent;
+  box-shadow: none;
+}
+
+.sapTntToolPageMain.sapTntToolPageMainBackground-List {
+  background: @_sap_tnt_ToolPage_ContentBackgroundList;
+}
+
+.sapTntToolPageMainContent {
+  flex: 1;
+  min-height: 0; // fixes flex chrome issue
+  position: relative;
+}
+
+.sapTntToolPageMainContentWrapper {
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   RTL
+   ========================================================================== */
+
+html[dir=rtl] {
+  &.sap-phone {
+    .sapTntToolPageAsideCollapsed {
+      .sapTntToolPageAside {
+        transform: translateX(@_sap_tnt_ToolPage_AsideCollapsedPhoneTransformRtl);
+      }
+    }
+  }
+}
+
+/* ========================================================================== */
+
+.sapTntToolPageAsideCollapsed {
+
+  .sapTntToolPageMain {
+    z-index: 1;
+  }
+
+  .sapTntToolPageAside {
+    z-index: 2;
+  }
+}
+
+.sapUiLocalBusy > .sapTntToolPage {
+  z-index: 0;
+}
+
+.sapTntToolPage.sapUiLocalBusy .sapUiLocalBusyIndicator {
+  z-index: 3;
+}

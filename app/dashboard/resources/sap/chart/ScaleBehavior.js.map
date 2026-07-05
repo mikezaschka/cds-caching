@@ -1,0 +1,1 @@
+{"version":3,"file":"ScaleBehavior.js","names":["sap","ui","define","DataType","ScaleBehavior","AutoScale","FixedScale","registerEnum"],"sources":["ScaleBehavior-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAC7C,aASA,IAAIC,EAAgB,CAKhBC,UAAW,YAKXC,WAAY,cAGhBH,EAASI,aAAa,0BAA2BH,GAEjD,OAAOA,CAEX,EAAkB","ignoreList":[]}

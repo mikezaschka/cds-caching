@@ -1,0 +1,57 @@
+/* ==================================== */
+/* CSS for control sap.m/InputListItem  */
+/* Base theme                           */
+/* ==================================== */
+
+.sapMILI {
+	min-height: 3rem;
+}
+
+.sapMILILabel {
+	font-size: 1.125rem;
+	color: var(--sapList_TextColor);
+}
+
+.sapMLIBActionable .sapMILILabel {
+	cursor: pointer;
+}
+
+.sapMILIContentWrapper {
+	display: flex;
+	gap: 0 1rem;
+	align-items: center;
+}
+
+.sapMILIContentWrapperL {
+	flex-wrap: wrap;
+
+	& > .sapMILILabel {
+		flex: 1 1 auto;
+	}
+}
+
+.sapMILILabel {
+	padding: 0.25rem 0;
+}
+
+.sapMILIDiv {
+	flex: 1 1 auto;
+	text-align: right;
+}
+
+html[dir='rtl'] .sapMILIDiv {
+	text-align: left;
+}
+
+.sapMLIBActive .sapMILILabel {
+	color: var(--sapList_Active_TextColor);
+}
+
+/* Compact size */
+.sapUiSizeCompact .sapMILI {
+	min-height: 2rem;
+}
+
+.sapUiSizeCompact .sapMILILabel {
+	font-size: @sapMFontMediumSize;
+}

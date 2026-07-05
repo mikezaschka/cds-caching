@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/routing/Targets","./TargetHandler","./Target","./async/Targets"],function(e,t,r,n){"use strict";var a=e.extend("sap.f.routing.Targets",{constructor:function(r){r.config._async=true;if(r.targetHandler){this._oTargetHandler=r.targetHandler}else{this._oTargetHandler=new t;this._bHasOwnTargetHandler=true}e.prototype.constructor.apply(this,arguments);var a=n;this._super={};for(var s in a){this._super[s]=this[s];this[s]=a[s]}},destroy:function(){e.prototype.destroy.apply(this,arguments);if(this._bHasOwnTargetHandler){this._oTargetHandler.destroy()}this._oTargetHandler=null},getTargetHandler:function(){return this._oTargetHandler},_constructTarget:function(e,t){return new r(e,this.getViews(),t,this._oTargetHandler)},_getDeprecatedOptions:function(){return Object.assign(e.prototype._getDeprecatedOptions.apply(this),{viewLevel:"level"})},_getLevel:function(e){var t;do{t=e._oOptions.hasOwnProperty("level")?e._oOptions.level:e._oOptions.viewLevel;if(t!==undefined){return t}e=e._oParent}while(e);return t}});return a});
+//# sourceMappingURL=Targets.js.map

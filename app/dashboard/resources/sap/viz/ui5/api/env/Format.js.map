@@ -1,0 +1,1 @@
+{"version":3,"file":"Format.js","names":["sap","ui","define","Format","numericFormatter","formatter","viz","api","env","apply","arguments"],"sources":["Format-dbg.js"],"mappings":";;;;AAKAA,IAAIC,GAAGC,OAAO,WACb,aAUA,IAAIC,EAAS,CAAC,EAyBdA,EAAOC,iBAAmB,SAASC,GAClC,OAAOL,IAAIM,IAAIC,IAAIC,IAAIL,OAAOC,iBAAiBK,MAAM,KAAMC,UAC5D,EAIA,OAAOP,CAER,EAAkB","ignoreList":[]}

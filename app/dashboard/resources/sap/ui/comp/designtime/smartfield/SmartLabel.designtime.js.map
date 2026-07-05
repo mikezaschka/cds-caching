@@ -1,0 +1,1 @@
+{"version":3,"file":"SmartLabel.designtime.js","names":["sap","ui","define","tool","start","oSmartLabel","getLabelInfo","stop"],"sources":["SmartLabel-dbg.designtime.js"],"mappings":";;;;AAIAA,IAAIC,GAAGC,OAAO,GAAI,WACjB,aAEA,MAAO,CACNC,KAAM,CACLC,MAAO,SAASC,GAEfA,EAAYC,cACb,EACAC,KAAM,WAEN,GAGH","ignoreList":[]}

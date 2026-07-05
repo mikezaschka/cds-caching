@@ -1,0 +1,1 @@
+{"version":3,"file":"TableGrowingMode.js","names":["sap","ui","define","DataType","TableGrowingMode","None","Basic","Scroll","registerEnum"],"sources":["TableGrowingMode-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAUA,MAAMC,EAAmB,CAMxBC,KAAM,OAMNC,MAAO,QAOPC,OAAQ,UAGTJ,EAASK,aAAa,oCAAqCJ,GAE3D,OAAOA,GAEU","ignoreList":[]}

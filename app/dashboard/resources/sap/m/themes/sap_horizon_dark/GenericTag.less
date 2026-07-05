@@ -1,0 +1,130 @@
+/* ================================= */
+/* CSS for control sap.m/GenericTag  */
+/* Evening Horizon theme             */
+/* ================================= */
+
+@_sap_m_GenericTag_BorderWidth: 0.375rem;
+@_sap_m_GenericTag_IconPaddingRight: 0.375rem;
+@_sap_m_GenericTag_HeightCozy: @_sap_m_GenericTag_HeightCompact;
+
+.sapMGenericTagWrap {
+	box-shadow: var(--sapContent_Shadow0);
+	border-radius: var(--sapButton_BorderCornerRadius);
+	background: ~"0 0 / @{_sap_m_GenericTag_BorderWidth} 100% no-repeat linear-gradient(0deg, var(--sapNeutralElementColor), var(--sapNeutralElementColor))";
+	background-color: var(--sapNeutralBackground);
+	border: none;
+	padding: 0 0.375rem 0 0.75rem;
+
+	.sapMGenericTagWarning & {
+		background: ~"0 0 / @{_sap_m_GenericTag_BorderWidth} 100% no-repeat linear-gradient(0deg, var(--sapCriticalElementColor), var(--sapCriticalElementColor))";
+		background-color: var(--sapWarningBackground);
+
+		.sapMGenericTagIcon {
+			color: var(--sapCriticalElementColor);
+		}
+
+		.sapMGenericTagValue {
+			color: var(--sapCriticalTextColor);
+		}
+	}
+
+	.sapMGenericTagError & {
+		background: ~"0 0 / @{_sap_m_GenericTag_BorderWidth} 100% no-repeat linear-gradient(0deg, var(--sapNegativeElementColor), var(--sapNegativeElementColor))";
+		background-color: var(--sapErrorBackground);
+
+		.sapMGenericTagIcon {
+			color: var(--sapNegativeElementColor);
+		}
+
+		.sapMGenericTagValue {
+			color: var(--sapNegativeTextColor);
+		}
+	}
+
+	.sapMGenericTagSuccess & {
+		background: ~"0 0 / @{_sap_m_GenericTag_BorderWidth} 100% no-repeat linear-gradient(0deg, var(--sapPositiveElementColor), var(--sapPositiveElementColor))";
+		background-color: var(--sapSuccessBackground);
+
+		.sapMGenericTagIcon {
+			color: var(--sapPositiveElementColor);
+		}
+
+		.sapMGenericTagValue {
+			color: var(--sapPositiveTextColor);
+		}
+	}
+
+	.sapMGenericTagInformation & {
+		background: ~"0 0 / @{_sap_m_GenericTag_BorderWidth} 100% no-repeat linear-gradient(0deg, var(--sapInformativeElementColor), var(--sapInformativeElementColor))";
+		background-color: var(--sapInformationBackground);
+
+		.sapMGenericTagIcon {
+			color: var(--sapInformativeElementColor);
+		}
+
+		.sapMGenericTagValue {
+			color: var(--sapInformativeTextColor);
+		}
+	}
+
+	&:hover {
+		background-color: var(--sapList_Hover_Background);
+		box-shadow: var(--sapContent_Shadow0);
+
+		.sapMGenericTagText,
+		.sapMGenericTagValue,
+		.sapMGenericTagIcon,
+		.sapMObjectNumberText,
+		.sapMObjectNumberUnit,
+		.sapMGenericTagErrorIcon {
+			text-shadow: none;
+		}
+	}
+
+	.sapMGenericTagText {
+		color: var(--sapList_TextColor);
+		text-shadow: var(--sapContent_TextShadow);
+	}
+
+	.sapMGenericTagValue {
+		text-shadow: var(--sapContent_TextShadow);
+	}
+
+	.sapMGenericTagErrorIcon {
+		color: var(--sapNegativeElementColor);
+	}
+
+	.sapMGenericTagActive & {
+		background-color: var(--sapList_Active_Background);
+
+		.sapMGenericTagText,
+		.sapMGenericTagValue,
+		.sapMGenericTagIcon,
+		.sapMObjectNumberText,
+		.sapMObjectNumberUnit,
+		.sapMGenericTagErrorIcon {
+			color: var(--sapList_Active_TextColor);
+			text-shadow: none;
+		}
+	}
+}
+
+html.sap-desktop .sapMGenericTag:focus {
+	position: relative;
+
+	&:after {
+		position: absolute;
+		content: ' ';
+		inset: 0;
+		border: var(--sapContent_FocusColor) var(--sapContent_FocusStyle) var(--sapContent_FocusWidth);
+		border-radius: var(--sapButton_BorderCornerRadius);
+	}
+
+	.sapMGenericTagWrap {
+		box-shadow: none;
+	}
+}
+
+.sapUiSizeCozy .sapMGenericTag {
+	margin: 0.5625rem 0;
+}

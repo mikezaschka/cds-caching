@@ -1,0 +1,117 @@
+@sapUiChartFocusWidth : 2px;
+/* ============================= */
+/* CSS for control sap.m/Slider  */
+/* High Contrast Black theme     */
+/* ============================= */
+
+/* slider */
+.sapVizSliderInner {
+    border: 1px solid @sapUiFieldBorderColor;
+    background: @sapUiFieldBackground;
+    border-radius: 0.125rem;
+}
+
+/* slider handle */
+.sapVizSliderHandle {
+    background: transparent;
+    border: 0.125rem solid @sapUiFieldBorderColor;
+}
+
+/* hover */
+html.sap-desktop .sapVizSliderHandle:not(.sapVizSliderInnerDisabled ):hover {
+    background: @sapUiFieldActiveBackground;
+}
+
+/* focus */
+html.sap-desktop .sapVizSliderHandle:focus {
+    outline: 0.125rem dotted @sapUiContentFocusColor;
+}
+
+/* pressed */
+.sapVizSliderPressed:not(.sapVizSliderInnerDisabled ) > .sapVizSliderHandle {
+    background: @sapUiFieldActiveBackground;
+    border: 0.125rem solid @sapUiFieldActiveBorderColor;
+}
+
+.sapVizSliderInnerDisabled {
+    border: 0.063rem solid @sapUiHcReducedAltForeground;
+}
+
+.sapVizSliderInnerDisabled .sapVizSliderProgress {
+    background: @sapUiHcReducedBackground;
+}
+
+.sapVizSliderInnerDisabled > .sapVizSliderHandle {
+    background: transparent;
+    border:0.125rem solid @sapUiHcReducedForeground;
+}
+
+
+
+//range slider 
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress{
+//top = padding-top/2 + border-width
+    top:-0.4275rem;
+    padding-top:0.43rem;
+    border:0.1875rem solid @sapUiDragAndDropBorderColor;
+    background:none;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress.focus{
+    border:0.1875rem solid @sapUiDragAndDropBorderColor;
+    background:none;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress:hover{
+    border:0.1875rem solid @sapUiDragAndDropBorderColor;
+    background:none;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle{
+    border:0.125rem solid;
+    border-color:@sapUiDragAndDropBorderColor;
+    background: @sapUiButtonBackground;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left{
+    margin-left:-1.2rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left.viz-Mobile{
+    margin-left:-1.65rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle.sapUiIcon:focus{
+    outline:none;
+    background: @sapUiButtonBackground;
+    border-radius:0;
+    border-style:dotted;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle.sapUiIcon:hover{
+    outline:none;
+    background: @sapUiButtonHoverBackground;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.sapVizSliderHandlePressed.ui5-sap-viz-vizSliderHandle.sapUiIcon{
+    background: @sapUiButtonHoverBackground;
+    border-radius:0;
+    border:0.125rem dotted @sapUiDragAndDropBorderColor;
+}
+// outline for vizSlider's handles when focused
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left:before{
+    padding-left: 0px;
+    left: 0px;
+}
+html.sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle:focus:before{
+    border: none;
+    outline: none;
+}
+
+html.sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before {
+  border:none;
+  outline: 2px dotted @sapUiContentFocusColor;
+}
+// use border as focused progress's outline in IE and Edge
+html[data-sap-ui-browser*='ed'].sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before,
+html[data-sap-ui-browser*='ie'].sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before {
+  border: 2px dotted @sapUiContentFocusColor;
+  outline: none;
+}

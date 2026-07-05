@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'no',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Kan ikke laste kontrollobjekt {0}.",VIZ_FRAME_INVALID:"Ugyldig VizFrame-instans.",VIZ_FRAME_DESTORYED:"VizFrame-instans er destruert.",}});

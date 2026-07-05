@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/m/p13n/Engine","sap/ui/mdc/flexibility/Util","sap/ui/fl/changeHandler/condenser/Classification"],(e,t,n)=>{"use strict";const o=function(e,t,n,o){if(o){e.resetRevertData()}else{e.setRevertData(n)}};const r=function(e,n,r,a){return new Promise((s,i)=>{const g=a===t.REVERT;const c=r.modifier;const d=g?e.getRevertData():e.getContent();Promise.resolve().then(c.getProperty.bind(c,n,"aggregateConditions")).then(t=>{const r=t?t:{};r[d.name]={};const a={name:d.name};c.setProperty(n,"aggregateConditions",r);o(e,n,a,g);s()}).catch(e=>{i(e)})})};const a=function(e,n,r,a){return new Promise((s,i)=>{const g=a===t.REVERT;const c=r.modifier;const d=g?e.getRevertData():e.getContent();Promise.resolve().then(c.getProperty.bind(c,n,"aggregateConditions")).then(t=>{const r=t?t:{};if(!r){i()}delete r[d.name];c.setProperty(n,"aggregateConditions",r);o(e,n,d,g);s()}).catch(e=>{i(e)})})};const s={};const i=function(e,t){const o=e.getContent();return{classification:n.Reverse,affectedControl:e.getSelector(),uniqueKey:"aggregate"+"_"+o.name}};s.addAggregate=t.createChangeHandler({apply:r,revert:a,getCondenserInfo:i});s.removeAggregate=t.createChangeHandler({apply:a,revert:r,getCondenserInfo:i});return s});
+//# sourceMappingURL=AggregateFlex.js.map

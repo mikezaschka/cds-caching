@@ -1,0 +1,54 @@
+/* =================================== */
+/* CSS for control sap.m/MessageStrip  */
+/* Evening Horizon theme               */
+/* =================================== */
+
+.sapMMsgStripInformation {
+	background-color: var(--sapInformationBackground);
+	border-color: var(--sapMessage_InformationBorderColor);
+
+	.sapMBtnTransparent {
+		background-color: var(--sapInformationBackground);
+		border-color: var(--sapInformationBackground);
+	}
+
+	.sapMMsgStripIcon {
+		color: var(--sapInformativeElementColor);
+	}
+}
+
+.sapMMsgStripError {
+	border-color: var(--sapMessage_ErrorBorderColor);
+
+	.sapMBtnTransparent {
+		background-color: var(--sapErrorBackground);
+		border-color: var(--sapErrorBackground);
+	}
+}
+
+.sapMMsgStripSuccess {
+	border-color: var(--sapMessage_SuccessBorderColor);
+
+	.sapMBtnTransparent {
+		background-color: var(--sapSuccessBackground);
+		border-color: var(--sapSuccessBackground);
+	}
+}
+
+.sapMMsgStripWarning {
+	border-color: var(--sapMessage_WarningBorderColor);
+
+	.sapMBtnTransparent {
+		background-color: var(--sapWarningBackground);
+		border-color: var(--sapWarningBackground);
+	}
+}
+
+.sapMMsgStripMessage > .sapMLnk {
+	padding-right: 0.25rem;
+	padding-left: 0.25rem;
+}
+
+.sapMMsgStripCloseButton {
+	top: -0.4375rem;
+}

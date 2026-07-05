@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'th',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"การโหลดออบเจ็กต์ควบคุม {0} ล้มเหลว",VIZ_FRAME_INVALID:"อินสแตนซ์ VizFrame ไม่ถูกต้อง",VIZ_FRAME_DESTORYED:"อินสแตนซ์ VizFrame ถูกทำลาย",}});

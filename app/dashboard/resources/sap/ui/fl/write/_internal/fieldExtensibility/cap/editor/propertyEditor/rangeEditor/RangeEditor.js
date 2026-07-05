@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor","sap/ui/model/json/JSONModel"],function(t,e){"use strict";const i=t.extend("sap.ui.fl.write._internal.fieldExtensibility.cap.editor.propertyEditor.rangeEditor.RangeEditor",{xmlFragment:"sap.ui.fl.write._internal.fieldExtensibility.cap.editor.propertyEditor.rangeEditor.RangeEditor",metadata:{library:"sap.ui.fl"},renderer:t.getMetadata().getRenderer().render});i.configMetadata={...t.configMetadata,rangeType:{defaultValue:"string"}};i.prototype.init=function(...i){t.prototype.init.apply(this,i);this._oContentModel=new e;this._oContentModel.setDefaultBindingMode("OneWay");this.setModel(this._oContentModel,"contentModel")};i.prototype.getExpectedWrapperCount=function(){return 2};i.prototype.setConfig=function(...e){t.prototype.setConfig.apply(this,e);this.setValue(this.getValue())};i.prototype.setValue=function(...e){const[i]=e;t.prototype.setValue.apply(this,e);const o={type:this.getConfig().rangeType};const n=Array.isArray(i)?i:[];this._oContentModel.setData([{value:n[0],config:{index:0,...o}},{value:n[1],config:{index:1,...o}}])};i.prototype._onChange=function(t){const e=t.getParameter("value");const i=t.getSource().getConfig().index;const o=(this.getValue()||[]).slice();o[i]=e;this.setValue(o)};return i});
+//# sourceMappingURL=RangeEditor.js.map

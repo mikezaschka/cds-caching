@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'da',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Kunne ikke indlæse kontrolobjektet {0}.",VIZ_FRAME_INVALID:"Ugyldig visualiseringsrammeforekomst.",VIZ_FRAME_DESTORYED:"Visualiseringsrammeforekomst blev ødelagt.",}});

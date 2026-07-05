@@ -1,0 +1,82 @@
+/* ======================================= */
+/* CSS for control sap.ui.comp/SmartField  */
+/* Base theme                              */
+/* ======================================= */
+
+.sapUiCompSmartField {
+	display: inline-block;
+	vertical-align: top;
+	width: 100%;
+}
+
+.sapUiTableCell > .sapUiCompSmartField,
+.sapMListTblCell > .sapUiCompUOMInTable .sapUiCompSmartField,
+.sapUiCompGroupElementVBox .sapUiCompSmartField {
+	display: block;
+}
+.sapMListTblCell > .sapUiCompUOMInTable .sapUiCompSmartField > .sapMText {
+	display: inline-block;
+}
+.sapUiCompSmartFieldUOMDisplayText {
+	line-height: 3rem;
+}
+
+.sapUiSizeCompact .sapUiCompSmartFieldUOMDisplayText {
+	line-height: 2rem;
+}
+
+.sapUiSizeCompact .sapMListTblCell > .sapUiCompSmartField > .sapMObjectIdentifier {
+	margin: .5rem 0;
+}
+
+.smartFieldPaddingRight {
+	padding-right: 0.5rem;
+}
+
+.smartFieldUoMAmountDisplayText {
+	min-width: 2.5rem;
+}
+
+.sapUiCompSmartFieldFlexItemAmountEdit {
+	max-width: ~"calc(100% - 5.3rem)";
+}
+
+.sapUiSizeCompact .sapUiCompSmartFieldFlexItemAmountEdit {
+	max-width: ~"calc(100% - 5rem)";
+}
+
+.sapUiCompSmartFieldFlexItemUnitEdit {
+
+	/* The !important keyword is required to override an inline style set by the
+	FlexBox control to workaound an IE 10-11 issue. */
+	width: 5.3rem !important;
+}
+
+.sapUiSizeCompact .sapUiCompSmartFieldFlexItemUnitEdit {
+
+	/* The !important keyword is required to override an inline style set by the
+	FlexBox control to workaound an IE 10-11 issue. */
+	width: 5rem !important;
+}
+
+.sapUiCompUOM.sapUiCompUOMInTableDisplay > div:nth-child(2)  {
+	min-width: initial;
+}
+
+/* Condensed size */
+.sapUiSizeCondensed .sapUiTableCell > .sapUiCompSmartField > .sapMText,
+.sapUiSizeCondensed .sapUiTableCell > .sapUiCompSmartField > .sapMLnk,
+.sapUiSizeCondensed .sapUiTableCell > .sapUiCompSmartField > .sapUiCompUOM {
+	box-sizing: border-box;
+	padding: 0 0.5rem;
+	line-height: 1.5rem;
+	vertical-align: middle;
+}
+
+.sapMTB > .sapUiCompSmartField {
+	width: auto !important;
+}
+
+.sapUiFormEdit-CTX .sapUiCompSmartFieldUnit {
+	min-width: 5rem;
+}

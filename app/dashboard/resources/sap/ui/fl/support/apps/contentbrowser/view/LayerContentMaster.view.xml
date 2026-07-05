@@ -1,0 +1,44 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m" controllerName="sap.ui.fl.support.apps.contentbrowser.controller.LayerContentMaster">
+	<Page
+			showNavButton="true"
+			navButtonPress=".navBack">
+		<subHeader>
+			<Toolbar>
+				<SearchField
+					id="search"
+					liveChange="onSearch"
+					width="100%" />
+			</Toolbar>
+		</subHeader>
+		<content>
+			<List
+				id="masterComponentsList"
+				growing="true"
+				growingThreshold="100"
+				growingScrollToLoad="true"
+				items="{content>/}">
+				<items>
+					<StandardListItem
+						title="{content>name}"
+						description="{path: 'content>fileType'}"
+						type="Active"
+						press="onContentSelected"
+						visible="{path: 'content>', formatter: '.oDataUtils.isNotExcluded'}"
+						icon="{= ${content>fileType} ? 'sap-icon://document' : 'sap-icon://folder-full'}">
+					</StandardListItem>
+				</items>
+			</List>
+		</content>
+		<footer>
+			<Toolbar>
+				<Button
+					icon="sap-icon://alert"
+					text="{messages>/length}"
+					type="Emphasized"
+					press=".handleMessagePopoverPress"
+					visible="{= ${messages>/length} > 0 }"/>
+			</Toolbar>
+		</footer>
+	</Page>
+</mvc:View>

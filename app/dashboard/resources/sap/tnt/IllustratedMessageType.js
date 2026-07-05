@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/base/DataType"],function(t){"use strict";var n={Avatar:"tnt-Avatar",Calculator:"tnt-Calculator",ChartArea:"tnt-ChartArea",ChartArea2:"tnt-ChartArea2",ChartBar:"tnt-ChartBar",ChartBPMNFlow:"tnt-ChartBPMNFlow",ChartBullet:"tnt-ChartBullet",ChartDoughnut:"tnt-ChartDoughnut",ChartFlow:"tnt-ChartFlow",ChartGantt:"tnt-ChartGantt",ChartOrg:"tnt-ChartOrg",ChartPie:"tnt-ChartPie",CodePlaceholder:"tnt-CodePlaceholder",Company:"tnt-Company",Compass:"tnt-Compass",Components:"tnt-Components",Dialog:"tnt-Dialog",ExternalLink:"tnt-ExternalLink",FaceID:"tnt-FaceID",Fingerprint:"tnt-Fingerprint",Handshake:"tnt-Handshake",Help:"tnt-Help",Lock:"tnt-Lock",Mission:"tnt-Mission",MissionFailed:"tnt-MissionFailed",NoApplications:"tnt-NoApplications",NoFlows:"tnt-NoFlows",NoUsers:"tnt-NoUsers",Radar:"tnt-Radar",RoadMap:"tnt-RoadMap",Secrets:"tnt-Secrets",Services:"tnt-Services",SessionExpired:"tnt-SessionExpired",SessionExpiring:"tnt-SessionExpiring",Settings:"tnt-Settings",Success:"tnt-Success",SuccessfulAuth:"tnt-SuccessfulAuth",Systems:"tnt-Systems",Teams:"tnt-Teams",Tools:"tnt-Tools",Tutorials:"tnt-Tutorials",UnableToLoad:"tnt-UnableToLoad",Unlock:"tnt-Unlock",UnsuccessfulAuth:"tnt-UnsuccessfulAuth",User2:"tnt-User2"};t.registerEnum("sap.tnt.IllustratedMessageType",n);return n});
+//# sourceMappingURL=IllustratedMessageType.js.map

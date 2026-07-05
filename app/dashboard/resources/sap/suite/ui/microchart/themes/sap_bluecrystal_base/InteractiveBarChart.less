@@ -1,0 +1,295 @@
+/* =========================================================== */
+/* CSS for control sap.suite.ui.microchart/InteractiveBarChart */
+/* Base Theme                                                  */
+/* =========================================================== */
+
+.sapSuiteIBC {
+	height: 100%;
+	width: 100%;
+	position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sapSuiteIBCBar {
+	width: 0%;
+	position: relative;
+	transform: translateY(-50%);
+	top: 50%;
+	height: ~"calc(100% - 10px)"; /* 2px less because of border */
+}
+
+.sapSuiteIBCStage1:not(.sapSuiteIBCFullWidth) .sapSuiteIBCBar {
+	height: ~"calc(100% - 6px)"; /* 2px less because of border */
+}
+
+.sapSuiteIBCStage2:not(.sapSuiteIBCFullWidth) .sapSuiteIBCBar {
+	height: ~"calc(100% - 4px)"; /* 2px less because of border */
+}
+
+.sapUiSizeCompact .sapSuiteIBCStage1:not(.sapSuiteIBCFullWidth) .sapSuiteIBCBar {
+	height: ~"calc(100% - 8px)"; /* 2px less because of border */
+}
+
+.sapUiSizeCompact .sapSuiteIBCStage2:not(.sapSuiteIBCFullWidth) .sapSuiteIBCBar {
+	height: ~"calc(100% - 2px)"; /* 2px less because of border */
+}
+
+.sapSuiteIBCBarInteractionArea {
+	width: 100%;
+	max-height: 3rem;
+	height: 3rem;
+	position: relative;
+	border: 1px solid transparent;
+	box-sizing: border-box;
+	margin-bottom: 0.125rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+}
+
+.sapSuiteIBCBarInteractionArea:last-child .sapSuiteIBCDivider {
+	height: ~"calc(100% - 1px)";
+}
+
+.sapUiSizeCompact .sapSuiteIBCBarInteractionArea {
+	height: 2.25rem;
+	max-height: 2.25rem;
+}
+
+.sapSuiteIBCDisabledOverlay {
+	position: absolute;
+	z-index: 1;
+	top: 0px;
+	right: 0px;
+	left: 0px;
+	bottom: 0px;
+}
+
+.sapSuiteIBCNonInteractive .sapSuiteIBCBarInteractionArea {
+	margin-bottom: 1px;
+}
+
+.sapSuiteIBCBarInteractionArea:focus {
+	outline: none;
+}
+
+html.sap-tablet .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus,
+html.sap-phone .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+	border: 1px dotted transparent;
+}
+
+html.sap-tablet .sapSuiteIBC:focus,
+html.sap-phone .sapSuiteIBC:focus {
+	outline: none;
+}
+
+.sapSuiteIBCBarLabel {
+	box-sizing: border-box;
+	position: relative;
+}
+
+.sapSuiteIBCBarLabelText {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: left;
+	font-family: @sapUiFontFamily;
+	font-weight: normal;
+	font-size: @sapMFontMediumSize;
+	margin-right: 0.375rem;
+	margin-left: 0.375rem;
+}
+html[dir="rtl"] .sapSuiteIBCBarLabelText {
+	text-align: right;
+}
+
+.sapSuiteIBCBarValue {
+	font-family: @sapUiFontFamily;
+	font-weight: normal;
+	font-size: @sapMFontMediumSize;
+	position: absolute;
+	transform: translateY(-50%);
+	top: 50%;
+}
+
+.sapSuiteIBCSmallFont .sapSuiteIBCBarValue {
+	font-size: @sapMFontSmallSize;
+}
+
+.sapSuiteIBCSmallFont .sapSuiteIBCBarLabelText {
+	font-size: @sapMFontSmallSize;
+}
+
+.sapSuiteIBCBarPositive .sapSuiteIBCBarValue {
+	text-align: right;
+	right: 0.25rem;
+	left: initial;
+}
+
+.sapSuiteIBCBarNegative .sapSuiteIBCBarValue {
+	text-align: left;
+	left: 0.25rem;
+	right: initial;
+}
+
+.sapSuiteIBCBarPositive .sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	right: auto;
+}
+
+.sapSuiteIBCBarNegative .sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	left: auto;
+}
+
+.sapSuiteIBCBarPositive .sapSuiteIBCBarValueAutoAlignment {
+	left: 0.25rem;
+	right: initial;
+}
+
+.sapSuiteIBCBarNegative .sapSuiteIBCBarValueAutoAlignment {
+	right: 0.25rem;
+	left: initial;
+}
+
+.sapSuiteIBCDivider {
+	position: relative;
+	width: 1px;
+	height: 3.25rem;
+	float: left;
+	z-index: 0;
+}
+
+.sapSuiteIBCFullWidth {
+	.sapSuiteIBCBarInteractionArea:first-child, .sapSuiteIBCDisabledOverlay  + .sapSuiteIBCBarInteractionArea  {
+		.sapSuiteIBCDivider  {
+			top: -0.75rem;
+			height: 3.875rem;
+		}
+	}
+}
+
+.sapSuiteIBCBarWrapper {
+	display: inline-block;
+	padding-right: 0.375rem;
+	box-sizing: border-box;
+	position: relative;
+	height: 100%;
+}
+
+.sapSuiteIBCBarNegative {
+	float: right;
+}
+
+.sapSuiteIBCBarPositive {
+	float: left;
+}
+
+.sapSuiteIBCBarWrapperPositive, .sapSuiteIBCBarWrapperNegative {
+	height: 100%;
+	position: relative;
+	display: inline-block;
+	float: left;
+}
+
+.sapSuiteIBCFullWidth .sapSuiteIBCBarLabel {
+	height: 0.75rem + 0.125rem + 0.125rem; /* font-size + padding-top + padding-bottom (design) */
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+.sapSuiteIBCFullWidth .sapSuiteIBCBarLabelText {
+	margin-left: 0.375rem + 0.25rem; /* area padding left + padding from divider (design) */
+	line-height: 0.75rem + 0.125rem + 0.125rem; /* font-size + padding-top + padding-bottom (design) */
+	font-size: @sapMFontSmallSize;
+}
+
+.sapSuiteIBCFullWidth .sapSuiteIBCBar {
+	height: ~"calc(100% - 4px)";
+}
+
+.sapSuiteIBCFullWidth .sapSuiteIBCBarWrapper {
+	padding-top: 0.75rem + 0.125rem; /* font-height + bottom-padding (design) */
+}
+
+.sapSuiteIBCFullWidth .sapSuiteIBCBarInteractionArea {
+	padding-left: 0.375rem;
+}
+
+.sapSuiteIBCBarSelected .sapSuiteIBCBarLabelText,
+.sapSuiteIBCBarSelected .sapSuiteIBCBarValue {
+	font-weight: bold;
+}
+
+.sapSuiteIBCSemanticMarker {
+	position: absolute;
+	width: 0.1875rem;
+	top: -1px;
+	bottom: -1px;
+
+	&.sapSuiteIBCSemanticGood {
+		background-color: @sapUiPositiveElement;
+	}
+	&.sapSuiteIBCSemanticError {
+		background-color: @sapUiNegativeElement;
+	}
+	&.sapSuiteIBCSemanticCritical {
+		background-color: @sapUiCriticalElement;
+	}
+}
+
+
+@_sap_suite_ui_microchart_InteractiveBarChart_BarBackground:				@sapUiHighlight;
+@_sap_suite_ui_microchart_InteractiveBarChart_BarHoverBackground: 			fade(@sapUiHighlight, 20);
+@_sap_suite_ui_microchart_InteractiveBarChart_BarSelectedBackground: 		fade(@sapUiHighlight, 20);
+@_sap_suite_ui_microchart_InteractiveBarChart_BarSelectedHoverBackground:	fade(@sapUiHighlight, 40);
+@_sap_suite_ui_microchart_InteractiveBarChart_BarHoverBorder:				fade(@sapUiHighlight, 60);
+
+
+.sapSuiteIBCBar {
+	background-color: @_sap_suite_ui_microchart_InteractiveBarChart_BarBackground;
+}
+
+.sapSuiteIBCBarLabelText {
+	color: @sapUiContentLabelColor;
+}
+
+html.sap-desktop .sapSuiteIBC.sapSuiteIBCNonInteractive:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:hover {
+	background-color: @_sap_suite_ui_microchart_InteractiveBarChart_BarHoverBackground;
+	border: 1px solid @_sap_suite_ui_microchart_InteractiveBarChart_BarHoverBorder;
+	.sapSuiteIBCBarLabelText {
+		color: @sapUiContentForegroundTextColor;
+	}
+}
+
+.sapSuiteIBCBarSelected {
+	background-color: @_sap_suite_ui_microchart_InteractiveBarChart_BarSelectedBackground;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarSelected:hover {
+	background-color: @_sap_suite_ui_microchart_InteractiveBarChart_BarSelectedHoverBackground;
+}
+
+.sapSuiteIBCBarSelected .sapSuiteIBCBarLabelText{
+	color: @sapUiBaseText;
+}
+
+.sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	color: @sapUiBaseText;
+}
+
+.sapSuiteIBCBarValue {
+	color: @sapUiContentContrastTextColor;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+	border: 1px dotted @sapUiContentFocusColor;
+}
+
+.sapSuiteIBCDivider {
+	background-color: @sapUiBaseText;
+}

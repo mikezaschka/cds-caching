@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/write/_internal/appVariant/AppVariant","sap/ui/fl/Layer","sap/ui/fl/descriptorRelated/Utils","sap/ui/fl/write/_internal/connectors/LrepConnector","sap/base/util/merge","sap/base/util/isPlainObject"],function(e,r,n,t,a,i){"use strict";function s(e){e.url||="/sap/bc/lrep";return t.appVariant.load(e)}var o={};o.load=function(r){if(r.id===undefined||typeof r.id!=="string"){throw new Error(`Parameter ${r.id} must be provided of type string`)}return s({reference:r.id}).then(function(n){var t=n.response;if(!i(t)){t=JSON.parse(t)}r=a({},r,t);return new e(r)})};o.prepareCreate=function(t){try{n.checkParameterAndType(t,"reference","string");n.checkParameterAndType(t,"id","string");if(t.version){n.checkParameterAndType(t,"version","string")}if(!t.layer){t.layer=r.CUSTOMER}else{n.checkParameterAndType(t,"layer","string")}if(t.skipIam){n.checkParameterAndType(t,"skipIam","boolean")}if(t.transport){n.checkTransportRequest(t.transport)}if(t.package){n.checkPackage(t.package)}}catch(e){return Promise.reject(e)}t.content=[];var a=new e(t);a.setMode("NEW");return Promise.resolve(a)};o.prepareUpdate=function(e){return o.load(e).then(function(e){e.setMode("EXISTING");return e})};o.prepareDelete=function(r){return(r.isForSmartBusiness?Promise.resolve(new e(r)):o.load(r)).then(function(e){e.setMode("DELETION");return e})};return o});
+//# sourceMappingURL=AppVariantFactory.js.map

@@ -1,0 +1,91 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
+sap.ui.define([
+		'sap/ui/core/InvisibleText'
+	],
+	(
+		InvisibleText
+	) => {
+		"use strict";
+
+		/**
+		 * @class Functions uses in <code>FieldInputRenderer</code> and <code>FieldMultiInputRenderer</code> to adjust aria attributes.
+		 *
+		 * @author SAP SE
+		 * @version 1.136.0
+		 * @since 1.86.0
+		 * @alias sap.ui.mdc.field.FieldInputRenderUtil
+		 *
+		 * @private
+		 */
+		const FieldInputRenderUtil = {
+
+			getAriaRole: function(oInput, oRenderer) {
+
+				const oAriaAttributes = oInput.getAriaAttributes();
+
+				if (oAriaAttributes.role) {
+					return oAriaAttributes.role;
+				} else {
+					return oRenderer.getAriaRole.apply(this, arguments);
+				}
+
+			},
+
+			getAccessibilityState: function(oInput, oRenderer) {
+
+				const oAriaAttributes = oInput.getAriaAttributes();
+				const mAccessibilityState = oRenderer.getAccessibilityState.apply(this, arguments);
+
+				// add aria attributes
+				if (oAriaAttributes.aria) {
+					for (const sAttribute in oAriaAttributes.aria) {
+						mAccessibilityState[sAttribute] = oAriaAttributes.aria[sAttribute];
+					}
+				}
+
+				if (!oAriaAttributes.valueHelpEnabled && mAccessibilityState.describedby) {
+					// remove "value help enabled" text if not needed
+					const sValueHelpEnabledID = InvisibleText.getStaticId("sap.m", "INPUT_VALUEHELP");
+					const aIDs = mAccessibilityState.describedby.value.split(" ");
+					let sIDs = "";
+
+					for (const sID of aIDs) {
+						if (sID !== sValueHelpEnabledID) {
+							sIDs = sIDs ? sIDs + " " + sID : sID;
+						}
+					}
+
+					if (sIDs) {
+						mAccessibilityState.describedby.value = sIDs;
+					} else {
+						delete mAccessibilityState.describedby;
+					}
+				}
+
+				return mAccessibilityState;
+
+			},
+
+			writeInnerAttributes: function(oRm, oInput, oRenderer) {
+
+				oRenderer.writeInnerAttributes.apply(this, arguments);
+
+				const oAriaAttributes = oInput.getAriaAttributes();
+
+				// add all not aria specific attributes
+				for (const sAttribute in oAriaAttributes) {
+					if (sAttribute !== "aria" && sAttribute !== "role" && sAttribute !== "valueHelpEnabled") {
+						oRm.attr(sAttribute, oAriaAttributes[sAttribute]);
+					}
+				}
+
+			}
+		};
+
+		return FieldInputRenderUtil;
+	});

@@ -1,0 +1,64 @@
+/* ========================================== */
+/* CSS for control sap.ui.comp/DialogContent  */
+/* Base theme                                 */
+/* ========================================== */
+
+.sapUiCompDialogContentFieldListContainer {
+	border-right: 1px solid @sapUiContentForegroundBorderColor;
+}
+
+.sapUiCompDialogContentFieldListContainerTop {
+	background-color: @sapUiContentForegroundColor;
+	border-bottom: 1px solid @sapUiContentForegroundBorderColor;
+}
+
+.sapUiCompDialogContentFieldListContainerTop > div {
+	width: inherit !important;
+    margin-left: 2px !important;
+    margin-right: 2px !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+.sapUiCompDialogContentMiddle {
+	border-right: 1px solid @sapUiContentForegroundBorderColor;
+	min-width: 40px;
+	max-width: 60px;
+}
+
+.sapUiCompDialogContentMiddle > div:first-child {
+	margin:auto;
+	text-align:center;
+}
+
+.sapUiCompDialogContent {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.sapUiCompDialogContentHeader {
+	flex-shrink: 0;
+	/*margin-left: 15px;
+	margin-right: 15px;
+	margin-top: 15px;
+	margin-bottom: 3px;
+    padding: 3px;*/
+}
+
+.sapUiCompDialogContentButtonAddFieldContainer {
+	display:flex;
+	align-items:center;
+	padding: 10px;
+}
+
+.sapUiCompDialogContentBodyFlexItem {
+	flex-grow:0;
+}
+
+.sapUiCompDialogBody {
+	position: relative;
+	display:flex;
+}

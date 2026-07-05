@@ -1,0 +1,1 @@
+{"version":3,"file":"Dock.js","names":["sap","ui","define","library","BaseStructuredType","Dock","extend","metadata"],"sources":["Dock-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,kBAAmB,uCACjC,SAASC,EAASC,GACjB,aA2BD,IAAIC,EAAOD,EAAmBE,OAAO,gCAAuF,CAAEC,SAAW,CAExIJ,QAAS,aAKV,OAAOE,CAER","ignoreList":[]}

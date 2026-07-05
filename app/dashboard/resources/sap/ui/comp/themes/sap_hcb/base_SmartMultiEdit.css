@@ -1,0 +1,31 @@
+.sapUiCompSmartMultiEditField {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin-bottom: 1rem;
+}
+
+.sapUiCompSmartMultiEditFieldSFWrapper {
+	display: flex;
+}
+
+.sapUiCompSmartMultiEditSmartField {
+	display: block;
+}
+
+.sapUiCompSmartMultiEditSmartFieldHidden {
+	display: none;
+}
+
+.sapUiCompSmartMultiEditSmartFieldDescription {
+	font-family: @sapUiFontFamily;
+	font-size: @sapMFontSmallSize;
+	font-weight: normal;
+	font-style: italic;
+	color: @sapUiFieldTextColor;
+}
+
+/* Compact size */
+.sapUiSizeCompact .sapUiCompSmartMultiEditField {
+	margin-bottom: 0.5rem;
+}

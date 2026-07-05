@@ -1,0 +1,71 @@
+/* ============================================================ */
+/* CSS for control sap.suite.ui.microchart/InteractiveLineChart */
+/* High Contrast White Theme                                    */
+/* ============================================================ */
+
+.sapSuiteILCBackgroundArea {
+	z-index: -1;
+}
+html.sap-tablet .sapSuiteILC.sapSuiteILCNonInteractive .sapSuiteILCSection:not(.sapSuiteILCSelected) .sapSuiteILCInteractionArea:focus,
+html.sap-phone .sapSuiteILC.sapSuiteILCNonInteractive .sapSuiteILCSection:not(.sapSuiteILCSelected) .sapSuiteILCInteractionArea:focus,
+.sapSuiteILC {
+	border: 0.125rem dotted transparent;
+	outline: none;
+}
+.sapSuiteILCSvgElement {
+	stroke: @sapUiHcStandardForeground;
+}
+.sapSuiteILCSection {
+	border: 0.125rem solid transparent;
+}
+.sapSuiteILCPoint {
+	background-color: @sapUiHcStandardForeground !important;
+}
+.sapSuiteILCTextElement {
+	color: @sapUiHcStandardForeground;
+}
+.sapSuiteILCBottomLabelArea {
+	border-top-color: @sapUiHcStandardForeground;
+}
+html.sap-desktop .sapSuiteILC:not(.sapSuiteILCNonInteractive) .sapSuiteILCSection:hover,
+html.sap-desktop .sapSuiteILC:not(.sapSuiteILCNonInteractive) .sapSuiteILCSection.sapSuiteILCSelected:hover {
+	.sapSuiteILCBackgroundArea {
+		background-color: @sapUiHcHighlightBackground !important;
+	}
+	.sapSuiteILCPoint {
+		border-color: @sapUiHcHighlightBackground;
+		&.sapSuiteICSemanticColorGood, &.sapSuiteICSemanticColorCritical, &.sapSuiteICSemanticColorError {
+			border-color: @sapUiHcStandardBackground;
+		}
+	}
+}
+.sapSuiteILCSelected {
+	.sapSuiteILCBackgroundArea {
+		background-color: @sapUiHcHighlightAltBackground !important;
+	}
+	.sapSuiteILCPoint {
+		border-color: @sapUiHcHighlightAltBackground;
+		&.sapSuiteICSemanticColorGood, &.sapSuiteICSemanticColorCritical, &.sapSuiteICSemanticColorError {
+			border-color: @sapUiHcStandardBackground;
+		}
+	}
+}
+html.sap-tablet .sapSuiteILC.sapSuiteILCNonInteractive .sapSuiteILCSelected .sapSuiteILCInteractionArea:focus,
+html.sap-phone .sapSuiteILC.sapSuiteILCNonInteractive .sapSuiteILCSelected .sapSuiteILCInteractionArea:focus,
+html.sap-desktop .sapSuiteILC:not(.sapSuiteILCNonInteractive) .sapSuiteILCSection:hover .sapSuiteILCInteractionArea,
+.sapSuiteILCSelected .sapSuiteILCInteractionArea {
+	border: 1px solid @sapUiHcStandardForeground;
+	outline: none;
+}
+html.sap-desktop .sapSuiteILCSection .sapSuiteILCInteractionArea:focus,
+html.sap-desktop .sapSuiteILC:not(.sapSuiteILCNonInteractive) .sapSuiteILCSection:hover .sapSuiteILCInteractionArea:focus {
+	border: 0.125rem dotted @sapUiHcStandardForeground;
+	outline: none;
+}
+html.sap-desktop .sapSuiteILC:focus {
+	border-color: @sapUiHcStandardForeground;
+	outline: none;
+}
+.sapSuiteILCDivider {
+	stroke: @sapUiHcStandardForeground;
+}

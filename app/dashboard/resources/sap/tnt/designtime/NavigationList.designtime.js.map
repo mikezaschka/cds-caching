@@ -1,0 +1,1 @@
+{"version":3,"file":"NavigationList.designtime.js","names":["sap","ui","define","aggregations","items","domRef","actions","move"],"sources":["NavigationList-dbg.designtime.js"],"mappings":";;;;;AAOAA,IAAIC,GAAGC,OAAO,GACX,WACF,aAEA,MAAO,CACNC,aAAc,CACbC,MAAO,CACNC,OAAQ,cACRC,QAAS,CACRC,KAAM,kBAKX","ignoreList":[]}

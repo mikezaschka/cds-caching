@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'tr',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"{0} kontrol nesnesini yükleme başarısız oldu.",VIZ_FRAME_INVALID:"Geçersiz VizFrame örneği.",VIZ_FRAME_DESTORYED:"VizFrame örneği imha edildi.",}});

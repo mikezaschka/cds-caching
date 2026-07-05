@@ -1,0 +1,162 @@
+/* ============================== */
+/* CSS for control sap.m/Toolbar  */
+/* Base theme                     */
+/* ============================== */
+
+@_sap_m_Toolbar_ShrinkItem_MinWidth: 2.5rem;
+@_sap_m_Toolbar_Height: 2rem;
+
+/* we want the first visible element on the row to have specific padding-left value */
+.sapMIBar.sapMTB .sapMBarChild {
+	margin-left: 0.25rem;
+}
+
+.sapMIBar.sapMTB .sapMBarChild ~ .sapMBarChild {
+	margin: 0 0 0 0.5rem;
+}
+
+.sapMIBar.sapMTB .sapMBarChild.sapMBarChildFirstChild {
+	margin-left: 0;
+}
+
+.sapMIBar.sapMTB.sapMTBHeader-CTX {
+	padding-left: 1rem;
+}
+
+.sapMTB {
+	white-space: nowrap;
+	overflow: hidden;
+	align-items: center;
+	box-sizing: border-box;
+	-webkit-text-size-adjust: none;
+	-moz-text-size-adjust: none;
+	height: 3rem;
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+	background: var(--sapToolbar_Background);
+}
+
+.sapMTB.sapMTB-Transparent-CTX {
+	background: transparent;
+}
+
+.sapMIBar.sapMTB .sapMTBHiddenElement {
+	position: absolute;
+	visibility: hidden;
+}
+
+.sapMTBFocused {
+	outline: 0;
+}
+
+.sapMTBStandard {
+	border-bottom: solid 0.0625rem var(--sapGroup_TitleBorderColor);
+}
+
+.sapMTBClear {
+	border-bottom: none;
+}
+
+/* Info Toolbar Context */
+.sapMIBar.sapMTB.sapMTB-Info-CTX {
+	padding: 0 1rem;
+}
+
+.sapMIBar.sapMTB.sapMTB-Info-CTX > .sapUiIcon:first-child {
+	padding: 1px;
+}
+
+/* Background and text colors for different states */
+.sapMTB-Info-CTX > .sapUiIcon:focus {
+	outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+	outline-offset: 0.0625rem;
+}
+
+.sapMTBActive,
+.sapMTBActive > * {
+	cursor: pointer;
+}
+
+.sapMTBShrinkItem:not(.sapMSF) {
+	min-width: @_sap_m_Toolbar_ShrinkItem_MinWidth; /* default min-width value for the shrinkable items */
+}
+
+/* NewFlex */
+.sapMTBNewFlex {
+	display: flex;
+}
+
+.sapMTBNewFlex > * {
+	flex-shrink: 0;
+}
+
+.sapMTBNewFlex > .sapMTBShrinkItem {
+	flex-shrink: 1;
+}
+
+/*** Toolbar inside of Form as Form- and Container- header ***/
+.sapUiFormContainerToolbar > .sapMTB.sapMIBar {
+	border-bottom: none;
+	padding: 0;
+}
+
+.sapUiFormCLContainer .sapMIBar.sapMTB .sapMBarChild:first-child,
+.sapUiRespGrid .sapMIBar .sapMBarChild:first-child {
+	margin-left: 0.25rem;
+}
+
+/* Solid Toolbar Context */
+.sapMTB-Solid-CTX.sapMTB {
+	background: var(--sapList_HeaderBackground);
+}
+
+/* Info Toolbar Context */
+.sapMTB-Info-CTX.sapMTB {
+	background: var(--sapInfobar_Background);
+	color: contrast(@sapUiInfobarBackground, @sapUiListActiveTextColor, @sapUiListTextColor, @sapUiContentContrastTextThreshold);
+	height: @_sap_m_Toolbar_Height;
+
+	.sapMText {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	> .sapMTitle {
+		font-size: var(--sapFontHeader6Size);
+		text-shadow: none;
+	}
+
+	&.sapMTBActive {
+
+		&:hover {
+			background: var(--sapInfobar_Hover_Background);
+		}
+
+		&:active {
+			background: var(--sapInfobar_Active_Background);
+		}
+	}
+}
+
+/********** COMPACT DESIGN ************/
+
+/* toolbar has 2rem height in compact mode */
+.sapUiSizeCompact .sapMTB {
+	height: @_sap_m_Toolbar_Height;
+}
+
+/* class used to get a height of 3rem in compact mode */
+.sapUiSizeCompact .sapMTB.sapMTBHeader-CTX {
+	height: var(--sapElement_LineHeight);
+}
+
+/* default min-width value for the shrinkable items */
+.sapUiSizeCompact .sapMTBShrinkItem:not(.sapMSF),
+.sapUiSizeCondensed .sapUiTableCell .sapMTBShrinkItem {
+	min-width: 2rem;
+}
+
+.sapFDynamicPageTitleContent-CTX .sapMTB.sapMTBStandard {
+	border-bottom: none;
+}

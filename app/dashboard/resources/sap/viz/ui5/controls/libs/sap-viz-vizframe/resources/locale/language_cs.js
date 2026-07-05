@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'cs',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Nepodařilo se načíst kontrolní objekt {0}.",VIZ_FRAME_INVALID:"Neplatná instance VizFrame.",VIZ_FRAME_DESTORYED:"Instance VizFrame byla zničena.",}});

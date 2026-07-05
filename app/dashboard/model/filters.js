@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/model/Filter","sap/ui/model/FilterOperator"],function(e,r){"use strict";function t(t){return new e({path:"cache",operator:r.EQ,value1:t})}function a(t,a){return[new e({path:"cache",operator:r.EQ,value1:t}),new e({path:"ID",operator:r.EQ,value1:a})]}function n(t){return new e({path:"period",operator:r.EQ,value1:t})}var o={__esModule:true};o.cacheNameFilter=t;o.cacheAndIdFilter=a;o.periodFilter=n;return o});
+//# sourceMappingURL=filters.js.map

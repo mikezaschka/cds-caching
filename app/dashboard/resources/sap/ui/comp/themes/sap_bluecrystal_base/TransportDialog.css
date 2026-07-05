@@ -1,0 +1,19 @@
+/* ============================================ */
+/* CSS for control sap.ui.comp/TransportDialog  */
+/* Base theme                                   */
+/* ============================================ */
+
+.sapUiCompTransportDialog .compTransportPadding {
+	padding-left: 1rem;
+	padding-right: 1rem;
+	padding-bottom: 1rem;
+	padding-top: 1rem;
+}
+
+.sapUiCompTransportDialog .compFieldMargin {
+	margin-top: 0.5rem;
+}
+
+.sapUiSizeCompact .sapUiCompTransportDialog .compFieldMargin {
+	margin-top: 0.5rem;
+}

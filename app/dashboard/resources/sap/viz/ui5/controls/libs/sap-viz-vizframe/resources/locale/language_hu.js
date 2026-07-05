@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'hu',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"A(z) {0} vezérlőobjektum betöltése nem sikerült.",VIZ_FRAME_INVALID:"Érvénytelen VizFrame-példány.",VIZ_FRAME_DESTORYED:"A VizFrame-példány megsemmisült.",}});

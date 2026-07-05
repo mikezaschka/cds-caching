@@ -1,0 +1,61 @@
+/* ================================================================ */
+/* CSS for control sap.suite.ui.microchart/ComparisonAreaMicroChart */
+/* Blue Crystal Theme                                               */
+/* ================================================================ */
+
+.sapSuiteCpMCChartItemValue {
+	color: @sapUiDarkText;
+}
+
+.sapSuiteCpMCChartItemValue.sapSuiteCpMCSemanticColorNeutral {
+	color: @sapUiLightText;
+}
+
+.sapSuiteCpMCChartItemValue.sapSuiteCpMCSemanticColorGood {
+	color: @sapUiPositiveText;
+}
+
+.sapSuiteCpMCChartItemValue.sapSuiteCpMCSemanticColorCritical {
+	color: @sapUiCriticalText;
+}
+
+.sapSuiteCpMCChartItemValue.sapSuiteCpMCSemanticColorError {
+	color: @sapUiNegativeText;
+}
+
+.sapSuiteCpMCChartBarValue.sapSuiteCpMCSemanticColorNeutral {
+	background-color: @sapUiChartNeutral;
+}
+
+.sapSuiteCpMCChartBarValue.sapSuiteCpMCSemanticColorGood {
+	background-color: @sapUiChartGood;
+}
+
+.sapSuiteCpMCChartBarValue.sapSuiteCpMCSemanticColorCritical {
+	background-color: @sapUiChartCritical;
+}
+
+.sapSuiteCpMCChartBarValue.sapSuiteCpMCSemanticColorError {
+	background-color: @sapUiChartBad;
+}
+
+.sapSuiteCpMCChartContent.sapSuiteCpMCSizeL {
+	font-size: @sapMFontMediumSize;
+}
+
+.sapSuiteCpMCChartBarNegNoValue {
+	background-color: darken(@sapUiExtraLightBG, 6.3);
+}
+
+.sapSuiteCpMCChartBarNoValue {
+	background-color: darken(@sapUiExtraLightBG, 6.3);
+}
+
+/* Make sure that if there is no middle bar (sapSuiteCpMCChartBarValue) a double left border wouldn't appear. */
+.sapSuiteCpMCChartBarNegNoValue + .sapSuiteCpMCChartBarNoValue {
+	border-left: none;
+}
+
+.sapSuiteCpMCChartItemTitle {
+	color: @sapUiLightText;
+}

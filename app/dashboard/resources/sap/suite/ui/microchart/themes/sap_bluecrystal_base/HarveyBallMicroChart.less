@@ -1,0 +1,242 @@
+/* ============================================================ */
+/* CSS for control sap.suite.ui.microchart/HarveyBallMicroChart */
+/* Base Theme                                                   */
+/* ============================================================ */
+
+.sapSuiteHBMC {
+  outline: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+html.sap-desktop .sapSuiteHBMC:focus:not([tabindex]),
+.sapSuiteHBMC:focus:not([tabindex]) {
+  outline: none;
+}
+
+html.sap-desktop .sapSuiteHBMC:focus {
+  outline: 1px dotted @sapUiContentFocusColor;
+  outline-offset: 1px;
+}
+
+.sapSuiteHBMCVerticalAlignmentContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-width: 4rem;
+  max-width: 20rem;
+  min-height: 1.125rem;
+  max-height: 5.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.sapSuiteHBMCChart {
+  height: 100%;
+  flex: 0 0 auto;
+}
+
+.sapSuiteHBMCChart .sapSuiteHBMCChartSvg {
+  height: 100%;
+  width: auto;
+}
+
+.sapSuiteHBMC .sapSuiteHBMCTextContainer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding-left: 4%;
+}
+
+.sapSuiteHBMCVerticalAlignmentContainer.sapSuiteHBMCAlignLeft {
+  justify-content: flex-start;
+}
+
+.sapSuiteHBMCVerticalAlignmentContainer.sapSuiteHBMCAlignCenter {
+  justify-content: center;
+}
+
+.sapSuiteHBMCVerticalAlignmentContainer.sapSuiteHBMCAlignRight {
+  justify-content: flex-end;
+}
+
+.sapSuiteHBMC .sapSuiteHBMCTextContainerHide {
+  display: none;
+}
+
+.sapSuiteHBMC:focus:not([tabindex]) {
+  outline: none;
+}
+
+html.sap-desktop .sapSuiteHBMC:focus {
+  outline: 1px dotted @sapUiContentFocusColor;
+}
+
+.sapSuiteHBMC.sapSuiteHBMCSizeResponsive {
+  height: 100%;
+  width: 100%;
+}
+
+.sapSuiteHBMC .sapSuiteHBMCValueContainer {
+  font-weight: bold;
+}
+
+.sapSuiteHBMC.sapSuiteHBMCSizeL {
+  height: 5.875rem;
+  width: 12rem;
+}
+
+html.sap-desktop .sapSuiteHBMC.sapSuiteHBMCSizeAuto,
+html.sap-tablet .sapSuiteHBMC.sapSuiteHBMCSizeAuto,
+.sapSuiteHBMC.sapSuiteHBMCSizeM {
+  height: 4.5rem;
+  width: 10.5rem;
+}
+
+.sapSuiteHBMC.sapSuiteHBMCLookL,
+.sapSuiteHBMC.sapSuiteHBMCLookM {
+  & .sapSuiteHBMCValueContainer {
+	font-size: 1.25rem;
+	line-height: 1.25rem;
+	padding-bottom: 0.34375rem;
+	font-family: @sapUiFontHeaderFamily;
+  }
+
+  & .sapSuiteHBMCTotalContainer {
+	font-size: 1rem;
+	line-height: 1rem;
+	padding-top: 0.34375rem;
+  }
+}
+
+html.sap-phone .sapSuiteHBMC.sapSuiteHBMCSizeAuto,
+.sapSuiteHBMC.sapSuiteHBMCSizeS {
+  height: 3.5rem;
+  width: 8.25rem;
+}
+
+.sapSuiteHBMC.sapSuiteHBMCLookS {
+  & .sapSuiteHBMCValueContainer {
+	font-size: 1rem;
+	line-height: 1rem;
+	padding-bottom: 0.28125rem;
+	font-family: @sapUiFontFamily;
+  }
+
+  & .sapSuiteHBMCTotalContainer {
+	font-size: 0.875rem;
+	line-height: 0.875rem;
+	padding-top: 0.28125rem;
+  }
+}
+
+.sapSuiteHBMC.sapSuiteHBMCSizeXS {
+  height: 1.125rem;
+  width: 6rem;
+}
+
+.sapSuiteHBMC.sapSuiteHBMCLookXS {
+  & .sapSuiteHBMCBackgroundCircle {
+	visibility: hidden;
+  }
+
+  & .sapSuiteHBMCSegment {
+	stroke: none;
+  }
+
+  & .sapSuiteHBMCValueContainer {
+	font-size: 0.875rem;
+	line-height: 0.875rem;
+	font-family: @sapUiFontFamily;
+  }
+
+  & .sapSuiteHBMCTotalContainer {
+	display: none;
+  }
+}
+
+.sapSuiteHBMCValue,
+.sapSuiteHBMCValueScale,
+.sapSuiteHBMCTotal,
+.sapSuiteHBMCTotalScale {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+html[dir=ltr] .sapSuiteHBMCTotalScale,
+html[dir=ltr] .sapSuiteHBMCValueScale {
+  margin-left: 0.2rem;
+}
+
+html[dir=rtl] .sapSuiteHBMCTotalScale,
+html[dir=rtl] .sapSuiteHBMCValueScale {
+  margin-right: 0.2rem;
+}
+
+/* Containers CSS */
+.sapSuiteHBMCValueContainer {
+  flex: 0 1 auto;
+  color: @sapUiTileTextColor
+}
+
+.sapSuiteHBMCTotalContainer {
+  flex: 0 1 auto;
+  color: @sapUiTileTitleTextColor;
+}
+
+.sapSuiteHBMCSegment {
+  stroke-width: 0.125rem;
+}
+
+.sapSuiteHBMCBackgroundCircle {
+  fill: @sapUiChartDataPointBG;
+}
+
+.sapSuiteHBMCSemanticColorNeutral {
+  &.sapSuiteHBMCValueContainer {
+	color: @sapUiNeutralText;
+  }
+  &.sapSuiteHBMCValueScale, &.sapSuiteHBMCValue {
+	color: @sapUiNeutralText;
+  }
+  &.sapSuiteHBMCSegment {
+	fill: @sapUiChartNeutral;
+  }
+}
+
+.sapSuiteHBMCSemanticColorGood {
+  &.sapSuiteHBMCValueContainer {
+	color: @sapUiPositiveText;
+  }
+  &.sapSuiteHBMCValueScale, &.sapSuiteHBMCValue {
+	color: @sapUiPositiveText;
+  }
+  &.sapSuiteHBMCSegment {
+	fill: @sapUiChartGood;
+  }
+}
+
+.sapSuiteHBMCSemanticColorCritical {
+  &.sapSuiteHBMCValueContainer {
+	color: @sapUiCriticalText;
+  }
+  &.sapSuiteHBMCValueScale, &.sapSuiteHBMCValue {
+	color: @sapUiCriticalText;
+  }
+  &.sapSuiteHBMCSegment {
+	fill: @sapUiChartCritical;
+  }
+}
+
+.sapSuiteHBMCSemanticColorError {
+  &.sapSuiteHBMCValueContainer {
+	color: @sapUiNegativeText;
+  }
+  &.sapSuiteHBMCValueScale, &.sapSuiteHBMCValue {
+	color: @sapUiNegativeText;
+  }
+  &.sapSuiteHBMCSegment {
+	fill: @sapUiChartBad;
+  }
+}

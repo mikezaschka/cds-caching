@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/base/util/restricted/_isEqual","sap/base/util/deepClone","sap/ui/core/Element","sap/ui/rta/plugin/iframe/AddIFrameDialog"],function(e,t,i,a){"use strict";return async function n(r){const s=new a;const d=r.get_settings();const c=r.getRenameInfo();if(c){const e=i.getElementById(c.sourceControlId);d.title=e.getProperty(c.propertyName)}const l=await a.buildUrlBuilderParametersFor(r);const o={parameters:l,frameUrl:d.url,frameWidth:d.width,frameHeight:d.height,title:d.title,asContainer:!!d.title,advancedSettings:t(d.advancedSettings),updateMode:true};const h=await s.open(o,r);if(!h){return[]}const u=[];let g=false;const f={url:d.url,height:d.height,width:d.width,advancedSettings:d.advancedSettings};if(h.frameHeight+h.frameHeightUnit!==d.height){g=true;f.height=h.frameHeight+h.frameHeightUnit}if(h.frameWidth+h.frameWidthUnit!==d.width){g=true;f.width=h.frameWidth+h.frameWidthUnit}if(h.frameUrl!==d.url){g=true;f.url=h.frameUrl}if(!e(h.advancedSettings,d.advancedSettings)){g=true;f.advancedSettings=h.advancedSettings}if(g){u.push({selectorControl:r,changeSpecificData:{changeType:"updateIFrame",content:f}})}if(h.title!==d.title){const e={selectorControl:i.getElementById(c.selectorControlId),changeSpecificData:{changeType:"rename",content:{value:h.title}}};u.push(e)}return u}});
+//# sourceMappingURL=editIFrame.js.map

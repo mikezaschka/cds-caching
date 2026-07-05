@@ -1,0 +1,115 @@
+/* ============================================== */
+/* CSS for control sap.ui.comp/NavigationPopover  */
+/* Base theme                                     */
+/* ============================================== */
+
+.navpopoversmallheader .sapUiRLContainer .sapUiFormTitle {
+	margin-bottom: 0rem;
+}
+
+.navpopoversmallheader .sapUiRLContainerCont {
+	height: 0rem;
+}
+
+.navigationPopover .sapUiFormTitle {
+	white-space: normal;
+}
+
+.navigationPopover .navigationPopoverHeader {
+	padding-top: 1rem;
+	padding-bottom: 0.5rem;
+	padding-right: 1rem;
+	padding-left: 1rem;
+}
+
+.navigationPopoverTitleH1 .sapMLnk {
+	font-size: 1rem;
+}
+
+.navigationPopoverTitleH1 .sapMLnkDsbl {
+	opacity: 1;
+	color: @sapUiBaseText;
+}
+
+/* .sapMQuickViewPage*/
+.navigationPopover .navigationPopoverThumbnail {
+	font-family: SAP-icons;
+	font-size: 2.5rem;
+	font-weight: normal;
+	/* without important, the width will be overwritten with 100%*/
+	width: 3rem !important;
+	height: 3rem;
+	margin-right: .75rem;
+}
+
+.navigationPopover .navigationPopoverTitle {
+	font-size: 1rem;
+	font-weight: normal;
+}
+
+.navigationPopover .navigationPopoverSubTitle {
+	color: @sapUiContentLabelColor;
+}
+
+.navigationPopover .navigationPopoverDefaultExtraContent .sapUiFormTitle {
+	color: @sapUiBaseText;
+}
+
+.navigationPopover .navigationPopoverSeparator {
+	border-bottom: 1px solid;
+	border-bottom-color: @sapUiToolbarSeparatorColor;
+	margin-left: 1rem;
+	margin-right: 1rem;
+}
+
+/* Overwrite background of 'related apps' section */
+.navigationPopover .navigationPopoverAvailableLinks .sapUiFormResLayout.sapUiFormBackgrTranslucent > div {
+	background-color: transparent;
+}
+
+.navigationPopover .navigationPopoverAvailableLinks {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	padding-right: 1rem;
+	padding-left: 1rem;
+}
+
+.navigationPopover .navigationPopoverAvailableLinks .sapMFlexItem {
+	display: -webkit-box;
+	display: flex;
+}
+
+.navigationPopover .navigationPopoverAvailableLinkWithoutGroup {
+	padding-top: 0.375rem;
+	padding-bottom: 0.375rem;
+}
+
+.navigationPopover .navigationPopoverAvailableLinkGroup {
+	padding-top: 0.625rem;
+	padding-bottom: 0.375rem;
+}
+
+.navigationPopover .navigationPopoverAvailableLinkGroup .sapMLink {
+	padding-bottom: 0.125rem;
+}
+
+.navigationPopover .navigationPopoverAvailableLinkGroup .sapMText {
+	color: @sapUiContentLabelColor;
+}
+
+.navigationPopover .navigationPopoverPersonalizationButton {
+	padding-top: 0;
+	padding-bottom: 1rem;
+	padding-right: 1rem;
+	padding-left: 1rem;
+}
+
+/*!* Overwrite overflow to 'scroll' - is relevant for phone mode *!*/
+/*.navigationPopover.sapMDialog .sapMDialogSection {*/
+/*overflow: scroll !important;*/
+/*}*/
+
+/*!* The height=100% is needed for VBox content container *!*/
+/*.navigationPopover.sapMDialogPhone .sapMDialogScroll {*/
+/*height: 100%;*/
+/*}*/

@@ -1,0 +1,6 @@
+/*!
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["./library","sap/ui/core/Element","sap/suite/ui/microchart/MicroChartUtils"],function(t,e,r){"use strict";const a=t.MicroChartColorType;var i=e.extend("sap.suite.ui.microchart.ColumnMicroChartData",{metadata:{library:"sap.suite.ui.microchart",properties:{color:{group:"Misc",type:"string",defaultValue:a.Neutral},label:{type:"string",group:"Misc",defaultValue:""},displayValue:{type:"string",group:"Appearance"},value:{type:"float",group:"Misc"}},events:{press:{}}}});i.prototype.init=function(){this.setAggregation("tooltip","((AltText))",true)};i.prototype.attachEvent=function(t,r,a,i){e.prototype.attachEvent.call(this,t,r,a,i);if(this.getParent()&&t==="press"){this.getParent().setBarPressable(this,true)}return this};i.prototype.detachEvent=function(t,r,a){e.prototype.detachEvent.call(this,t,r,a);if(this.getParent()&&t==="press"){this.getParent().setBarPressable(this,false)}return this};r.extendMicroChartSetColor(i);return i});
+//# sourceMappingURL=ColumnMicroChartData.js.map

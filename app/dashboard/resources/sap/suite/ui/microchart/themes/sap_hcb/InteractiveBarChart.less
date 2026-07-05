@@ -1,0 +1,101 @@
+/* =========================================================== */
+/* CSS for control sap.suite.ui.microchart/InteractiveBarChart */
+/* High Contrast Black Theme                                   */
+/* =========================================================== */
+
+html.sap-desktop .sapSuiteIBC:focus {
+	outline: 2px dotted @sapHCStandardFG;
+}
+
+.sapSuiteIBCBar {
+	background-color: @sapHCStandardBG;
+	border-style: solid;
+	border-width: 1px 0px 1px 0px;
+	border-color: @sapHCStandardFG;
+	&.sapSuiteIBCBarNegative.sapSuiteIBCValueNegative {
+		border-left-width: 1px;
+	}
+	&.sapSuiteIBCBarPositive.sapSuiteIBCValuePositive {
+		border-right-width: 1px;
+	}
+	&.sapSuiteIBCBarValueNull {
+		border: none;
+	}
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:hover {
+	background-color: @sapHCHighlightBG;
+	border-style: solid;
+	border-width: 1px;
+	border-color: @sapHCStandardFG;
+}
+
+.sapSuiteIBCBarSelected {
+	background-color: @sapHCHighlightAltBG;
+	border-style: solid;
+	border-width: 1px;
+	border-color: @sapHCStandardFG;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarSelected:hover {
+	background-color: @sapHCHighlightAltBG;
+}
+
+.sapSuiteIBCBarLabelText {
+	color: @sapHCStandardFG;
+}
+
+.sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	color: @sapHCStandardFG;
+}
+
+.sapSuiteIBCBarValue {
+	color: @sapHCStandardFG;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+	outline: 2px dotted @sapHCStandardFG;
+	outline-offset: -2px;
+	border-color: transparent;
+}
+
+/* IE and Edge ignores outline-offset. Firefox stretches the outline */
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop,
+html[data-sap-ui-browser^="ff"].sap-desktop {
+	.sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+		outline: none;
+		position: relative;
+	}
+	.sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus:before {
+		content: " ";
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		border: 2px dashed @sapHCStandardFG;
+		pointer-events: none;
+	}
+}
+
+html[data-sap-ui-browser^="ff"].sap-desktop {
+	.sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus:before {
+		border-style: dotted;
+	}
+}
+
+html.sap-tablet .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea.sapSuiteIBCBarSelected:focus,
+html.sap-phone .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea.sapSuiteIBCBarSelected:focus {
+	border: 1px solid @sapHCStandardFG;
+}
+
+.sapSuiteIBCDivider {
+	background-color: @sapHCStandardFG;
+}
+.sapSuiteIBCSemanticMarker {
+	border-right-color: @sapHCStandardBG;
+	border-right-style: solid;
+	border-right-width: 1px;
+}

@@ -1,0 +1,29 @@
+/* =================================== */
+/* CSS for control sap.m/ComboBoxBase  */
+/* Horizon High Contrast Black theme   */
+/* =================================== */
+
+.sapMInputBaseIconPressed .sapMComboBoxBaseClearIcon {
+	color: var(--sapContent_IconColor);
+	background: transparent;
+	border-left-color: transparent;
+
+	&:hover {
+		background: var(--sapButton_Lite_Hover_Background);
+		border-left-color: var(--sapButton_Selected_BorderColor);
+	}
+
+	&:active {
+		background-color: var(--sapButton_Lite_Active_Background);
+		color: var(--sapButton_Active_TextColor);
+		border-left-color: var(--sapButton_Selected_BorderColor);
+
+		&::before {
+			color: var(--sapButton_Active_TextColor);
+		}
+	}
+}
+
+.sapMInputBaseIconPressed .sapMComboBoxBaseClearIcon::before {
+	color: var(--sapContent_IconColor);
+}

@@ -1,0 +1,6 @@
+/*
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define("sap/ui/comp/smartfield/LifecycleUtil",["sap/base/util/Deferred"],function(e){"use strict";var t={};t._getNextModeRenderedPromise=function(){var t=new e,i;this._oNextRendering=t;i={onAfterRendering:function(e){var n=this._oControl[this.getMode()];if(n&&n.getFocusDomRef()){this.removeEventDelegate(i);clearInterval(this._iNMRPromiseTimeout);t.resolve(this)}}.bind(this)};this.addEventDelegate(i);this._iNMRPromiseTimeout=setInterval(t.reject.bind(this,"rejected by timeout"),1e3);return t.promise};t._createICRenderedDeferred=function(){var t;t=new e;this._oRenderedWithContext=t;new Promise(function(e){var t={onAfterRendering:function(i){var n=this._oControl[this.getMode()],r=this.getAggregation("_content");if(!n){return}if(n.getDomRef()&&n.getFocusDomRef()&&n.getBindingContext()&&n===r){this.removeEventDelegate(t);e()}}.bind(this)};this.addEventDelegate(t)}.bind(this)).then(function(){t.resolve()})};t._getICRenderedPromise=function(){var e=this._oRenderedWithContext;return e?e.promise:undefined};t._rejectAll=function(e){if(this._oNextRendering){this._oNextRendering.reject(e)}if(this._oRenderedWithContext){this._oRenderedWithContext.reject(e)}};return t},true);
+//# sourceMappingURL=LifecycleUtil.js.map

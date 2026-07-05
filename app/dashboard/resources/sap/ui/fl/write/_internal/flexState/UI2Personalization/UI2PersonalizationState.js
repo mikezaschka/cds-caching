@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/apply/_internal/flexState/FlexState","sap/ui/fl/apply/_internal/flexState/UI2Personalization/UI2PersonalizationState","sap/ui/fl/write/_internal/connectors/LrepConnector"],function(e,n,t){"use strict";const o={};o.setPersonalization=async function(n){if(!n||!n.reference||!n.containerKey||!n.itemName||!n.content){throw new Error("not all mandatory properties were provided for the storage of the personalization")}const o=await t.ui2Personalization.create({flexObjects:n});const a=e.getUI2Personalization(o.response.reference);a[o.response.containerKey]||=[];a[o.response.containerKey].push(o.response);e.updateStorageResponse(o.response.reference,[{type:"ui2",newData:a}])};o.deletePersonalization=async function(o,a,r){if(!o||!a||!r){throw new Error("not all mandatory properties were provided for the storage of the personalization")}await t.ui2Personalization.remove({reference:o,containerKey:a,itemName:r});const i=e.getUI2Personalization(o);const s=i[a];const p=n.getPersonalization(o,a,r);const l=s.indexOf(p);s.splice(l,1);e.updateStorageResponse(o,[{type:"ui2",newData:i}])};return o});
+//# sourceMappingURL=UI2PersonalizationState.js.map

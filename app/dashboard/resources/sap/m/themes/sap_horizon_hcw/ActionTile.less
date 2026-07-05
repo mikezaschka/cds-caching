@@ -1,0 +1,28 @@
+/* ================================== */
+/* CSS for control sap.m/ActionTile  */
+/* Horizon High Contrast White theme  */
+/* ================================== */
+
+.sapMAT:hover {
+	outline:solid 0.1875rem var(--sapTile_Interactive_BorderColor);
+	background-color: var(--sapTile_Background);
+	box-shadow: none;
+}
+
+.sapMAT:focus {
+
+	.sapMATFocusDiv {
+		border: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor) !important;
+	}
+
+	.sapMGTFocusDiv {
+		border: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor) !important;
+	}
+}
+
+.sapMAT:active {
+
+	.sapMATFocusDiv {
+		border: none;
+	}
+}

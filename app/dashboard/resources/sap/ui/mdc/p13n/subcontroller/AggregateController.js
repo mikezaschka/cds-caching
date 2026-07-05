@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["./SelectionController","sap/ui/mdc/p13n/P13nBuilder","sap/base/util/merge"],(t,e,n)=>{"use strict";const r=t.extend("sap.ui.mdc.p13n.subcontroller.AggregateController");r.prototype.getStateKey=function(){return"aggregations"};r.prototype.getCurrentState=function(){return this.getAdaptationControl().getAggregateConditions()||{}};r.prototype.sanityCheck=function(t){const e=[];Object.keys({...t}).forEach(n=>{const r={name:n,key:n};if(t[n].hasOwnProperty("aggregated")){r["aggregated"]=t[n].aggregated}e.push(r)});return e};r.prototype.getDelta=function(e){e.existingState=this.sanityCheck(e.existingState);return t.prototype.getDelta.apply(this,arguments)};r.prototype.initAdaptationUI=function(t){return null};r.prototype.getChangeOperations=function(){return{add:"addAggregate",remove:"removeAggregate"}};r.prototype._getPresenceAttribute=function(){return"aggregated"};r.prototype.changesToState=function(t){const e={};t.forEach(t=>{const n=t.changeSpecificData.content.name;if(!e[n]){e[n]=[]}const r={};if(t.changeSpecificData.changeType===this.getChangeOperations()["remove"]){r.aggregated=false}e[n]=r});return e};r.prototype.mixInfoAndState=function(t){const e=this.getCurrentState();const n=this.prepareAdaptationData(t,(t,n)=>{const r=e[n.name];t.aggregated=!!r;return n.aggregatable});return n};return r});
+//# sourceMappingURL=AggregateController.js.map

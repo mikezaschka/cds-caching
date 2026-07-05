@@ -1,0 +1,30 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:form="sap.ui.layout.form">
+	<Popover title="{localData>/keyName}" placement="Bottom" contentWidth="30rem">
+		<content>
+			<IconTabBar>
+				<items>
+					<IconTabFilter text="{i18n>keyTabMetadata}">
+						<content>
+							<TextArea value="{localData>/metadata}" rows="20" width="100%" editable="false" />
+						</content>
+					</IconTabFilter>
+					<IconTabFilter text="{i18n>keyTabSubject}">
+						<content>
+							<TextArea value="{localData>/subject}" rows="20" width="100%" editable="false" />
+						</content>
+					</IconTabFilter>
+					<IconTabFilter text="{i18n>keyTabQuery}">
+						<content>
+							<TextArea value="{localData>/query}" rows="20" width="100%" editable="false" />
+						</content>
+					</IconTabFilter>
+					<IconTabFilter text="{i18n>keyTabCacheOptions}">
+						<content>
+							<TextArea value="{localData>/cacheOptions}" rows="20" width="100%" editable="false" />
+						</content>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</content>
+	</Popover>
+</core:FragmentDefinition>

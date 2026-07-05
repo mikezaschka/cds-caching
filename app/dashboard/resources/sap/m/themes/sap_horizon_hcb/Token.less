@@ -1,0 +1,85 @@
+/* ================================== */
+/* CSS for control sap.m/Token        */
+/* Horizon High Contrast Black theme  */
+/* ================================== */
+
+@_sap_m_Token_LeftPadding: 0.3125rem;
+@_sap_m_Token_IconWidth: 1.75rem;
+@_sap_m_Token_CompactIconWidth: 1.5rem;
+@_sap_m_Token_DeleteIconHeight: 2.25rem;
+@_sap_m_Token_DeleteIconCompactHeight: 1.625rem;
+
+.sapMToken {
+	padding-left: @_sap_m_Token_LeftPadding;
+	border-radius: 0.25rem;
+	color: var(--sapTextColor);
+	font-size: var(--sapFontSize);
+	overflow: visible;
+}
+
+.sapMTokenIcon::before {
+	display: inline-block;
+	width: 0.75rem;
+	height: 0.75rem;
+	line-height: 1;
+}
+
+html.sap-desktop .sapMToken:not(.sapMTokenReadOnly):hover {
+	border: var(--sapButton_BorderWidth) solid var(--sapButton_Hover_BorderColor);
+	background: var(--sapButton_Hover_Background);
+}
+
+html.sap-desktop .sapMToken.sapMTokenSelected:not(.sapMTokenReadOnly):hover {
+	background: var(--sapButton_Selected_Hover_Background);
+	border: var(--sapButton_BorderWidth) solid var(--sapButton_Selected_BorderColor);
+}
+
+html.sap-desktop .sapMToken:focus {
+	outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+	outline-offset: -0.1875rem;
+}
+
+html.sap-desktop .sapMToken {
+	&.sapMTokenReadOnly,
+	&.sapMTokenReadOnly:hover,
+	&.sapMTokenReadOnly.sapMTokenSelected,
+	&.sapMTokenReadOnly.sapMTokenSelected:hover {
+		color: var(--sapContent_LabelColor);
+		background: var(--sapField_ReadOnly_Background);
+		border: var(--sapButton_BorderWidth) solid var(--sapField_ReadOnly_BorderColor);
+	}
+}
+
+.sapMToken.sapMTokenReadOnly {
+	padding: 0.25rem 0.3125rem;
+	color: var(--sapContent_LabelColor);
+
+	.sapMTokenText {
+		line-height: 1rem;
+	}
+}
+
+.sapUiSizeCompact .sapMToken.sapMTokenReadOnly {
+	padding: 0.125rem 0.25rem;
+
+	.sapMTokenText {
+		line-height: 0.875rem;
+	}
+}
+
+.sapMTokenIcon {
+	box-sizing: border-box;
+	top: ~"calc((@{_sap_m_Token_TokenHeight} / 2) - (@{_sap_m_Token_DeleteIconHeight} / 2) - @{sapUiButtonBorderWidth})";
+	width: @_sap_m_Token_IconWidth;
+	height: @_sap_m_Token_DeleteIconHeight;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	right: ~"calc(var(--sapButton_BorderWidth) * -1)";
+}
+
+.sapUiSizeCompact .sapMTokenIcon {
+	top: ~"calc((@{_sap_m_Token_TokenCompactHeight} / 2) - (@{_sap_m_Token_DeleteIconCompactHeight} / 2) - @{sapUiButtonBorderWidth})";
+	width: @_sap_m_Token_CompactIconWidth;
+	height: @_sap_m_Token_DeleteIconCompactHeight;
+}

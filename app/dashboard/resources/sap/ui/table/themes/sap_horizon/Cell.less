@@ -1,0 +1,33 @@
+/* ========================= */
+/* CSS for sap.ui.table/Cell */
+/* Horizon theme             */
+/* ========================= */
+
+@_sap_ui_table_Cell_FocusOutlineOffset: ~"calc((var(--sapContent_FocusWidth) * -1) - 0.0625rem)";
+@_sap_ui_table_Cell_BorderColorSelected: var(--sapList_SelectionBorderColor);
+@_sap_ui_table_Cell_BorderColorFixedSelected: var(--sapList_SelectionBorderColor);
+@_sap_ui_table_Cell_ShadowColorFixed: @sapUiListTableFixedBorder;
+@_sap_ui_table_Cell_BorderBottomFocus: transparent;
+@_sap_ui_table_Cell_DummyBorderColor: @sapUiListTableFixedBorder;
+
+.sapUiTableCellDummy {
+
+	.sapUiTableContentRow & {
+		background-color: var(--sapList_Background) !important;
+	}
+}
+
+.sapUiTableGroupMode .sapUiTableCell.sapUiTableRowSelectionCell {
+	box-shadow: none;
+}
+
+/*
+ * Focus outline in Condensed mode
+ */
+.sapUiSizeCondensed .sapUiTableCell:focus {
+
+	&::before {
+		outline: 0.0625rem var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+		outline-offset: -1px;
+	}
+}

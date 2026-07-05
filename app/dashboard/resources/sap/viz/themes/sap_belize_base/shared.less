@@ -1,0 +1,1112 @@
+
+/*
+Parameter which stored a long css setting string for cvom's chart's internal use.
+*/
+
+@sapVizChartBackgroundColor: @sapUiBaseBG;
+
+@sapVizChartErrorColor : @sapUiChartMainTitleFontColor;
+
+@sapVizChartTooltipBackgroundColor: @sapVizChartBackgroundColor;
+
+@sapVizChartBackgroundStroke: #d8d8d8;
+
+@sapVizChartPieSectorStroke: @sapVizChartBackgroundColor;
+
+@sapVizChartHoverColor: #CCCCCC;
+
+@sapVizChartHoverline: @sapVizChartHoverColor;
+
+@sapVizChartHoverShadow: @sapVizChartHoverColor;
+
+@sapVizChartHoverShadowMouseDown: #808080;
+
+@sapVizChartInnerWhisker: #000000;
+
+@sapVizChartTitleColor: @sapUiBaseText;
+
+@sapVizChartLabelColor: @sapUiBaseText;
+
+@sapVizChartAxisColor: @sapUiText;
+
+@sapVizChartAxisGridlineColor: @sapVizChartBackgroundStroke;
+
+@sapVizChartTooltipBorderStroke: @sapVizChartBackgroundStroke;
+
+@sapVizChartHiddenTitleColor: #a6a6a6;
+
+@sapUiChartPopoverGroupFontColor : #000000;
+
+@sapUiChartPopoverDataItemFontSize : 0.875rem;
+
+@sapUiChartPopoverGroupFontSize : 0.875rem;
+
+@sapUiChartPopoverGroupFontWeight : bold;
+
+@sapFieldBorderWidth : @sapField_BorderWidth;
+
+@sapUiChartFocusWidth : 2px;
+
+
+
+.sapVizChartTitleSettings () {
+	fill:@sapVizChartTitleColor;
+	font-family:@sapUiFontFamily;
+}
+
+.sapVizChartLabelSettings () {
+	fill:@sapVizChartLabelColor;
+	font-family:@sapUiFontFamily;
+}
+
+.sapVizChartHiddenTitleSettings(){
+  fill : @sapVizChartHiddenTitleColor;
+}
+
+.sapVizChart .v-m-title .v-title{
+	.sapVizChartTitleSettings
+}
+
+.sapVizChart .v-subtitle{
+	.sapVizChartTitleSettings
+}
+
+.sapVizChart .v-title{
+	.sapVizChartTitleSettings
+}
+
+.sapVizChart .v-hidden-title{
+	.sapVizChartHiddenTitleSettings
+}
+
+.sapVizChart .v-pie .v-donut-title{
+	.sapVizChartTitleSettings
+}
+
+.sapVizChart .v-m-tooltip .v-body-title{
+	.sapVizChartTitleSettings
+}
+
+.sapVizChart .v-label{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .viz-polar-axis-label{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-datalabel{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-m-tooltip .v-body-label{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-m-tooltip .v-body-value{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-m-tooltip .v-footer-label{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-m-tooltip .v-footer-value{
+	.sapVizChartLabelSettings
+}
+
+.sapVizChart .v-m-tooltip .v-separationline{
+	stroke: @sapVizChartTooltipBorderStroke;
+}
+
+.sapVizChart .v-background-body{
+	fill:@sapVizChartBackgroundColor;
+}
+
+.sapVizChart .v-background-border{
+	stroke : @sapVizChartBackgroundStroke;
+}
+
+.sapVizChart .v-hoverline{
+	stroke:@sapVizChartHoverline;
+}
+
+.sapVizChart .v-hovershadow{
+	fill:@sapVizChartHoverShadow;
+}
+
+.sapVizChart .v-hovershadow-mousedown{
+	fill:@sapVizChartHoverShadowMouseDown;
+}
+
+.sapVizChart .v-m-tooltip .v-background{
+	fill:@sapVizChartTooltipBackgroundColor;
+	stroke:@sapVizChartTooltipBorderStroke;
+}
+
+.sapVizChart .v-m-tooltip .v-closeButton{
+  background-color:@sapVizChartTooltipBackgroundColor  !important;
+  border-color:@sapVizChartTooltipBorderStroke  !important;
+}
+
+.sapVizChart .v-background{
+	border-color : @sapVizChartTooltipBorderStroke!important;
+}
+
+.sapVizChart .v-innerwhisker{
+	stroke:@sapVizChartInnerWhisker;
+}
+
+.sapVizChart .v-categoryaxisline{
+	stroke:@sapVizChartAxisColor;
+}
+
+.sapVizChart .v-valueaxisline{
+	stroke: @sapVizChartAxisColor;
+}
+
+.sapVizChart .v-gridline{
+	stroke: @sapVizChartAxisGridlineColor;
+}
+
+.sapVizChart .sapVizChart {
+	position: relative;
+}
+
+.sapVizChart .sapVizChart.sapVizNoData {
+	/*background-color: @sapUiLightBG;*/
+	border: 1px solid @sapUiExtraLightBorder;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+
+.sapVizChart .sapVizChart.sapVizNoData > .sapVizNoDataDefault {
+	position: absolute;
+	display: block;
+	bottom: 50%;
+	left: 0;
+	right: 0;
+	text-align: center;
+	white-space: nowrap;
+}
+
+/*Below classes are moved from popover.css for theme designer*/
+.viz-controls-chartPopover .viz-controls-chartPopover-dimension-label{
+  font-weight: @sapUiChartPopoverGroupFontWeight;
+  color: @sapUiChartPopoverGroupFontColor;
+  font-size: @sapUiChartPopoverGroupFontSize;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapMLabel{
+  font-size: @sapUiChartPopoverDataItemFontSize;
+  color: @sapUiChartPopoverDataItemFontColor;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapMText{
+  font-size: @sapUiChartPopoverDataItemFontSize;
+  color: @sapUiChartPopoverDataItemFontColor;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-subActionItemsPage{
+  background-color: @sapUiGroupContentBackground;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-vizSelectedBar{
+  background-color: transparent;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-vizSelectedBar .sapMLabel{
+  color: @sapUiChartPopoverDataItemFontColor;
+}
+
+.viz-controls-chartPopover{
+  height: auto;
+  font-size: 0.875rem;
+}
+
+.viz-controls-chartPopover .sapUiIcon{
+  border : none;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel{
+  padding: 0.875rem 0.688rem 0.45rem 0.688rem;
+  border-bottom: none;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-dimension-marker{
+  line-height: 1.2rem;
+  float: left;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-dimension-label{
+  line-height: 1.2rem;
+  padding-bottom: 0.225rem;
+  padding-left: 0.688rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-vizSelectedBar{
+  margin: 0 0.688rem;
+  width: 92%;
+  box-shadow: none;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-vizSelectedBarBorder{
+  border-top: 1px rgba(153,153,153,0.6) solid;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-actionList li:first-child{
+  border-top: 1px rgb(229, 229, 229) solid;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-actionList div{
+  font-size: 0.875rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-actionList.hideActionList{
+  visibility: hidden;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-subActionItemsPage{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 100;
+  left: 0px;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-subActionItemsPage div{
+  font-size: 0.875rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapUiFormM:not(.sapUiFormEdit) > .sapUiFormResGrid > div{
+  padding: 0;
+  background-color: inherit;
+}
+
+.viz-controls-chartPopover .sapUiRespGrid.sapUiRespGridHSpace1{
+  padding: 0 0 0 0.5rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapUiRespGridSpanL12 {
+  margin: 0;
+}
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapUiRespGridSpanM12 {
+  margin: 0;
+}
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapUiRespGridSpanS12{
+  margin: 0;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .viz-controls-chartPopover-Vlt .sapUiSimpleForm .viz-controls-chartPopover-measure-name.sapMLabel{
+  text-align: left !important;
+}
+
+html[data-sap-ui-browser^=ie] .viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .viz-controls-chartPopover-Vlt .sapUiSimpleForm .viz-controls-chartPopover-measure-name,
+html[data-sap-ui-browser^=ed] .viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .viz-controls-chartPopover-Vlt .sapUiSimpleForm .viz-controls-chartPopover-measure-name{
+  text-align: left !important;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .viz-controls-chartPopover-measure-labels.sapMLabel:after{
+  content: '';
+}
+
+.viz-controls-chartPopover .sapUiRespGridMedia-Std-Tablet.sapUiRespGridHSpace1>.sapUiRespGridSpanM12:not(:first-child){
+  width: 100%;
+}
+
+.viz-controls-chartPopover .sapUiSimpleForm{
+  padding-left: 0.625rem;
+}
+
+.viz-controls-chartPopover .sapMPopoverHeader .sapMBarTitleAlignAuto .sapMBarMiddle .sapMBarContainer{
+  justify-content: center;
+}
+
+
+.viz-controls-chartPopover .viz-controls-chartPopover-measure-simpleForm{
+  padding-left: 1.188rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-measure-simpleForm-withoutDimensionLabel{
+  padding-left: 0.438rem;
+}
+
+
+.viz-controls-chartPopover .viz-controls-chartPopover-measure-labels{
+  line-height: 1rem;
+  padding: 0.2rem 0;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-measure-labels-wrapper-name{
+  padding-bottom: 0;
+}
+.viz-controls-chartPopover .viz-controls-chartPopover-measure-labels-wrapper-value{
+  padding-top: 0;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-timeDayValue{
+  margin-top: -0.3rem;
+}
+.viz-controls-chartPopover .viz-controls-chartPopover-timeDayDimValue{
+  margin-top: -0.2rem;
+}
+
+.viz-controls-chartPopover .viz-controls-chartPopover-contentPanel .sapUiFormLblColon .sapUiFormElementLbl>.sapMLabel .sapMLabelColonAndRequired:before{
+  content: "";
+}
+
+html[dir=rtl] .viz-controls-chartPopover .viz-controls-chartPopover-measure-value{
+  text-align: right !important;
+}
+
+.ui5-viz-controls-viz-description-title {
+  font-size: @sapUiChartMainTitleFontSize;
+  font-weight: @sapUiChartLabelFontWeight;
+  color: @sapVizChartErrorColor;
+}
+
+.ui5-viz-controls-viz-description-detail {
+  font-size: @sapUiChartAxisTitleFontSize;
+  color: @sapVizChartErrorColor;
+}
+
+.ui5-viz-controls-viz-description {
+    position : absolute;
+    top : 50%;
+    left : 50%;
+    transform : translate(-50%, -50%);
+    -ms-transform : translate(-50%, -50%);     /* IE 9 */
+    -moz-transform : translate(-50%, -50%);    /* Firefox */
+    -webkit-transform : translate(-50%, -50%); /* Safari and Chrome */
+    -o-transform : translate(-50%, -50%);  /* Opera */
+    text-align : center;
+    word-wrap : break-word;
+}
+
+.ui5-viz-controls-viz-description-message {
+    font-size: @sapUiChartAxisTitleFontSize;
+    font-weight: @sapUiFontHeaderWeight;
+    color: @sapUiGroupTitleTextColor;
+    font-family: @sapUiFontHeaderFamily;
+}
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel {
+    background: @sapUiGroupContentBackground;
+    padding: 0.7rem;
+    box-shadow: @sapUiShadowLevel1;
+    border-radius: 0.188rem;
+}
+
+.viz-controls-chartTooltip .sapUI5TooltipRowSpacing {
+    margin-top: 0.25rem;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-label {
+    color: @sapUiChartLightText;
+    font-size: @sapUiChartLegendLabelFontSize;
+    overflow: visible;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-separator {
+    color: @sapUiChartLightText;
+    font-size: @sapUiChartLegendLabelFontSize;
+    overflow: visible;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-dimension-value {
+    margin-left: 0.25rem;
+    color: @sapUiChartPopoverGroupFontColor;
+    font-weight: @sapUiChartPopoverGroupFontWeight;
+    font-size: @sapUiChartLegendLabelFontSize;
+    line-height: normal;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-measure-value {
+    margin-left: 0.25rem;
+    color: @sapUiChartPopoverGroupFontColor;
+    font-size: @sapUiChartLegendLabelFontSize;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-measure-value .sapMObjectNumberText {
+    font-size: @sapUiChartLegendLabelFontSize;
+    font-weight: @sapUiChartPopoverGroupFontWeight;
+    vertical-align: baseline;
+    overflow: visible;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .viz-controls-chartTooltip-measure-value .sapMObjectNumberUnit {
+    vertical-align: baseline;
+    padding-top: 0px;
+    font-size: 0.688rem;
+    font-weight: @sapUiChartLabelFontWeight;
+    overflow: visible;
+}
+
+.viz-controls-chartTooltip .viz-controls-chartTooltip-contentPanel .sapUiVltCell.sapuiVltCell {
+    font-size: @sapUiChartLegendLabelFontSize;
+}
+
+.sapMFocus.ui5-viz-controls-viz-frame .v-info::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    border: @sapUiChartFocusWidth dotted @sapUiContentFocusColor;
+    pointer-events: none
+}
+
+.sapMFocus.ui5-viz-controls-viz-frame .v-focusInside::before {
+    border-style: none;
+}
+
+.ui5-viz-controls-viz-frame .v-info:focus{
+    outline: none;
+}
+
+/* ============================= */
+/* CSS for control sap.m/Slider  */
+/* Base theme                    */
+/* ============================= */
+
+/* ------------------------------ */
+/* Slider commons styles          */
+/* ------------------------------ */
+
+.sapVizSlider {
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  height: 3.3125rem;
+  padding: 1.406rem 1.0625rem;
+
+
+  /* IE Windows 8 */
+  /* This elements receives events when not panning in vertial direction */
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
+}
+
+.sapVizSliderInner {
+  width: 100%;
+  z-index: 1;
+  position: relative;
+  background-repeat: no-repeat;
+}
+
+.sapVizSliderInner,
+.sapVizSliderProgress {
+  height: 0.188rem;
+}
+
+.sapVizSliderProgress,
+.sapVizSliderHandle {
+  position: absolute;
+}
+
+.sapVizSliderHandle {
+  display: block;
+  outline: none;
+}
+
+.sapVizSliderInput {
+  display: none;
+}
+
+.sapVizSliderTickmarks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  z-index: 0;
+  top: 0.625rem;
+  left: 1.0625rem;
+  right: 1.0625rem;;
+  display: block;
+  height: 1.75rem;
+}
+
+.sapVizSliderTick {
+  display: inline-block;
+  height: 1rem;
+  border-left: 0.0625rem solid @sapUiFieldBorderColor;
+  margin: 0.4375rem 0 0 -0.0625rem;
+}
+
+
+.sapVizSliderTickLabel {
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  width: 0.0625rem;
+  background-color: @sapUiFieldBorderColor;
+  margin: 0 0 0 -0.0625rem;
+
+  &:last-child {
+    right: 0;
+  }
+}
+
+.sapVizSliderLabel {
+  font-size: 0.75rem;
+  display: block;
+  width: 5rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: absolute;
+  top: 1.75rem;
+  left: -2.5rem;
+  direction: ltr;
+}
+
+/* slider progress bar */
+.sapVizSliderProgress {
+  background: @sapUiFieldActiveBorderColor;
+
+  &:before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 500%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* slider handle */
+.sapVizSliderHandle {
+  margin-left: -1rem;
+  top: -0.91rem;
+  height: 1.75rem;
+  width: 1.75rem;
+  direction: ltr;
+
+  /* some browsers like Samsung Galaxy S4 with Android 4.2 does not support the "border-radius" shorthand property
+  but does support the long-hand properties for each corner like "border-top-left-radius" */
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+
+  &:before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+}
+
+.sapVizSliderHandle:hover ~ .sapVizSliderTooltipContainer{
+  visibility: visible;
+}
+
+.sapVizSliderHandleTooltip:hover{
+  visibility: visible;
+}
+
+.sapMInputBaseWidthPadding:hover{
+  visibility: visible;
+}
+
+.sapVizSliderProgress:hover ~ .sapVizSliderTooltipContainer {
+  visibility: visible;
+}
+
+/* ============ */
+/* compact size */
+/* ============ */
+
+/* slider */
+.sapUiSizeCompact {
+  .sapVizSlider {
+    height: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  /* slider handle */
+  .sapVizSliderHandle {
+    height: 1.375rem;
+    width: 1.375rem;
+    margin-left: -0.8125rem;
+    top: -0.75rem;
+  }
+
+  .sapVizSliderTickmarks {
+    height: 1rem;
+  }
+
+  .sapVizSliderLabel {
+    top: 1rem;
+  }
+
+  .sapVizSliderTick {
+    margin-top: 0.125rem;
+    height: 0.75rem;
+  }
+
+  .sapVizSliderTickLabel {
+    height: 1rem;
+  }
+}
+/* ================================== */
+/* CSS for control sap.m/RangeSlider  */
+/* Base theme                         */
+/* ================================== */
+
+.sapVizSliderProgress {
+  width: auto;
+}
+
+.sapVizSliderProgress:focus {
+  outline: none;
+}
+
+html.sap-desktop .sapVizSliderProgress:focus:before {
+  border: 1px dotted @sapUiContentFocusColor;
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  pointer-events: none;
+}
+
+.sapVizSliderHandleTooltip {
+  display: inline-block;
+  position: absolute;
+}
+
+//----- RangeSlider Labels------------
+.sapVizSliderLabels {
+  margin: 0.875rem -0.875rem 0 -0.875rem;
+  height: 1rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  margin-left: -1.0625rem;
+  margin-right: -1.406rem;
+}
+
+.sapVizSliderRangeLabel {
+  display: block;
+  width: 1.75rem;
+  font-size: 0.75rem;
+  align-self: flex-end;
+  text-align: center;
+  direction: ltr;
+}
+
+.sapVizSliderTooltipContainer {
+  display: flex;
+  position: absolute;
+  top: -3rem;
+  height: 2rem;
+  width: auto;
+  justify-content: space-between;
+  transition-property: left, right;
+  visibility: hidden;
+}
+
+//----- RangeSlider Input Labels------------
+.sapVizSliderTooltipContainer .sapMInputBaseWidthPadding {
+  padding: 0;
+}
+
+.sapVizSliderTooltipContainer {
+  .sapMInputBase {
+    height: inherit;
+  }
+  .sapMInputBaseInner {
+    height: inherit;
+    font-size: 0.75rem;
+    position: relative;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .sapMInputBaseState .sapMInputBaseStateInner {
+    height: inherit;
+    font-size: 0.75rem;
+    position: relative;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .sapMInputBaseState .sapMInputBaseErrorInner {
+    visibility: visible;
+  }
+}
+
+.sapUiSizeCozy .sapVizSliderTooltipContainer {
+  .sapMInputBase {
+    height: 3rem;
+    top: -1rem;
+    padding: 0.25rem 0;
+  }
+  .sapMInputBaseInner {
+    height: 2.5rem;
+  }
+}
+
+/* pressed */
+
+.sapVizSliderHandleTooltip {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  font-size: 0.75rem;
+  text-align: center;
+  visibility: hidden;
+  box-shadow: @sapUiShadowLevel1;
+  position: relative;
+  flex-shrink: 0;
+  background-color: @sapUiGroupContentBackground;
+  direction: ltr;
+}
+
+.sapVizSliderHandleTooltipShow {
+  visibility: visible;
+}
+
+.sapVizSliderHandle:hover ~ .sapVizSliderTooltipContainer .sapVizSliderHandleTooltip{
+  visibility: visible;
+}
+
+.sapVizSliderProgress:hover ~ .sapVizSliderTooltipContainer .sapVizSliderHandleTooltip {
+        visibility: visible;
+      }
+
+.sapVizSliderHandleTooltipsShow,
+.sapVizSliderHandleTooltipsShow .sapVizSliderHandleTooltip {
+  visibility: visible;
+}
+
+/* overlap */
+.sapVizSliderHandle.sapVizSliderHandleOverlap {
+  background-color: @sapUiFieldActiveBorderColor;
+  border: @sapUiFieldActiveBorderColor;
+}
+
+/* pressed */
+.sapVizSliderInner > .sapVizSliderHandle.sapVizSliderHandlePressed {
+  background: @sapUiHighlight;
+  border: 0.125rem solid @sapUiFieldActiveBorderColor;
+}
+
+
+/* ============ */
+/* compact size */
+/* ============ */
+.sapUiSizeCompact {
+  .sapVizSliderLabels {
+    margin: 0.5rem -0.6875rem 0 -0.6875rem;
+  }
+
+  .sapVizSliderRangeLabel {
+    width: 1.375rem;
+  }
+}
+
+
+
+
+
+
+
+/*css for range slider*/
+.sapRangeSliderVizFrame{
+  padding-bottom: 2rem;
+  padding-right: 0.75rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider{
+    border-width:0.75rem 0 0.75rem 0;
+    margin-top:-0.75rem;
+    border-style:solid;
+    border-color:transparent;
+    padding:0;
+    box-sizing: inherit;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderInner{
+    background-color: transparent;
+    height:inherit;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress:before{
+    height:100%;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderLabels{
+    display: none;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderMock{
+    position: absolute;
+    height: inherit;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderMock-left{
+    left:0%;
+    padding-top: 0.67rem;
+    top: -0.34rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderMock-right{
+    right:0%;
+    padding-top: 0.67rem;
+    top: -0.34rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderLabel{
+    position:absolute;
+    width: 3rem;
+    line-height: 1.75rem;
+    top: 100%;
+    margin-top: 0.5rem;
+    margin-left: -0.5rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle:before{
+    position:absolute;
+    content: attr(data-sap-ui-icon-content);
+    width: inherit;
+    height: inherit;
+    line-height: 1.425rem;
+    top: -1px;
+    padding-top: 2px;
+    transform: none;
+    cursor:ew-resize;
+}
+
+// outline for vizSlider's handles when focused
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-right:before{
+    padding-right: 1px;
+    left: 0px;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left:before{
+    padding-left: 1px;
+    left: -1px;
+}
+
+html.sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle:focus:before{
+    outline: 1px dotted @sapUiContentFocusColor;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.viz-Mobile:before{
+    position:relative;
+    content: attr(data-sap-ui-icon-content);
+    width:auto;
+    left:auto;
+    top:0.35rem;
+    transform: none;
+    cursor:ew-resize;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle{
+    position:absolute;
+    width: 1rem;
+    height: 1.625rem;
+    margin-top: -0.81rem;
+    top: 50%;
+    cursor: ew-resize;
+    font-family: 'SAP-icons';
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle.viz-Mobile{
+    position:absolute;
+    width: 1.5rem;
+    height: 2.5rem;
+    margin-top: -1.25rem;
+    top: 50%;
+    cursor: ew-resize;
+    font-size: 1.375rem;
+    font-family: 'SAP-icons';
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle{
+    border:none;
+    background: @sapUiDragAndDropActiveBorderColor;
+    border-radius: 0.1875rem 0 0 0.1875rem;
+    color: @sapUiContentContrastTextColor;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-right{
+    margin-left:-0.07rem;
+    border-radius: 0 0.1875rem 0.1875rem 0;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-right:after{
+    position:absolute;
+    content:"";
+    width:2rem;
+    height:2rem;
+    left:0px;
+    top:-0.1875rem;
+    transform: none;
+    cursor:ew-resize;
+    border:none;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-right.viz-Mobile:after{
+    width:3rem;
+    height:3rem;
+    left:0px;
+    top:-0.25rem;
+    transform: none;
+    cursor:ew-resize;
+    border:none;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left{
+    margin-left:-0.95rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left.viz-Mobile{
+    margin-left:-1.475rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left:after{
+    position:absolute;
+    content:"";
+    width:2rem;
+    height:2rem;
+    left:-1rem;
+    top:-0.1875rem;
+    transform: none;
+    cursor:ew-resize;
+    border:none;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle-left.viz-Mobile:after{
+    width:3rem;
+    height:3rem;
+    left:-1.5rem;
+    top:-0.25rem;
+    transform: none;
+    cursor:ew-resize;
+    border:none;
+}
+
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderTooltipContainer{
+    top: -2.25rem;
+    visibility: hidden;
+}
+
+/*styles relating to different themes*/
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress{
+    top: -0.34rem;
+    padding-top: 0.43rem;
+    border: 0.125rem solid @sapUiDragAndDropActiveBorderColor;
+    background: none;
+    position:absolute;
+    height:inherit;
+    box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress.sapVizSliderProgressResized.focus{
+    cursor: ew-resize;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress.focus{
+    background: @sapUiDragAndDropActiveBackground;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .sapVizSliderProgress:hover{
+    background: @sapUiDragAndDropActiveBackground;
+    cursor: move;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderMock{
+    background: fade(@sapUiDragAndDropBackground, 80);
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderLabel{
+    font-family: @sapUiFontFamily;
+    font-size: @sapMFontMediumSize;
+    font-weight: normal;
+    color: @sapUiContentLabelColor;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider  .ui5-sap-viz-vizSliderLabel::before{
+    color: @sapUiContentContrastTextColor;
+    font-size:1.375rem;
+}
+
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle.sapUiIcon:focus{
+    outline: none;
+    background: @sapUiDragAndDropActiveBorderColor;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.ui5-sap-viz-vizSliderHandle.sapUiIcon:hover{
+    outline: none;
+    background: @sapUiDragAndDropActiveBorderColor;
+}
+.ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderHandle.sapVizSliderHandlePressed.ui5-sap-viz-vizSliderHandle{
+    background: @sapUiDragAndDropActiveBorderColor;
+    border:none ;
+}
+
+html.sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before {
+  border:none;
+  outline: 1px dotted @sapUiContentFocusColor;
+  outline-offset: -2px;
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: 0px;
+  pointer-events: none;
+  height: 100%;
+  width: 100%;
+  left: auto;
+  right: auto;
+  top: auto;
+  box-sizing: border-box;
+  transform: none;
+}
+
+// use border as focused progress's outline in IE and Edge
+html[data-sap-ui-browser*='ed'].sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before,
+html[data-sap-ui-browser*='ie'].sap-desktop .ui5-sap-viz-vizRangeSlider.sapVizSlider .sapVizSliderProgress:focus:before {
+  border: 1px dotted @sapUiContentFocusColor;
+  outline: none;
+}
+
+///////////// Viz Controls CSS///////////////////////
+.ui5-viz-controls-app {
+  margin: 0px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ui5-viz-controls-viz-frame {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.ui5-viz-controls-viz-builder {
+  position: absolute;
+  width: 260px;
+}
+
+.ui5-viz-controls-switch-bar {
+  position: absolute;
+  margin: 0px auto;
+  padding-top: 9px;
+}
+
+.ui5-viz-controls-vertical-splitter {
+  position: absolute;
+  width: 8px;
+  background: linear-gradient(to left, rgba(242, 242, 242, 0),
+  rgba(0, 0, 0, 0.1));
+}
+///////////////////////////////////////////////////

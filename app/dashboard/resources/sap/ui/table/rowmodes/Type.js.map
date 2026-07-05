@@ -1,0 +1,1 @@
+{"version":3,"file":"Type.js","names":["sap","ui","define","DataType","Type","Fixed","Auto","Interactive","registerEnum"],"sources":["Type-dbg.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAChD,aAUA,MAAMC,EAAO,CAMZC,MAAO,QAMPC,KAAM,OAMNC,YAAa,eAGdJ,EAASK,aAAa,6BAA8BJ,GAEpD,OAAOA,CACR","ignoreList":[]}

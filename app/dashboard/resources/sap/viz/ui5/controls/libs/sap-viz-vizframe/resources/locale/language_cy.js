@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'cy',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Wedi methu llwytho gwrthrych rheoli {0}.",VIZ_FRAME_INVALID:"Enghraifft VizFrame annilys.",VIZ_FRAME_DESTORYED:"Enghraifft VizFrame wedi'i ddinistrio.",}});

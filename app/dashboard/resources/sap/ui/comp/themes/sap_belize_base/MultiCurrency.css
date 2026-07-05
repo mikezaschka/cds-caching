@@ -1,0 +1,12 @@
+/* ============================================================================ */
+/* CSS for control sap.ui.comp/SmartTable/MultiCurrencyPopover & it's contents  */
+/* Base theme                                                                   */
+/* ============================================================================ */
+.sapUiCompMultiCurrency .sapMCLI {
+	padding: 0 2px 0 2px;
+	height: 3rem;
+}
+
+.sapUiSizeCompact .sapUiCompMultiCurrency .sapMCLI {
+	height: 2rem;
+}

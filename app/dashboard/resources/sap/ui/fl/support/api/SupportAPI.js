@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/base/Log","sap/ui/core/ComponentRegistry","sap/ui/fl/support/_internal/getAllUIChanges","sap/ui/fl/support/_internal/getFlexObjectInfos","sap/ui/fl/support/_internal/getFlexSettings","sap/ui/fl/support/_internal/getChangeDependencies","sap/ui/fl/Utils"],function(e,t,n,i,r,s,a){"use strict";async function o(n,i){if(a.getUshellContainer()){const t=await a.getUShellService("AppLifeCycle");const s=t.getCurrentApplication();if(s.componentInstance){return n(s.componentInstance)}const o=await s.getIntent();var r=document.getElementById(`application-${o.semanticObject}-${o.action}`);if(!r){const t="Possible cFLP scenario, but the iFrame can't be found";e.error(t);throw Error(t)}return new Promise(function(e){r.contentWindow.sap.ui.require([i],function(t){t().then(e)})})}const s=t.filter(function(e){return e.getManifestObject().getRawJson()["sap.app"].type==="application"});if(s.length===1){return n(s[0])}throw Error("No application component found")}var p={getAllUIChanges(){return o(n,"sap/ui/fl/support/_internal/getAllUIChanges")},getFlexObjectInfos(){return o(i,"sap/ui/fl/support/_internal/getFlexObjectInfos")},getChangeDependencies(){return o(s,"sap/ui/fl/support/_internal/getChangeDependencies")},getFlexSettings(){return o(r,"sap/ui/fl/support/_internal/getFlexSettings")}};return p});
+//# sourceMappingURL=SupportAPI.js.map

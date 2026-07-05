@@ -1,0 +1,89 @@
+/* ================================== */
+/* CSS for control sap.m/Toolbar      */
+/* Horizon High Contrast Black theme  */
+/* ================================== */
+
+html.sap-desktop .sapMTBActive.sapMTBFocused {
+	outline: 0.125rem dotted var(--sapContent_ContrastFocusColor);
+	outline-offset: -0.1875rem;
+}
+
+.sapMTB {
+	height: 2.75rem;
+	padding: 0 0.5rem;
+}
+
+/* Info Toolbar */
+.sapMIBar.sapMTB-Info-CTX.sapMTB {
+	padding: 0 0.5rem 0 1rem;
+}
+
+/* Info Toolbar Context */
+.sapMTB-Info-CTX.sapMTB {
+	background: var(--sapInfobar_NonInteractive_Background);
+	color: var(--sapList_TextColor);
+	height: 2rem;
+
+	> .sapUiIcon {
+		width: 1rem;
+		height: 1rem;
+		color: var(--sapList_TextColor);
+	}
+
+	> .sapUiIcon:focus {
+		color: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+	}
+
+	&.sapMTBActive {
+		background: var(--sapInfobar_Background);
+		color: var(--sapInfobar_TextColor);
+
+		&:active {
+			background: var(--sapInfobar_Active_Background);
+		}
+
+		&:hover {
+			background: var(--sapInfobar_Hover_Background);
+		}
+
+		.sapMText,
+		.sapMLabel,
+		> .sapMTitle {
+			color: inherit;
+		}
+	}
+}
+
+html.sap-desktop .sapMTB-Info-CTX.sapMTBActive.sapMTBFocused {
+	outline-color: var(--sapContent_ContrastFocusColor);
+}
+
+.sapMTB.sapMTBStandard {
+	border-bottom: solid 0.0625rem var(--sapGroup_TitleBorderColor);
+}
+
+/* solid toolbar context */
+.sapMTB-Solid-CTX.sapMTB {
+	background-color: var(--sapToolbar_Background);
+}
+
+html.sap-desktop .sapMTBActive.sapMTBFocused {
+	outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+}
+
+.sapMTB .sapMTBSeparator {
+	background: var(--sapToolbar_SeparatorColor);
+}
+
+/* Styles suporting Table inside ObjectPageSubSection scenario */
+.sapUxAPObjectPageLayout.sapUxAPObjectPageLayout-Std-Phone .sapUiTableOnObjectPageAdjustmentsForSection .sapMIBar.sapMTB.sapMTBHeader-CTX {
+	padding: 0;
+}
+
+.sapUxAPObjectPageLayout .sapUiTableOnObjectPageAdjustmentsForSection .sapMIBar.sapMTB.sapMTBHeader-CTX {
+	padding: 1rem;
+}
+
+.sapUiTableOnObjectPageAdjustmentsForSection .sapMIBar.sapMTB.sapMTBHeader-CTX .sapMBarChildFirstChild {
+	margin: 0;
+}

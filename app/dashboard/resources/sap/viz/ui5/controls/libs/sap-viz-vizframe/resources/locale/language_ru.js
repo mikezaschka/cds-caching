@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'ru',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Не удалось загрузить контрольный объект {0}.",VIZ_FRAME_INVALID:"Недопустимая инстанция VizFrame.",VIZ_FRAME_DESTORYED:"Инстанция VizFrame уничтожена.",}});

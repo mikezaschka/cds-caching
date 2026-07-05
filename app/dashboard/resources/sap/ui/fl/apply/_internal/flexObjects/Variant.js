@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/apply/_internal/flexObjects/getVariantAuthor","sap/ui/fl/apply/_internal/flexObjects/FlexObject"],function(t,e){"use strict";var n=e.extend("sap.ui.fl.apply._internal.flexObjects.Variant",{metadata:{properties:{favorite:{type:"boolean",defaultValue:false},visible:{type:"boolean",defaultValue:true},executeOnSelection:{type:"boolean",defaultValue:false},standardVariant:{type:"boolean",defaultValue:false},contexts:{type:"object",defaultValue:{}},variantId:{type:"string"},author:{type:"string"}}},constructor:function(...n){e.apply(this,n);if(!this.getVariantId()){this.setVariantId(this.getId())}if(!this.getAuthor()){this.setAuthor(t(this.getSupportInformation().user,this.getLayer(),{}))}}});n.getMappingInfo=function(){return{...e.getMappingInfo(),favorite:"favorite",executeOnSelection:"executeOnSelection",contexts:"contexts"}};n.prototype.getMappingInfo=function(){return n.getMappingInfo()};n.prototype.getName=function(){return this.getText("variantName")};n.prototype.setName=function(t,e){this.setText("variantName",t,"XFLD",e)};n.prototype.hasContexts=function(){var t=this.getContexts();var e=Object.keys(t);return e.some(function(e){return t[e].length>0})};n.prototype.canBeCondensed=function(){return false};return n});
+//# sourceMappingURL=Variant.js.map

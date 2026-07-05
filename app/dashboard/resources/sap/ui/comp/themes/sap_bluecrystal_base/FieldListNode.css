@@ -1,0 +1,16 @@
+/* ========================================== */
+/* CSS for control sap.ui.comp/FieldListNode  */
+/* Base theme                                 */
+/* ========================================== */
+
+.sapUiCompFieldListNode {
+    padding-left: 20px;
+}
+
+.sapUiCompFieldListNodeBorder {
+	position: relative;
+}
+
+.sapUiCompFieldListNodeIsSelected {
+	background-color: @sapUiListSelectionBackgroundColor;
+}

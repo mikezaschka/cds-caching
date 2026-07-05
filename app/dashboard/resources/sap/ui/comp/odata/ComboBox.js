@@ -1,0 +1,6 @@
+/*!
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["sap/m/ComboBox","sap/m/ComboBoxRenderer","sap/ui/comp/util/ComboBoxUtils"],function(e,t,r){"use strict";var o=e.extend("sap.ui.comp.odata.ComboBox",{metadata:{library:"sap.ui.comp",interfaces:["sap.ui.comp.IDropDownTextArrangement"],properties:{textArrangement:{type:"string",group:"Misc",defaultValue:""}},events:{selectedKeyChange:{parameters:{selectedKey:{type:"string"}}}}},renderer:t});o.prototype.onBeforeRendering=function(){e.prototype.onBeforeRendering.apply(this,arguments);this._processSelectedKeyChange()};o.prototype._processSelectedKeyChange=function(){var e,t,r=this.getSelectedKey();if(r!==this._sKey){e=this.getKeys();t=this.getItemByKey(""+r);if(t&&e.indexOf(r)!==-1){this.fireSelectedKeyChange({selectedKey:r});this._sKey=r}}};o.prototype.setValue=function(t){var o=this.getSelectedKey(),s=this.getItemByKey(""+o),i=this.getTextArrangement();if(i&&s!==null){t=r.formatDisplayBehaviour(s,i)}return e.prototype.setValue.call(this,t)};return o});
+//# sourceMappingURL=ComboBox.js.map

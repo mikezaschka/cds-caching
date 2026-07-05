@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'de',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Laden des Kontrollobjekts {0} fehlgeschlagen.",VIZ_FRAME_INVALID:"Ungültige VizFrame-Instanz.",VIZ_FRAME_DESTORYED:"VizFrame-Instanz wurde zerstört.",}});

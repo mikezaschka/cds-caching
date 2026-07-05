@@ -1,0 +1,1 @@
+{"version":3,"file":"SelectionMode.js","names":["sap","ui","define","DataType","SelectionMode","Single","MultiToggle","registerEnum"],"sources":["SelectionMode-dbg.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aASA,MAAMC,EAAgB,CAMrBC,OAAQ,SAORC,YAAa,eAGdH,EAASI,aAAa,qCAAsCH,GAE5D,OAAOA","ignoreList":[]}

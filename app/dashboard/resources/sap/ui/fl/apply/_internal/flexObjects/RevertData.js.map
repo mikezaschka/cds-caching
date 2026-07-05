@@ -1,0 +1,1 @@
+{"version":3,"file":"RevertData.js","names":["sap","ui","define","ManagedObject","extend","metadata","properties","type","content"],"sources":["RevertData-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CACb,6BACE,SAASC,GACX,aAYA,OAAOA,EAAcC,OAAO,mDAAoD,CAC/EC,SAAU,CACTC,WAAY,CACXC,KAAM,CAACA,KAAM,UACbC,QAAS,CAACD,KAAM,aAIpB","ignoreList":[]}

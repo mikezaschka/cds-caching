@@ -1,0 +1,12 @@
+/* =========================================================== */
+/* CSS for control sap.ui.comp/config/condition/DateRangeType  */
+/* Base theme                                                  */
+/* =========================================================== */
+
+.sapUiCompDateRangeType {
+	padding : 1rem;
+}
+
+.sapUiCompFilterBarCTPaddingTop {
+	margin-top: .2rem;
+}

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<library xmlns="http://www.sap.com/sap.ui.library.xsd">
+
+	<name>sap.suite.ui.microchart</name>
+	<vendor>SAP SE</vendor>
+	<copyright>SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.</copyright>
+	<version>1.136.0</version>
+
+	<documentation>UI5 library: sap.suite.ui.microchart</documentation>
+
+	<dependencies>
+		<dependency>
+			<libraryName>sap.ui.core</libraryName>
+		</dependency>
+		<dependency>
+			<libraryName>sap.m</libraryName>
+		</dependency>
+	</dependencies>
+
+	<appData>
+		<!-- excludes for the JSDoc -->
+		<jsdoc xmlns="http://www.sap.com/ui5/buildext/jsdoc">
+			<exclude name="sap.suite.ui.microchart.js."/>
+		</jsdoc>
+		<!-- excludes for the JSCoverage -->
+		<jscoverage xmlns="http://www.sap.com/ui5/buildext/jscoverage">
+			<exclude name="sap.suite.ui.microchart.js."/>
+		</jscoverage>
+
+		<!-- demokit module app -->
+		<documentation xmlns="http://www.sap.com/ui5/buildext/documentation"
+			indexUrl="../../../../../test-resources/sap/suite/ui/microchart/demokit/docuindex.json"
+			resolve="lib" />
+
+		<!-- release notes files -->
+		<releasenotes xmlns="http://www.sap.com/ui5/buildext/releasenotes"
+			url="../../../../../test-resources/sap/suite/ui/microchart/relnotes/changes-{major}.{minor}.json"
+			resolve="lib" />
+
+		<!-- control ownership -->
+		<ownership xmlns="http://www.sap.com/ui5/buildext/ownership">
+			<component>CA-UI5-SC</component><!-- default component for library -->
+		</ownership>
+	</appData>
+</library>

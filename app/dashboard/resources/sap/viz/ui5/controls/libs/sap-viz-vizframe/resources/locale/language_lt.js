@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'lt',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Nepavyko įkelti valdančio objekto {0}.",VIZ_FRAME_INVALID:"Neleistinas „VizFrame“ egzempliorius.",VIZ_FRAME_DESTORYED:"„VizFrame“ egzempliorius sunaikintas.",}});

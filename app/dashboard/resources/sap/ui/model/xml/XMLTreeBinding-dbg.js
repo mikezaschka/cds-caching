@@ -1,0 +1,96 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
+// Provides the XML model implementation of a list binding
+sap.ui.define(['sap/ui/model/ClientTreeBinding', "sap/base/util/each"],
+	function(ClientTreeBinding, each) {
+	"use strict";
+
+
+	/**
+	 *
+	 * @class
+	 * Tree binding implementation for XML format
+	 *
+	 * @param {sap.ui.model.xml.XMLModel} [oModel]
+	 * @param {string} Path pointing to the tree or array that should be bound
+	 * @param {object} [oContext] Context object for this binding
+	 * @param {sap.ui.model.Filter[]|sap.ui.model.Filter} [aFilters=[]]
+	 *   The filters to be used initially with type {@link sap.ui.model.FilterType.Application}; call {@link #filter} to
+	 *   replace them
+	 * @param {object} [mParameters] Additional model-specific parameters
+	 * @param {sap.ui.model.Sorter[]|sap.ui.model.Sorter} [aSorters=[]]
+	 *   The sorters used initially; call {@link #sort} to replace them
+	 * @throws {Error} If one of the filters uses an operator that is not supported by the underlying model
+	 *   implementation or if the {@link sap.ui.model.Filter.NONE} filter instance is contained in
+	 *   <code>aFilters</code> together with other filters
+	 * @protected
+	 * @alias sap.ui.model.xml.XMLTreeBinding
+	 * @extends sap.ui.model.ClientTreeBinding
+	 */
+	var XMLTreeBinding = ClientTreeBinding.extend("sap.ui.model.xml.XMLTreeBinding");
+
+	/**
+	 * Return node contexts for the tree
+	 * @param {sap.ui.model.Context} oContext to use for retrieving the node contexts
+	 * @param {int} iStartIndex the startIndex where to start the retrieval of contexts
+	 * @param {int} iLength determines how many contexts to retrieve beginning from the start index.
+	 * @return {sap.ui.model.Context[]} the contexts array
+	 * @protected
+	 */
+	XMLTreeBinding.prototype.getNodeContexts = function(oContext, iStartIndex, iLength) {
+		if (!iStartIndex) {
+			iStartIndex = 0;
+		}
+		if (!iLength) {
+			iLength = this.oModel.iSizeLimit;
+		}
+
+		var sContextPath = oContext.getPath();
+
+		if (!sContextPath.endsWith("/")) {
+			sContextPath = sContextPath + "/";
+		}
+		if (!sContextPath.startsWith("/")) {
+			sContextPath = "/" + sContextPath;
+		}
+
+		var aContexts = [],
+			mNodeIndices = {},
+			that = this,
+			oNode = this.oModel._getObject(oContext.getPath()),
+			sChildPath, oChildContext;
+
+		each(oNode[0].childNodes, function(sName, oChild) {
+			if (oChild.nodeType == 1) { // check if node is an element
+				if (mNodeIndices[oChild.nodeName] == undefined) {
+					mNodeIndices[oChild.nodeName] = 0;
+				} else {
+					mNodeIndices[oChild.nodeName]++;
+				}
+				sChildPath = sContextPath + oChild.nodeName + "/" + mNodeIndices[oChild.nodeName];
+				oChildContext = that.oModel.getContext(sChildPath);
+				// check if there is a filter on this level applied
+				if (that.oCombinedFilter && !that.bIsFiltering) {
+					if (that.filterInfo.aFilteredContexts
+							&& that.filterInfo.aFilteredContexts.indexOf(oChildContext) != -1) {
+						aContexts.push(oChildContext);
+					}
+				} else {
+					aContexts.push(oChildContext);
+				}
+			}
+		});
+
+		this._applySorter(aContexts);
+		this._setLengthCache(sContextPath, aContexts.length);
+
+		return aContexts.slice(iStartIndex, iStartIndex + iLength);
+	};
+
+	return XMLTreeBinding;
+
+});

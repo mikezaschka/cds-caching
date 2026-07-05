@@ -1,0 +1,103 @@
+/* ========================================== */
+/* CSS for control sap.m/SelectionDetailsItem */
+/* Base theme                                 */
+/* ========================================== */
+
+.sapMSDItem {
+	display: block;
+	padding: 0;
+}
+
+.sapMSDItem > .sapMLIBContent {
+	padding: 0.5rem 0;
+	box-sizing: border-box;
+	width: 100%;
+	display: flex;
+	align-items: center;
+}
+
+.sapMSDItem .sapMSDItemLines {
+	flex: 1 1;
+	max-width: ~"calc(100% - 3rem)";
+}
+
+.sapMSDItem .sapMSDItemActions {
+	width: 100%;
+	flex: 0 0 100%;
+
+	.sapMTB {
+		border-bottom: none;
+	}
+}
+
+.sapMSDItem:not(.sapMLIBTypeNavigation) {
+
+	.sapMSDItemActions {
+		flex-basis: ~"calc(100% + 2rem)";
+	}
+}
+
+.sapMSDItem .sapMLIBImgNav {
+	cursor: pointer;
+}
+
+.sapMSDItemLine {
+	display: flex;
+	overflow: hidden;
+}
+
+.sapMSDItem .sapMSDItemLineMarkerContainer {
+	flex: 0 0 3rem;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.sapMSDItem .sapMSDItemLineLabel,
+.sapMSDItem .sapMSDItemLineValue {
+	flex: 1 1;
+	padding: 0.25rem;
+	box-sizing: border-box;
+	font-size: smaller;
+	min-width: 0; /* explicitly allow items to shrink to 0 */
+	word-wrap: break-word;
+}
+
+.sapMSDItem .sapMSDItemLineLabel {
+	margin-right: 1rem;
+	color: var(--sapContent_LabelColor);
+	white-space: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sapMSDWrapLabels .sapMSDItem .sapMSDItemLineLabel {
+	white-space: normal;
+	text-overflow: clip;
+}
+
+.sapMSDItem .sapMSDItemLineValue {
+	color: var(--sapList_TextColor);
+
+	&.sapMSDItemLineBold {
+		font-weight: bold;
+	}
+}
+
+.sapMSDItem .sapMSDItemLineUnit {
+	font-weight: normal;
+}
+
+.sapMSDItem.sapMLIBActive {
+
+	.sapMSDItemLineLabel,
+	.sapMSDItemLineValue,
+	.sapMBtnText,
+	.sapMBtnTransparent > .sapMBtnIcon {
+		color: var(--sapList_Active_TextColor);
+		text-shadow: none;
+	}
+}

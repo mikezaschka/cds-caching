@@ -1,0 +1,101 @@
+{
+  "_version": "1.21.0",
+  "sap.app": {
+    "id": "sap.chart",
+    "type": "library",
+    "embeds": [],
+    "applicationVersion": {
+      "version": "1.136.0"
+    },
+    "title": "Smart viz control based on Vizframe",
+    "description": "Smart viz control based on Vizframe",
+    "ach": "BI-CVM",
+    "resources": "resources.json",
+    "offline": true
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "supportedThemes": []
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.136",
+      "libs": {
+        "sap.ui.core": {
+          "minVersion": "1.136.0"
+        },
+        "sap.viz": {
+          "minVersion": "1.136.0"
+        }
+      }
+    },
+    "library": {
+      "i18n": {
+        "bundleUrl": "messages/messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cs",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-US-sappsd",
+          "es",
+          "et",
+          "fi",
+          "fr",
+          "he",
+          "hi",
+          "hr",
+          "hu",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "ms",
+          "nb",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      "css": false,
+      "content": {
+        "controls": [
+          "sap.chart.Chart"
+        ],
+        "elements": [
+          "sap.chart.data.Dimension",
+          "sap.chart.data.TimeDimension",
+          "sap.chart.data.HierarchyDimension",
+          "sap.chart.data.Measure"
+        ],
+        "types": [
+          "sap.chart.SelectionBehavior",
+          "sap.chart.SelectionMode",
+          "sap.chart.data.MeasureSemantics"
+        ],
+        "interfaces": []
+      }
+    }
+  }
+}

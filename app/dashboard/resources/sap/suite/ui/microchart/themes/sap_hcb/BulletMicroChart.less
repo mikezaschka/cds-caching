@@ -1,0 +1,104 @@
+/* ======================================================== */
+/* CSS for control sap.suite.ui.microchart/BulletMicroChart */
+/* High Contrast Black Theme                                */
+/* ======================================================== */
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorNeutral {
+	background-color: @sapHCNeutral;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorGood {
+	background-color: @sapHCPositive;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorCritical {
+	background-color: @sapHCCritical;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorError {
+	background-color: @sapHCNegative;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorNeutral {
+	color: @sapHCNeutral;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorGood {
+	color: @sapHCPositive;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorCritical {
+	color: @sapHCCritical;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorError {
+	color: @sapHCNegative;
+}
+
+.sapSuiteBMCTargetValue {
+	color: @sapHCStandardFG;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorNeutral {
+	background-color: darken(@sapHCNeutral, 20);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorGood {
+	background-color: lighten(@sapHCPositive, 25);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorCritical {
+	background-color: lighten(@sapHCCritical, 25);
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorError {
+	background-color: lighten(@sapHCNegative, 25);
+}
+
+.sapSuiteBMCBarValue {
+	border-left: 1px @sapHCStandardBG solid;
+	border-right: 1px @sapHCStandardBG solid;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCForecast {
+	border-bottom: 1px @sapHCStandardBG solid;
+	border-left: 0;
+	border-right: 0;
+}
+
+html[dir=rtl] .sapSuiteBMCForecastBarValue {
+	border-left: 1px @sapHCStandardBG solid;
+	border-right: 0;
+}
+
+.sapSuiteBMCForecastBarValue {
+	border-left: 0;
+	border-right: 1px @sapHCStandardBG solid;
+}
+
+.sapSuiteBMCBarValueMarker.sapSuiteBMCModeTypeDelta {
+	border-left: 1px @sapHCStandardBG solid;
+	border-right: 1px @sapHCStandardBG solid;
+}
+
+/* Scale Colors Start */
+
+.sapSuiteBMCBar {
+	box-sizing: border-box;
+	background-color: @sapHCStandardBG;
+	border: 1px @sapUiFieldBorderColor solid;
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorTransparent {
+	background-color: transparent;
+}
+
+/* Scale Colors End */

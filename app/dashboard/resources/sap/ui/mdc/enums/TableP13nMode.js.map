@@ -1,0 +1,1 @@
+{"version":3,"file":"TableP13nMode.js","names":["sap","ui","define","DataType","TableP13nMode","Column","Sort","Filter","Group","Aggregate","registerEnum"],"sources":["TableP13nMode-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAUA,MAAMC,EAAgB,CAMrBC,OAAQ,SAMRC,KAAM,OAMNC,OAAQ,SAMRC,MAAO,QAMPC,UAAW,aAGZN,EAASO,aAAa,iCAAkCN,GAExD,OAAOA,GAEU","ignoreList":[]}

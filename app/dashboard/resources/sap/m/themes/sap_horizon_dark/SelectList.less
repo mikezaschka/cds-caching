@@ -1,0 +1,68 @@
+/* ================================= */
+/* CSS for control sap.m/SelectList  */
+/* Evening Horizon theme             */
+/* ================================= */
+
+@_sap_m_SelectListItem_Height: 2.5rem;
+@_sap_m_SelectListItem_CompactHeight: 2rem;
+@_sap_m_SelectListItemBelizeFocus_Height: 0.25rem; /* 2 borders * 0.0625rem + 2 offsets (top and bottom) * 0.0625rem */
+
+/* selected */
+.sapMSelectListItemBase.sapMSelectListItemBaseSelected {
+	background: var(--sapList_SelectionBackgroundColor);
+	color: var(--sapList_TextColor);
+	border-bottom: 0.0625rem solid var(--sapList_SelectionBorderColor);
+
+	&:hover {
+		background: var(--sapList_Hover_SelectionBackground);
+	}
+}
+
+/* pressed */
+html.sap-desktop .sapMSelectListItemBase.sapMSelectListItemBasePressed:focus {
+	outline: 0.0625rem dotted var(--sapContent_ContrastFocusColor);
+}
+
+.sapMSelectListItemBase.sapMSelectListItemBasePressed,
+.sapMSelectListItemBase.sapMSelectListItemBaseSelected.sapMSelectListItemBasePressed {
+	background-color: var(--sapList_Active_Background);
+	color: var(--sapList_Active_TextColor);
+}
+
+.sapMSelectListItemBase.sapMSelectListItemBasePressed .sapMSelectListItemIcon {
+	color: var(--sapContent_ContrastIconColor);
+}
+
+/* disabled */
+.sapMSelectListItemBaseDisabled {
+	opacity: 0.5;
+}
+
+/* focus */
+html.sap-desktop .sapMSelectListItemBase:focus::after,
+.sapMSltPicker-CTX .sapMSelectListItemBaseSelected::after,
+.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected::after {
+	pointer-events: none;
+	content: '';
+	outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+	outline-offset: -0.1875rem;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.sapMSltPicker-CTX .sapMSelectListItemBaseSelected,
+.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected,
+html.sap-desktop .sapMSelectListItemBase:focus {
+	outline: none;
+}
+
+.sapMSelectListItemBase {
+	background-color: var(--sapList_Background);
+	border-color: var(--sapList_BorderColor);
+	position: relative;
+	font-size: var(--sapFontSize);
+	color: var(--sapList_TextColor);
+}

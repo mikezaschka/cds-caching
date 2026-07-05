@@ -1,0 +1,6 @@
+/*!
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["./library","sap/ui/core/Element"],function(t,e){"use strict";var i=e.extend("sap.suite.ui.microchart.AreaMicroChartPoint",{metadata:{library:"sap.suite.ui.microchart",properties:{x:{type:"float",group:"Misc",defaultValue:null},y:{type:"float",group:"Misc",defaultValue:null}}}});i.prototype.setX=function(t,e){this._isXValue=this._isNumber(t);return this.setProperty("x",this._isXValue?t:NaN,e)};i.prototype.setY=function(t,e){this._isYValue=this._isNumber(t);return this.setProperty("y",this._isYValue?t:NaN,e)};i.prototype.getXValue=function(){return this._isXValue?this.getX():undefined};i.prototype.getYValue=function(){return this._isYValue?this.getY():undefined};i.prototype._isNumber=function(t){return typeof t=="number"&&!isNaN(t)&&isFinite(t)};i.prototype.clone=function(t,i,r){var u=e.prototype.clone.apply(this,arguments);u._isXValue=this._isXValue;u._isYValue=this._isYValue;return u};return i});
+//# sourceMappingURL=AreaMicroChartPoint.js.map

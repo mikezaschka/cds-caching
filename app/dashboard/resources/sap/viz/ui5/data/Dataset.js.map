@@ -1,0 +1,1 @@
+{"version":3,"file":"Dataset.js","names":["sap","ui","define","Element","library","Dataset","extend","metadata","abstract"],"sources":["Dataset-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,sBAAsB,mBACpC,SAASC,EAASC,GAClB,aAiBA,IAAIC,EAAUF,EAAQG,OAAO,2BAA6E,CAAEC,SAAW,CAEtHC,SAAa,KACbJ,QAAU,aAMX,OAAOC,CAER","ignoreList":[]}

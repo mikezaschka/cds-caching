@@ -1,0 +1,1 @@
+{"version":3,"file":"FilterField.designtime.js","names":["sap","ui","define","properties","operators","ignore","defaultOperator"],"sources":["FilterField-dbg.designtime.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,GAAI,KACjB,aAEA,MAAO,CACNC,WAAY,CACXC,UAAW,CACVC,OAAQ,MAGTC,gBAAiB,CAChBD,OAAQ","ignoreList":[]}

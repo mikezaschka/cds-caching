@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<library xmlns="http://www.sap.com/sap.ui.library.xsd" >
+
+  <name>sap.m</name>
+  <vendor>SAP SE</vendor>
+  <copyright>OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</copyright>
+  <version>1.136.0</version>
+
+  <documentation>The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.</documentation>
+
+  <dependencies>
+    <dependency>
+      <libraryName>sap.ui.core</libraryName>
+    </dependency>
+    <dependency>
+      <libraryName>sap.ui.layout</libraryName>
+      <lazy>true</lazy>
+    </dependency>
+    <dependency>
+      <libraryName>sap.ui.unified</libraryName>
+      <lazy>true</lazy>
+    </dependency>
+  </dependencies>
+
+  <appData>
+    <!-- package name for selenium -->
+    <selenium xmlns="http://www.sap.com/ui5/buildext/selenium" package="com.sap.ui5.selenium.mobile" />
+    <!-- excludes for the JSDoc -->
+    <jsdoc xmlns="http://www.sap.com/ui5/buildext/jsdoc" >
+        <exclude name="sap.m.js." />
+        <exclude name="sap.m._thirdparty." />
+    </jsdoc>
+    <!-- excludes for the JSCoverage -->
+    <jscoverage xmlns="http://www.sap.com/ui5/buildext/jscoverage" >
+        <exclude name="sap.m.js." />
+        <exclude name="sap.m._thirdparty." />
+    </jscoverage>
+    <!-- excludes for the library-preload.js -->
+    <packaging xmlns="http://www.sap.com/ui5/buildext/packaging" version="2.0" >
+        <all-in-one>
+            <exclude name="sap/m/_thirdparty/purify.js" />
+        </all-in-one>
+    </packaging>
+    <!-- Thirdparty references -->
+    <thirdparty xmlns="http://www.sap.com/ui5/buildext/thirdparty" >
+        <lib name="DOMPurify" displayName="purify.js" npmName="dompurify" version="3.2.4" hash="b8b770c2c5daf7e777d33af0270ec21d" homepage="https://github.com/cure53/DOMPurify/" id="73554900106100137292">
+            <license url="https://github.com/cure53/DOMPurify/blob/main/LICENSE" type="Apache-2.0" />
+            <copyright>Mario Heiderich</copyright>
+            <pattern>sap/m/_thirdparty/purify.js</pattern>
+        </lib>
+        <lib  id="73555000106100004191"
+              name="qunit-composite-2"
+              displayName="QUnit Composite 2.0.0"
+              version="2.0.0"
+              npmName="qunit-composite"
+              npmVersion="2.0.0"
+              hash="cf42dd8c3b1e980237f14df37487c808"
+              homepage="https://github.com/JamesMGreene/qunit-composite"
+            >
+            <license url="https://github.com/JamesMGreene/qunit-composite/blob/master/LICENSE.txt" type="MIT" />
+            <copyright>jQuery Foundation and other contributors, https://jquery.org/</copyright>
+            <pattern>../test/sap/m/qunit/_thirdparty/qunit-composite.css</pattern>
+            <pattern>../test/sap/m/qunit/_thirdparty/qunit-composite.js</pattern>
+        </lib>
+    </thirdparty>
+    <documentation xmlns="http://www.sap.com/ui5/buildext/documentation"
+        indexUrl="../../../test-resources/sap/m/demokit/docuindex.json"
+        resolve="lib" />
+    <releasenotes xmlns="http://www.sap.com/ui5/buildext/releasenotes"
+        url="../../../test-resources/sap/m/relnotes/changes-{major}.{minor}.json"
+        resolve="lib" />
+    <ownership xmlns="http://www.sap.com/ui5/buildext/ownership">
+        <component>CA-UI5-CTR</component><!-- default component for library, embedded text as a shortcut for <name>text</name> -->
+        <component>
+            <name>CA-UI5-CTR-BAL</name>
+            <modules>
+                <module>sap/m/FacetFilter</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-SC</name>
+            <modules>
+                <module>sap/m/FeedInput</module>
+                <module>sap/m/FeedListItem</module>
+                <module>sap/m/UploadCollection</module>
+                <module>sap/m/ActionTile</module>
+                <module>sap/m/ActionTileContent</module>
+                <module>sap/m/TileAttribute</module>
+                <module>sap/m/SlideTile</module>
+                <module>sap/m/GenericTile</module>
+                <module>sap/m/LinkTileContent</module>
+                <module>sap/m/TileInfo</module>
+                <module>sap/m/ContentConfig</module>
+                <module>sap/m/TileContent</module>
+                <module>sap/m/FeedContent</module>
+                <module>sap/m/NewsContent</module>
+                <module>sap/m/NumericContent</module>
+                <module>sap/m/ImageContent</module>
+                <module>sap/m/HeaderContainer</module>
+                <module>sap/m/GenericTileMode</module>
+                <module>sap/m/TileInfoColor</module>
+                <module>sap/m/GenericTileScope</module>
+                <module>sap/m/TileSizeBehavior</module>
+                <module>sap/m/Size</module>
+                <module>sap/m/ValueColor</module>
+                <module>sap/m/ValueCSSColor</module>
+                <module>sap/m/FrameType</module>
+                <module>sap/m/UploadCollectionItem</module>
+                <module>sap/m/UploadCollectionParameter</module>
+                <module>sap/m/LoadState</module>
+                <module>sap/m/SelectionDetails</module>
+                <module>sap/m/SelectionDetailsFacade</module>
+                <module>sap/m/SelectionDetailsItem</module>
+                <module>sap/m/SelectionDetailsItemFacade</module>
+                <module>sap/m/SelectionDetailsLine</module>
+                <module>sap/m/MultiEditField</module>
+                <module>sap/m/PDFViewer</module>
+                <module>sap/m/upload/Uploader</module>
+                <module>sap/m/upload/UploadSet</module>
+                <module>sap/m/upload/UploadSetItem</module>
+                <module>sap/m/upload/UploadSetToolbarPlaceholder</module>
+                <module>sap/m/upload/UploaderTableItem</module>
+                <module>sap/m/upload/FilePreviewDialog</module>
+                <module>sap/m/upload/Column</module>
+                <module>sap/m/upload/ActionsPlaceholder</module>
+                <module>sap/m/plugins/UploadSetwithTable</module>
+                <module>sap/m/upload/UploadItem</module>
+                <module>sap/m/upload/UploadItemConfiguration</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-FST</name>
+            <modules>
+                <module>sap/m/tutorial/Walkthrough</module>
+                <module>sap/m/tutorial/Testing-BulletinBoard</module>
+                <module>sap/m/tutorial/MasterDetail-DisplayOrders</module>
+                <module>sap/m/tutorial/Worklist-ManageProductStock</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-COR</name>
+            <modules>
+                <module>sap/m/tutorial/QuickStart</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-CMP</name>
+            <modules>
+                <module>sap/m/P13nDialog</module>
+                <module>sap/m/P13nColumnsPanel</module>
+                <module>sap/m/P13nFilterPanel</module>
+                <module>sap/m/P13nGroupPanel</module>
+                <module>sap/m/P13nSortPanel</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-MDC</name>
+            <modules>
+                <module>sap/m/p13n/SelectionController</module>
+                <module>sap/m/p13n/SelectionPanel</module>
+                <module>sap/m/p13n/SortController</module>
+                <module>sap/m/p13n/SortPanel</module>
+                <module>sap/m/p13n/GroupController</module>
+                <module>sap/m/p13n/GroupPanel</module>
+                <module>sap/m/p13n/Engine</module>
+                <module>sap/m/p13n/MetadataHelper</module>
+                <module>sap/m/p13n/Popup</module>
+                <module>sap/m/VariantManagement</module>
+            </modules>
+        </component>
+        <component>
+            <name>CA-UI5-TBL</name>
+            <modules>
+                <module>sap/m/ListBase</module>
+                <module>sap/m/List</module>
+                <module>sap/m/Tree</module>
+                <module>sap/m/Table</module>
+                <module>sap/m/ListItemBase</module>
+                <module>sap/m/DisplayListItem</module>
+                <module>sap/m/GroupHeaderListItem</module>
+                <module>sap/m/InputListItem</module>
+                <module>sap/m/ActionListItem</module>
+                <module>sap/m/StandardListItem</module>
+                <module>sap/m/CustomListItem</module>
+                <module>sap/m/CustomTreeItem</module>
+                <module>sap/m/GrowingList</module>
+                <module>sap/m/Column</module>
+                <module>sap/m/ColumnListItem</module>
+                <module>sap/m/plugins/DataStateIndicator</module>
+                <module>sap/m/plugins/ColumnResizer</module>
+                <module>sap/m/plugins/PasteProvider</module>
+                <module>sap/m/table/columnmenu/ActionItem</module>
+                <module>sap/m/table/columnmenu/Category</module>
+                <module>sap/m/table/columnmenu/Entry</module>
+                <module>sap/m/table/columnmenu/Item</module>
+                <module>sap/m/table/columnmenu/ItemBase</module>
+                <module>sap/m/table/columnmenu/MenuBase</module>
+                <module>sap/m/table/columnmenu/Menu</module>
+                <module>sap/m/table/columnmenu/QuickAction</module>
+                <module>sap/m/table/columnmenu/QuickActionBase</module>
+                <module>sap/m/table/columnmenu/QuickActionItem</module>
+                <module>sap/m/table/columnmenu/QuickGroup</module>
+                <module>sap/m/table/columnmenu/QuickGroupItem</module>
+                <module>sap/m/table/columnmenu/QuickSort</module>
+                <module>sap/m/table/columnmenu/QuickSortItem</module>
+                <module>sap/m/table/columnmenu/QuickTotal</module>
+                <module>sap/m/table/columnmenu/QuickTotalItem</module>
+            </modules>
+        </component>
+    </ownership>
+  </appData>
+
+</library>

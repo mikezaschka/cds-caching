@@ -12,9 +12,8 @@ sap.ui.define(["./BaseController"], function (__BaseController) {
     onInit: function _onInit() {
       this.getRouter().getRoute("main").attachPatternMatched(this.onRouteMatched, this);
     },
-    onRouteMatched: function _onRouteMatched(event) {
-      // Set layout to one column for main view
-      this.getModel("app").setProperty("/layout", "OneColumn");
+    onRouteMatched: function _onRouteMatched(_event) {
+      this.getAppModel().setProperty("/layout", "OneColumn");
       this.getView().byId("cachesList").getBinding("items").refresh();
     },
     onCacheSelect: function _onCacheSelect(event) {

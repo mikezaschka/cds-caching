@@ -1,0 +1,46 @@
+/* =================================== */
+/* CSS for control sap.m/TabContainer  */
+/* Base theme                          */
+/* =================================== */
+
+.sapMTabContainer {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+
+	.sapMTabContainerContent {
+		position: relative;
+		flex-grow: 1;
+
+		.sapMTabContainerInnerContent {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			overflow-x: auto;
+		}
+	}
+}
+
+/* mixin call for creating container content padding classes (arguments: rootContainer, contentSelector) */
+.sapUiContainerContentPadding(~".sapMTabContainer", ~"> .sapMTabContainerContent > .sapMTabContainerInnerContent");
+
+.sapMTabContainer {
+
+	.sapMTabContainerContentTransparent {
+		background-color: transparent;
+	}
+
+	.sapMTabContainerContentList {
+		background-color: var(--sapGroup_ContentBackground);
+	}
+
+	.sapMTabContainerContentSolid {
+		background-color: var(--sapShell_Background);
+	}
+
+	.sapMTabContainerContentStandard {
+		background-color: var(--sapBackgroundColor);
+	}
+}

@@ -1,0 +1,44 @@
+/* ============================================== */
+/* CSS for control sap.ui.unified/CalendarLegend  */
+/* Horizon High Contrast White theme              */
+/* ============================================== */
+
+.sapUiUnifiedLegendItem {
+	position: relative;
+
+	&:focus {
+		outline: none;
+		&::after {
+			content: "";
+			position: absolute;
+			box-sizing: border-box;
+			inset: 0.125rem;
+			border: @sapContent_FocusWidth @sapContent_FocusStyle @sapUiContentFocusColor;
+			pointer-events: none;
+		}
+	}
+}
+
+.sapUiSizeCompact .sapUiUnifiedLegendDescription {
+	margin-block-start: 0.5rem;
+}
+
+.sapUiCalLegDayTypeNonWorking .sapUiUnifiedLegendSquare .sapUiUnifiedLegendSquareColor,
+.sapUiUnifiedLegendNonWorkingDay .sapUiUnifiedLegendSquare .sapUiUnifiedLegendSquareColor {
+	background: @sapUiLegendNonWorkingBackground;
+}
+
+.sapUiSizeCompact {
+	.sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+		margin: 0.1875rem;
+	}
+
+	.sapUiUnifiedLegendItem {
+
+		&:focus {
+			&::after {
+				inset: 0.0625rem;
+			}
+		}
+	}
+}

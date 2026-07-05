@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/Lib","sap/ui/fl/write/_internal/fieldExtensibility/ServiceValidation","sap/ui/fl/write/_internal/fieldExtensibility/cap/dialog/CustomFieldCAPDialog"],function(e,t,i){"use strict";var n=null;var r=null;var a=e.getResourceBundleFor("sap.ui.fl");var o={};o.getTexts=function(){return{headerText:a.getText("BUSINESS_CONTEXT_TITLE"),tooltip:a.getText("BTN_ADD_FIELD")}};o.isExtensibilityEnabled=function(){return true};o.getExtensionData=function(){var e=n.getModel();var t=n.getBindingContext().getPath();if(e.isA("sap.ui.model.odata.v2.ODataModel")){return Promise.reject()}else if(e.isA("sap.ui.model.odata.v4.ODataModel")){var i=e.getMetaModel();var r=i.getMetaPath(t);return i.requestObject(r).then(function(e){var t=i.fetchEntityContainer().getResult();var n=t[t.$EntityContainer];return{boundEntitySet:e,entityTypes:Object.values(n).map(function(e){return e.$Type}).filter(Boolean)}})}return Promise.reject()};o.onControlSelected=function(e){n=e};o.onTriggerCreateExtensionData=function(e,t){r||=new i;r.open(e,t)};o.isServiceOutdated=function(e){return t.isServiceOutdated(e)};o.setServiceValid=function(e){t.setServiceValid(e)};o.setServiceInvalid=function(e){t.setServiceInvalid(e)};return o});
+//# sourceMappingURL=CAPAccess.js.map

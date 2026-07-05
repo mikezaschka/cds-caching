@@ -1,0 +1,55 @@
+/* ================================== */
+/* CSS for control sap.m/Panel        */
+/* Horizon High Contrast Black theme  */
+/* ================================== */
+
+.sapMPanel {
+	min-height: 2.75rem;
+}
+
+.sapMPanelBGSolid {
+	background-color: var(--sapGroup_ContentBackground);
+}
+
+.sapMPanelBGTranslucent {
+	background-color: var(--sapGroup_ContentBackground);
+}
+
+.sapMPanelBGTransparent {
+	background-color: transparent;
+}
+
+/* if Panel is not expandable, we do wish header to come with own border */
+.sapMPanel .sapMPanelHeadingDiv > .sapMPanelHdr,
+/* notice: sapMPanelWrappingDiv is available if Panel is expandable */
+.sapMPanelWrappingDiv,
+/* do not want border if expanded and if only header text */
+.sapMPanelWrappingDivTb {
+	border-bottom: @sapGroup_TitleBorderWidth solid @sapUiGroupTitleBorderColor;
+}
+
+.sapMPanelWrappingDiv.sapMPanelWrappingDivExpanded,
+.sapMPanelWrappingDivTb.sapMPanelWrappingDivTbExpanded {
+	border-bottom: @sapGroup_TitleBorderWidth solid @sapUiGroupTitleBorderColor;
+}
+
+.sapMPanelWrappingDivTb .sapMTB.sapMTBStandard {
+	border: none;
+}
+
+.sapMPanelContent:not(.sapMPanelBGTransparent) {
+	border-bottom: @sapGroup_TitleBorderWidth solid @sapUiGroupTitleBorderColor;
+}
+
+.sapMPanelContent {
+	padding: 0.625rem 1rem;
+}
+
+.sapMPanel .sapMPanelHdr {
+	line-height: 2.75rem;
+	height: 2.75rem;
+}
+
+.sapMPanelWrappingDiv .sapUiIcon {
+	color: var(--sapButton_Lite_TextColor);
+}

@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'hr',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Učitavanje kontrolnog objekta {0} nije uspjelo.",VIZ_FRAME_INVALID:"Nevažeća VizFrame instanca.",VIZ_FRAME_DESTORYED:"VizFrame instanca uništena.",}});

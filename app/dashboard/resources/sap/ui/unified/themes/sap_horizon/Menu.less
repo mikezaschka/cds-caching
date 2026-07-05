@@ -1,0 +1,108 @@
+/* ==================================== */
+/* CSS for control sap.ui.unified/Menu  */
+/* Horizon theme                        */
+/* ==================================== */
+
+.sapUiMnu {
+	border-radius: @sapUiPopoverBorderCornerRadius;
+}
+
+.sapUiMnuItmSbMnu > div:after {
+	font-size: 1rem;
+}
+
+.sapUiMnuItm.sapUiMnuTfItm .sapUiMnuTfItemTf.sapUiMnuTfItemTfDsbl {
+	opacity: @sapUiContentDisabledOpacity;
+}
+
+.sapUiMnuItm.sapUiMnuItmSubMnuOpen.sapUiMnuItmHov:hover {
+	background-color: @sapUiListSelectionHoverBackground;
+}
+
+.sapUiMnu  .sapUiMnuDiv>hr,
+.sapMList .sapMListItems .sapUiMnuDiv>hr{
+	border-top: 0.0625rem solid @sapUiGroupContentBorderColor;
+	left: 0rem;
+	right: 0rem;
+}
+
+.sapUiMnu.sapUiMnuCozySupport.sapUiSizeCozy .sapUiMnuItm {
+	height: 2.75rem;
+	line-height: 2.75rem;
+}
+
+.sapUiMnu.sapUiMnuCozySupport.sapUiSizeCozy .sapUiMnuItmIco > .sapUiIcon {
+	line-height: 2.75rem;
+	font-size: 1rem;
+}
+
+.sapUiMnu.sapUiMnuCozySupport.sapUiSizeCozy .sapUiMnuItmSbMnu {
+	width: 2.25rem;
+	height: 2.75rem;
+	font-size: 0.75rem;
+	&.sapUiIconMirrorInRTL{
+		height: 2.75rem;
+	}
+}
+
+.sapMMenuLIArrowRightIcon {
+	font-size: 1rem;
+	padding-inline-start: 0.875rem;
+	width: 1rem;
+	height: 2.75rem;
+	line-height: 2.75rem;
+}
+
+.sapUiSizeCompact .sapUiMnuItmR, .sapUiSizeCompact .sapUiMnuNoIco .sapUiMnuItmL {
+	width: 0.5rem;
+}
+
+.sapUiMnu .sapUiMnuLst .sapUiMnuItm.sapUiMnuItmSubMnuOpen,
+.sapUiMnu .sapUiMnuLst .sapUiMnuItm.sapUiMnuItmSubMnuOpen.sapUiMnuItmHov {
+	border-bottom: 1px solid @sapUiListSelectionBorderColor;
+}
+
+.sapUiMnu .sapUiMnuLst .sapUiMnuItm {
+	border-bottom: 1px solid transparent;
+}
+
+.sapUiMnu .sapUiMnuLst .sapUiMnuItm.sapUiMnuItmHov:active{
+	border-bottom: 1px solid transparent;
+}
+
+.sapUiMnu .sapUiMnuLst .sapUiMnuItm.sapUiMnuItmSubMnuOpen.sapUiMnuItmHov:active{
+	border-bottom: 1px solid transparent;
+	background-color: @sapUiListActiveBackground;
+}
+
+.sapUiMnuItm:focus {
+	outline: 0.125rem solid @sapUiContentFocusColor;
+	outline-offset: -0.1875rem;
+}
+
+html.sap-desktop,
+html.sap-tablet {
+	.sapUiMnuLst > .sapUiMnuItm > .sapUiMnuItmIco + .sapUiMnuItmTxt {
+		padding-inline-start: 0;
+	}
+}
+
+html.sap-desktop,
+html.sap-tablet {
+	.sapUiSizeCompact {
+		.sapUiMnuLst > .sapUiMnuItm > .sapUiMnuItmIco + .sapUiMnuItmTxt {
+			padding-inline-start: 0;
+		}
+	}
+	.sapUiMnuLst > .sapUiMnuItm > .sapUiMnuItmIco + .sapUiMnuItmTxt {
+		padding-inline-start: 0;
+	}
+}
+
+.sapUiMnuItm.sapUiMnuTfItm .sapUiMnuTfItemTf {
+	border-radius: 0.25rem;
+}
+
+.sapUiMnuItm.sapUiMnuTfItm .sapUiMnuTfItemTf:focus {
+	border-width: 0.125rem;
+}

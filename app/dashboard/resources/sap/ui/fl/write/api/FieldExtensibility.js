@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/write/_internal/fieldExtensibility/ABAPAccess","sap/ui/fl/write/_internal/fieldExtensibility/cap/CAPAccess","sap/ui/base/ManagedObject","sap/ui/fl/Utils"],function(e,n,t,i){"use strict";var r={};var a;function s(r){if(!a){if(!(r instanceof t)){return undefined}var s=i.getAppComponentForControl(r);var o=s&&s.getManifestEntry("/sap.ui5/config")||{};var u=new URLSearchParams(window.location.search);if(o.experimentalCAPScenario||u.get("sap-ui-fl-xx-capScenario")==="true"){a=n}else{a=e}}return a}function o(...e){var n=e.shift();var t=s(...e);if(!t){return Promise.reject("Could not determine field extensibility scenario")}return Promise.resolve(t[n].apply(null,e))}r.onControlSelected=function(e){return o("onControlSelected",e)};r.isExtensibilityEnabled=function(e){return o("isExtensibilityEnabled",e)};r.isServiceOutdated=function(e){return o("isServiceOutdated",e)};r.setServiceValid=function(e){return o("setServiceValid",e)};r.getTexts=function(){return o("getTexts")};r.getExtensionData=function(){return o("getExtensionData")};r.onTriggerCreateExtensionData=function(e,n,t){return o("onTriggerCreateExtensionData",e,n,t)};r._resetCurrentScenario=function(){a=null};return r});
+//# sourceMappingURL=FieldExtensibility.js.map

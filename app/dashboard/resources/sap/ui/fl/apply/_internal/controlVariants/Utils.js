@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/Element","sap/ui/core/StaticArea","sap/ui/fl/Utils"],function(e,t,r){"use strict";function n(e,t){if(!t){return undefined}if(e.indexOf(t.getId())>-1){return t.getId()}return n(e,t.getParent())}function a(e,n){var a=r.getAppComponentForControl(e);var o=a.getRootControl();var i=[];if(!n&&o.getDomRef()){i=Array.from(o.getDomRef().querySelectorAll(".sapUiFlVarMngmt"))}if(n||i.length===0){i=Array.from(t.getDomRef().querySelectorAll(".sapUiFlVarMngmt"))}return i.map(function(e){return e.id})}var o={DEFAULT_AUTHOR:"SAP",VARIANT_TECHNICAL_PARAMETER:"sap-ui-fl-control-variant-id",compareVariants(e,t){if(e.getName().toLowerCase()<t.getName().toLowerCase()){return-1}else if(e.getName().toLowerCase()>t.getName().toLowerCase()){return 1}return 0},getIndexToSortVariant(e,t){var r=e.length;e.some(function(e,n){if(o.compareVariants(t.instance,e.instance)<0){r=n;return true}});return r},getRelevantVariantManagementControlId(t,r,o){var i={};if(!r||!r.length){r=a(t,o)}var u=r.reduce(function(t,r){var n=e.getElementById(r);if(n){var a=n.getFor();a.forEach(function(e){i[e]=r});t=t.concat(a)}return t},[]);var g=n(u,t);return i[g]},belongsToVariantManagement(e){var t=a(e);return!!o.getRelevantVariantManagementControlId(e,t)},getAllVariantManagementControlIds(e){return a(e)}};return o});
+//# sourceMappingURL=Utils.js.map

@@ -108,7 +108,7 @@
 									"target": "singleMetric"
 								},
 								{
-									"pattern": "cache/{cache}/key-metric/{keyMetricId}",
+									"pattern": "cache/{cache}/key-metric/{keyMetricId}/{keyName}",
 									"name": "singleKeyMetric",
 									"target": "singleKeyMetric"
 								}

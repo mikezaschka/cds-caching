@@ -1,5 +1,4 @@
 using {Northwind} from './external/Northwind.csn';
-using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
 
 service AppService {
     entity Foo {

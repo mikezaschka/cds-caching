@@ -38,13 +38,16 @@
       },
       "caching": {
         "impl": "cds-caching",
-        "dashboard": true,
         "namespace": "my-cache",
         "store": "redis",
-        "statistics": {
+        "metrics": {
           "enabled": true,
           "persistenceInterval": 10000,
-          "maxLatencies": 1000
+          "maxLatencies": 1000,
+          "reuse": {
+            "api": true,
+            "dashboard": true
+          }
         },
         "credentials": {
           "socket": {

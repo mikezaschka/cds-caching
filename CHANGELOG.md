@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.0](https://github.com/mikezaschka/cds-caching/compare/1.3.2...2.0.0) (2026-07-05)
+
+### Features
+
+* add config normalizer for metrics v2 and legacy compatibility ([ec77573](https://github.com/mikezaschka/cds-caching/commit/ec7757317ab2551f3c9e9e4da8e684d939608df5))
+* add plugin roots resolver for metrics reuse activation ([593d517](https://github.com/mikezaschka/cds-caching/commit/593d517fd9dc5de3ec2613472bb9c26a0b5b9b8b))
+* **dashboard:** add key metric detail view and table filters ([020cbf0](https://github.com/mikezaschka/cds-caching/commit/020cbf04477b4f21904fa25c3805bae9d85d556b))
+* expand cds add caching-dashboard with --source scaffold ([52b96f0](https://github.com/mikezaschka/cds-caching/commit/52b96f0c6d7164272b92a832e8d251e7192a3fb3))
+* serve bundled dashboard when dashboard: true ([1ad7fae](https://github.com/mikezaschka/cds-caching/commit/1ad7fae9e814115c04ab05999c07f6388689a571))
+* update cds add scaffold for HTML5 repo zip deploy ([e62f773](https://github.com/mikezaschka/cds-caching/commit/e62f7739c2c0be04485f81e394532f59acf5c3a5))
+
+### Bug Fixes
+
+* hash CQN when URL has no query string ([54ecf48](https://github.com/mikezaschka/cds-caching/commit/54ecf4808ddb915a250080fe4ec3f291a4d62e06))
+* normalize dashboard i18n unicode escapes ([7253ae0](https://github.com/mikezaschka/cds-caching/commit/7253ae0b94aea3e080b0728c941c5fc6cd2b4f42))
+* serve dashboard static files with express.static ([6cf99ab](https://github.com/mikezaschka/cds-caching/commit/6cf99abae40b3d43b2f91464e91e4835ab35623c))
+* treat HCQL POST SELECT as cacheable read ([9ff1f90](https://github.com/mikezaschka/cds-caching/commit/9ff1f90617ee60c069200c54be165407cf3a6f65))
+
 ## [1.3.2](https://github.com/mikezaschka/cds-caching/compare/1.3.1...1.3.2) (2026-04-24)
 
 ### Features

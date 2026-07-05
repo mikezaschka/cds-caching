@@ -75,9 +75,15 @@ describe('cds add caching-dashboard', () => {
 		await runWithOptions()
 
 		const ui5 = readFileSync(join(tempRoot, 'app/caching-dashboard/ui5.yaml'), 'utf8')
+		const ui5Deploy = readFileSync(join(tempRoot, 'app/caching-dashboard/ui5-deploy.yaml'), 'utf8')
 		const pkg = JSON.parse(readFileSync(join(tempRoot, 'app/caching-dashboard/package.json'), 'utf8'))
 
 		expect(ui5).not.toContain('ui5-tooling-transpile-middleware')
+		expect(ui5Deploy).toContain('ui5-task-zipper')
+		expect(ui5Deploy).not.toContain('deploy-to-abap')
+		expect(pkg.scripts.start).toBe('ui5 serve -o index.html')
+		expect(pkg.scripts['build:cf']).toContain('ui5-deploy.yaml')
+		expect(pkg.devDependencies).toHaveProperty('ui5-task-zipper')
 		expect(pkg.devDependencies).not.toHaveProperty('typescript')
 		expect(existsSync(join(tempRoot, 'app/caching-dashboard/tsconfig.json'))).toBe(false)
 	})
@@ -122,5 +128,7 @@ describe('cds add caching-dashboard', () => {
 		expect(built['app/caching-dashboard/ui5.yaml']).not.toContain('ui5-tooling-transpile-task')
 		expect(source['app/caching-dashboard/ui5.yaml']).toContain('ui5-tooling-transpile-task')
 		expect(source['app/caching-dashboard/ui5.yaml']).toContain('moduleId: my-app')
+		expect(built['app/caching-dashboard/ui5-deploy.yaml']).toContain('extends:\n  path: ui5.yaml')
+		expect(built['app/caching-dashboard/package.json']).toContain('"start": "ui5 serve -o index.html"')
 	})
 })

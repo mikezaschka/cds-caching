@@ -1,0 +1,25 @@
+ARG CDS_MAJOR=10
+FROM node:22-bookworm
+
+# @cap-js/sqlite@2 (cds 9) may compile native addons.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ARG CDS_MAJOR=10
+ENV CDS_MAJOR=${CDS_MAJOR}
+
+COPY package.json package-lock.json ./
+COPY test/app/package.json test/app/
+COPY examples/app/package.json examples/app/
+COPY examples/dashboard/package.json examples/dashboard/
+COPY test/docker/install-cds.sh test/docker/
+
+RUN chmod +x test/docker/install-cds.sh \
+    && CDS_MAJOR=${CDS_MAJOR} test/docker/install-cds.sh
+
+COPY . .
+
+CMD ["npm", "test"]

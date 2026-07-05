@@ -86,9 +86,9 @@ Running `cds add caching-dashboard` adds the following to your project:
 |------|---------|
 | `app/caching-dashboard/webapp/` | UI5 dashboard application (pre-built by default, TypeScript source with `--source`) |
 | `app/caching-dashboard/ui5.yaml` | UI5 build configuration |
-| `app/caching-dashboard/ui5-deploy.yaml` | Deploy configuration (ABAP `deploy-to-abap` template — edit placeholders) |
+| `app/caching-dashboard/ui5-deploy.yaml` | BTP/HTML5 Application Repository build config (`ui5-task-zipper`) |
 | `app/caching-dashboard/xs-app.json` | Approuter routing for HTML5 App Repo deployments |
-| `app/caching-dashboard/package.json` | Build/deploy scripts for the UI app |
+| `app/caching-dashboard/package.json` | `start`, `build`, and `build:cf` scripts for the UI app |
 | `app/caching-dashboard/tsconfig.json` | TypeScript configuration (only with `--source`) |
 | `srv/caching-api.cds` | Exposes the `CachingApiService` OData API |
 
@@ -126,7 +126,16 @@ How you deploy the dashboard depends on your runtime topology:
 
 **1. CAP backend serves the UI (simplest).** If your CAP server serves static content itself (e.g. directly exposed, or an approuter route that forwards to the backend), the dashboard is served by CAP just like locally. In this case the [zero-config `dashboard: true`](#zero-config-alternative-reuse--compose) flag is enough — nothing extra to deploy.
 
-**2. SAP BTP with HTML5 App Repository + approuter (standard productive setup).** Here UIs are served from the HTML5 repo, not the backend, so the dashboard must be built and deployed as its own HTML5 app. `cds add caching-dashboard` lays down the required artifacts (`ui5.yaml`, `xs-app.json`, `package.json`). Then wire it into your deployment with the standard CAP facets:
+**2. SAP BTP with HTML5 App Repository + approuter (standard productive setup).** Here UIs are served from the HTML5 repo, not the backend, so the dashboard must be built and deployed as its own HTML5 app. `cds add caching-dashboard` lays down the required artifacts (`ui5.yaml`, `ui5-deploy.yaml`, `xs-app.json`, `package.json`). The generated `ui5-deploy.yaml` follows the CAP best-practice template for HTML5 repo deployment: it extends `ui5.yaml` and runs the `ui5-task-zipper` custom task to produce a deployable ZIP (including `xs-app.json`).
+
+Install dependencies and verify the UI5 build from the app folder:
+
+```bash
+cd app/caching-dashboard && npm install
+npm run build:cf
+```
+
+Then wire the app into your MTA deployment with the standard CAP facets:
 
 ```bash
 cds add html5-repo
@@ -135,7 +144,7 @@ cds add mta          # or: cds add approuter
 
 The generated `xs-app.json` forwards `/odata/v4/caching-api/*` to the CAP backend via the `srv-api` destination (created by `cds add mta`) and serves the UI from `html5-apps-repo-rt`. Adjust the destination name if yours differs, and secure the service (see [Securing the Dashboard](#securing-the-dashboard)).
 
-**3. ABAP front-end server.** Use the generated `ui5-deploy.yaml` (a `deploy-to-abap` template) — replace the `MY_ABAP_DESTINATION`, `MY_PACKAGE`, and `MY_TRANSPORT` placeholders, then run `npm run deploy` from `app/caching-dashboard/`.
+**3. ABAP front-end server.** Generate an ABAP deploy configuration with `npx -p @sap/ux-ui5-tooling fiori add deploy-config abap` from `app/caching-dashboard/` (this creates a separate ABAP-specific deploy config alongside the HTML5 repo template).
 
 > The shipped dashboard is a **self-contained UI5 build** (the SAPUI5 runtime is bundled), so it does not depend on the public SAPUI5 CDN at runtime.
 
@@ -145,7 +154,7 @@ The dashboard files copied into `app/caching-dashboard/webapp/` are fully owned 
 
 **Default (pre-built):** Works immediately with `cds watch`, but controllers are transpiled/minified JavaScript bundled with the SAPUI5 runtime — fine for deployment, awkward for deep UI changes.
 
-**Source mode (`--source`):** Copies the original TypeScript sources, `tsconfig.json`, and a `ui5.yaml` with transpile middleware. Run `npm install` in `app/caching-dashboard/` before `cds watch`. Local development uses the SAPUI5 CDN; run `npm run build` from that folder before deploying to HTML5 App Repo or ABAP.
+**Source mode (`--source`):** Copies the original TypeScript sources, `tsconfig.json`, and a `ui5.yaml` with transpile middleware. Run `npm install` in `app/caching-dashboard/` before `cds watch` or `npm start`. Local development uses the SAPUI5 CDN; run `npm run build:cf` from that folder before deploying to the HTML5 Application Repository.
 
 Re-running `cds add caching-dashboard` (with or without `--source`) refreshes `webapp/` from the installed plugin version. Back up local changes before updating, and use the same flag you chose initially if you want to keep the same variant.
 

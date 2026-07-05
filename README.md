@@ -399,6 +399,8 @@ See the [Dashboard Guide](docs/dashboard.md) for details on features, security, 
 
 Contributions are welcome! Please submit pull requests to the [repository](https://github.com/mikezaschka/cds-caching).
 
+Dashboard UI sources live in [`app/dashboard-src/`](app/dashboard-src/). From the repo root, use `npm run start:dashboard` (with `cds watch` in `examples/app`) for TypeScript development, and `npm run build:dashboard` to regenerate the pre-built bundle in `app/dashboard/`.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

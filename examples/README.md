@@ -1,5 +1,4 @@
 
-
 ## Install
 
 
@@ -7,20 +6,20 @@
 
 ## Deploy
 ```
-cd app
+cd examples/app
 cds deploy
 ```
 
-## Run Dashboard (including backend)
+## Run the example (backend + dashboard)
 
 ```
-cd dashboard
-DEBUG=cds-caching npm start
+cd examples/app
+DEBUG=cds-caching cds watch
 ```
 
 ## Open the dashboard
 
-http://localhost:8080/index.html
+http://localhost:4004/caching-dashboard/index.html
 
 ## Activate key tracking 
 
@@ -29,7 +28,7 @@ http://localhost:8080/index.html
 ## Start caching
 
 * Use requests.http file to create requests that trigger the cache
-* Inside of the `app` folder use `cds repl --run cds-caching-example-app` to start a terminal and interact with the caching services
+* Inside of the `examples/app` folder use `cds repl --run cds-caching-example-app` to start a terminal and interact with the caching services
 
 
 
@@ -92,3 +91,13 @@ await caching.rt.run(SELECT("Products").limit(2), Northwind);
 await caching.rt.send({ method: 'GET', path: '/Products' }, Northwind);
 ```
 
+## Dashboard UI development
+
+To work on the TypeScript dashboard sources in `app/dashboard-src/`, run the example backend and the UI5 dev server in separate terminals:
+
+```
+cd examples/app && cds watch
+npm run start:dashboard
+```
+
+Open http://localhost:8080/index.html for live TypeScript development (CAP API proxied from port 4004).

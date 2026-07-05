@@ -1,6 +1,6 @@
 const cds = require('@sap/cds')
 const { test, GET, expect } = cds.test().in(__dirname + '/app')
-beforeEach (test.data.reset)
+beforeEach (() => test.data.reset())
 
 describe('Read-Through Operations', () => {
 

@@ -26,8 +26,18 @@ cds.on('served', scanCachingAnnotations)
 const LOG = cds.log("cds-caching");
 
 if (dashboardEnabled) {
+    const dashboardPath = path.join(__dirname, 'app', 'dashboard');
+    const dashboardProbe = path.join(dashboardPath, 'resources', 'sap', 'ui', 'core', 'cldr', 'en.json');
+    if (!fs.existsSync(dashboardProbe)) {
+        LOG.warn(
+            'cds-caching dashboard static resources are incomplete (missing UI5 runtime files). ' +
+            'Upgrade cds-caching to a release that includes the full pre-built dashboard, ' +
+            'or run "npm run build:dashboard" in the cds-caching package before using dashboard: true.'
+        );
+    }
     cds.once('bootstrap', (app) => {
-        app.serve('/caching-dashboard').from('cds-caching', 'app/dashboard');
+        app.use('/caching-dashboard', require('express').static(dashboardPath));
+        (app._app_links ??= []).push('/caching-dashboard');
         LOG.info("Serving cds-caching dashboard at /caching-dashboard");
     });
 }

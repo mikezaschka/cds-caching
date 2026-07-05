@@ -47,12 +47,14 @@ If you don't want any files copied into your project, you can have the plugin se
 
 With this flag the plugin automatically:
 
-- serves the pre-built UI at `/caching-dashboard` (via `app.serve('/caching-dashboard').from('cds-caching', 'app/dashboard')` at bootstrap), and
+- serves the pre-built UI at `/caching-dashboard` from the installed package's `app/dashboard/` folder, and
 - exposes the `CachingApiService` OData API — so you don't need `srv/caching-api.cds` either.
 
 No files are copied, and the dashboard always tracks the installed plugin version. Use **either** this flag **or** `cds add caching-dashboard`, not both (they both serve `/caching-dashboard`).
 
-> **Production note:** `app.serve().from()` serves the UI from the CAP Node.js server. This works out of the box locally and in deployments where the CAP backend serves the UI. In the standard SAP BTP setup (managed/standalone approuter + HTML5 Application Repository), UIs are served from the HTML5 repo — not the backend — so the `dashboard: true` route is not reachable through the approuter unless you add an explicit route to the backend. For those deployments, use `cds add caching-dashboard` and the [deployment](#deploying-the-dashboard) flow below. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
+> **Version note:** `dashboard: true` requires a **complete** self-contained UI5 build under `app/dashboard/` (including `resources/sap/ui/core/...`). npm releases before **1.3.3** shipped an incomplete bundle, which shows up as 404s for theme CSS, CLDR JSON, and message bundles while `sap-ui-custom.js` still loads. Upgrade `cds-caching`, or install from a current git checkout after running `npm run build:dashboard` in that repo.
+
+> **Production note:** The dashboard is served as static files from the CAP Node.js server. This works out of the box locally and in deployments where the CAP backend serves the UI. In the standard SAP BTP setup (managed/standalone approuter + HTML5 Application Repository), UIs are served from the HTML5 repo — not the backend — so the `dashboard: true` route is not reachable through the approuter unless you add an explicit route to the backend. For those deployments, use `cds add caching-dashboard` and the [deployment](#deploying-the-dashboard) flow below. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
 
 ## Prerequisites
 

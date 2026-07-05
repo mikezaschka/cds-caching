@@ -1,7 +1,7 @@
 ARG CDS_MAJOR=10
 FROM node:22-bookworm
 
-# @cap-js/sqlite@2 (cds 9) may compile native addons.
+# @cap-js/sqlite@1 (cds 8) and @2 (cds 9) may compile native addons.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ \
     && rm -rf /var/lib/apt/lists/*

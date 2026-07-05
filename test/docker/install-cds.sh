@@ -2,7 +2,15 @@
 set -eu
 
 major="${CDS_MAJOR:?CDS_MAJOR is required}"
-sqlite_major=$([ "$major" = "9" ] && echo 2 || echo 3)
+case "$major" in
+    8) sqlite_major=1 ;;
+    9) sqlite_major=2 ;;
+    10) sqlite_major=3 ;;
+    *)
+        echo "Unsupported CDS_MAJOR=$major (expected 8, 9, or 10)" >&2
+        exit 1
+        ;;
+esac
 
 echo "Installing dependencies for @sap/cds ^${major} (@cap-js/sqlite ^${sqlite_major})..."
 

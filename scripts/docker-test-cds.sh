@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cds="${1:?Usage: $0 <9|10>}"
+cds="${1:?Usage: $0 <8|9|10>}"
 start_services="${START_SERVICES:-1}"
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

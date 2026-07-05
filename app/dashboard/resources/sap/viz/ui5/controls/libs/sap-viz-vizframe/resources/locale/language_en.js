@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'en',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Failed to load the control object {0}.",VIZ_FRAME_INVALID:"Invalid VizFrame instance.",VIZ_FRAME_DESTORYED:"VizFrame instance was destroyed.",}});

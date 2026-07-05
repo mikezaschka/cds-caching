@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/LayerUtils","sap/ui/fl/changeHandler/condenser/Classification","sap/ui/core/util/reflection/JsControlTreeModifier"],function(e,t,n){"use strict";const a={};a.applyChange=async function(t,n,a){const i=a.modifier;const o=await i.getStashed(n);const r=await i.findIndexInParentAggregation(n);this.setChangeRevertData(t,o,r);if(e.isDeveloperLayer(t.getLayer())){return i.setStashed(n,true)}return i.setVisible(n,false)};a.revertChange=async function(t,n,a){const i=t.getRevertData();const o=a.modifier;if(e.isDeveloperLayer(t.getLayer())){const e=await o.setStashed(n,i.originalValue,a.appComponent);if(e){const t=await o.findIndexInParentAggregation(e);if(t!==i.originalIndex){const t=o.getParent(e);const n=await o.getParentAggregationName(e);await o.moveAggregation(t,n,t,n,e,i.originalIndex)}}}o.setVisible(n,!i.originalValue);t.resetRevertData()};a.completeChangeContent=function(){};a.setChangeRevertData=function(e,t,n){e.setRevertData({originalValue:t,originalIndex:n})};a.getCondenserInfo=function(e){return{affectedControl:e.getSelector(),classification:t.Reverse,uniqueKey:"stashed"}};a.getChangeVisualizationInfo=function(e,t){const a=e.getSelector();const i=n.bySelector(a,t);return{affectedControls:[a],displayControls:[i.getParent().getId()]}};return a});
+//# sourceMappingURL=StashControl.js.map

@@ -1,0 +1,68 @@
+/* =========================================== */
+/* CSS for control sap.f/FlexibleColumnLayout  */
+/* Horizon High Contrast White theme           */
+/* =========================================== */
+
+/* Cozy mode */
+.sapFFCL > {
+
+	&.sapFFCLBackgroundDesignSolid {
+		background: var(--sapContent_ForegroundColor);
+	}
+
+	&.sapFFCLBackgroundDesignTranslucent {
+		background: var(--sapBackgroundColor);
+	}
+
+	&.sapFFCLBackgroundDesignTransparent {
+		background: var(--sapBackgroundColor);
+	}
+
+	& > .sapFFCLColumnMid.sapFFCLColumnActive {
+		border-left: 0.0625rem solid var(--sapGroup_ContentBorderColor);
+		border-right: 0.0625rem solid var(--sapGroup_ContentBorderColor);
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnLastActive {
+		border-right: none;
+		border-left: 0.0625rem solid var(--sapGroup_ContentBorderColor);
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnFirstActive {
+		border-right: 0.0625rem solid var(--sapGroup_ContentBorderColor);
+		border-left: none;
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnOnlyActive {
+		border-right: none;
+		border-left: none;
+	}
+}
+
+.sapFFCL {
+
+	.sapFFCLNavigationButton {
+
+		.sapMBtnInner {
+			border: 0.0625rem solid var(--sapButton_BorderColor);
+
+			.sapMBtnIcon {
+				width: auto;
+			}
+		}
+
+		&::before,
+		&::after {
+			background-size: 0.125rem 100%;
+			background-position-x: calc(50% - 0.0625rem);
+		}
+
+		&::before {
+			background-image: linear-gradient(to top, var(--sapObjectHeader_BorderColor), fade(@sapUiObjectHeaderBorderColor, 0));
+		}
+
+		&::after {
+			background-image: linear-gradient(to bottom, var(--sapObjectHeader_BorderColor), fade(@sapUiObjectHeaderBorderColor, 0));
+		}
+	}
+}

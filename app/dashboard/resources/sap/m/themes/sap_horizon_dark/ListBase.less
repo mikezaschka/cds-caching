@@ -1,0 +1,54 @@
+/* =============================== */
+/* CSS for control sap.m/ListBase  */
+/* Evening Horizon theme           */
+/* =============================== */
+
+.sapMGrowingListDescription,
+.sapMGrowingListTriggerText > .sapMSLITitle {
+	text-shadow: @sapUiShadowText;
+}
+
+.sapMSticky > .sapMListHdrText,
+.sapMSticky > .sapMListHdrTBar.sapMTB-Transparent-CTX {
+	background: lighten(@sapUiListHeaderBackground, 2);
+}
+
+.sapUiTableOnObjectPageAdjustmentsForSection .sapMListHdrText,
+.sapUiTableOnObjectPageAdjustmentsForSection .sapMSticky > .sapMListHdrTBar.sapMTB-Transparent-CTX {
+	background: var(--sapBackgroundColor);
+	border-top-right-radius: 0;
+	border-top-left-radius: 0;
+}
+
+.sapMListHdr {
+	border-top-right-radius: var(--sapElement_BorderCornerRadius);
+	border-top-left-radius: var(--sapElement_BorderCornerRadius);
+}
+
+.sapMListHdrText {
+	font-size: var(--sapGroup_Title_FontSize);
+}
+
+.sapUiTableOnObjectPageAdjustmentsForSection .sapMListHdr {
+	border-top-right-radius: 0;
+	border-top-left-radius: 0;
+}
+
+.sapMListNoData,
+.sapMGrowingList {
+	border-bottom: none;
+}
+
+.sapMGrowingList {
+	background-color: var(--sapList_Background);
+}
+
+.sapMGrowingListDummyColumn {
+	border-right: 1px solid var(--sapList_TableFixedBorderColor);
+}
+
+.sapMGrowingListTrigger {
+	border-top: var(--sapList_BorderWidth) solid var(--sapList_HeaderBorderColor);
+}
+
+._sap_m_ListBase_Rounded_HeaderToolbarMixin();

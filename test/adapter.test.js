@@ -1,5 +1,5 @@
 const cds = require('@sap/cds')
-const { expect } = cds.test.in(__dirname + '/app')
+const { expect } = cds.test().in(__dirname + '/app')
 
 describe('Adapter Tests', () => {
 

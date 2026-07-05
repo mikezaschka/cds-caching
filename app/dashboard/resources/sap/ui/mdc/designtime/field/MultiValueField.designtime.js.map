@@ -1,0 +1,1 @@
+{"version":3,"file":"MultiValueField.designtime.js","names":["sap","ui","define","properties","delegate","ignore","aggregations","items"],"sources":["MultiValueField-dbg.designtime.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,GAAI,KACjB,aAEA,MAAO,CACNC,WAAY,CACXC,SAAU,CACTC,OAAQ,OAGVC,aAAc,CACbC,MAAO,CACNF,OAAQ","ignoreList":[]}

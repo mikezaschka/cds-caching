@@ -1,0 +1,1 @@
+{"version":3,"file":"MeasureSemantics.js","names":["sap","ui","define","DataType","MeasureSemantics","Actual","Reference","Projected","registerEnum"],"sources":["MeasureSemantics-dbg.js"],"mappings":";;;;AAKAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAC7C,aASA,IAAIC,EAAmB,CAKnBC,OAAQ,SAKRC,UAAW,YAKXC,UAAW,aAGfJ,EAASK,aAAa,kCAAmCJ,GAEzD,OAAOA,CAEX,EAAkB","ignoreList":[]}

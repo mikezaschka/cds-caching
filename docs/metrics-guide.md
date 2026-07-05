@@ -28,7 +28,18 @@ cds-caching provides comprehensive metrics collection to help you monitor and op
 
 ### Basic Configuration
 
-Metrics are disabled by default to minimize performance impact. They can only be enabled/disabled via the programmatic API or OData API at runtime, not through package.json configuration.
+Enable metrics in `package.json`:
+
+```json
+"metrics": {
+  "enabled": true,
+  "persistenceInterval": 60000
+}
+```
+
+Run `cds deploy` after adding the metrics block so persistence tables exist. See the [Feature Activation Guide](feature-activation.md) for reuse vs manual API activation.
+
+Metrics can also be enabled at runtime via the programmatic API or OData API (see below).
 
 ### Enabling Metrics Programmatically
 

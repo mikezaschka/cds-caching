@@ -1,0 +1,121 @@
+/* ================================== */
+/* CSS for control sap.m/FeedContent  */
+/* Base theme                         */
+/* ================================== */
+
+.sapMFC {
+	outline: none;
+	position: relative;
+	width: 100%;
+	height: 3.875rem;
+	display: inline-block;
+}
+
+.sapMFCCTxt {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	height: 2.126rem;
+	max-width: 20.5rem;
+	margin-top: 0.3rem;
+
+	.sapMText {
+		display: inline;
+		line-height: 1.063rem;
+	}
+}
+
+.sapMFCSbh {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 20.5rem;
+	line-height: 1.063rem;
+	font-size: var(--sapFontSmallSize);
+	color: var(--sapTile_TextColor);
+}
+
+.sapMFCValue {
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-left: 1rem;
+	padding-top: 0.875rem;
+	font-size: 2.25rem;
+	line-height: 3rem;
+	max-width: 10.25rem;
+	min-width: 3rem;
+	float: right;
+	font-family: var(--sapFontHeaderFamily);
+	font-weight: @sapUiFontHeaderWeight;
+}
+
+.sapMFCCTxt > .sapMText {
+	cursor: inherit;
+}
+
+.sapMFC:focus:not([tabindex]) {
+	outline: none;
+}
+
+.sapMFCCTxt .sapMText {
+	font-size: @sapFontSize;
+	color: var(--sapTile_TitleTextColor);
+}
+
+.sapMGT.TwoByOne.sapMTileSmallPhone {
+
+	.sapMFCCTxt .sapMText {
+		font-size: var(--sapFontSmallSize);
+	}
+}
+
+.sapMFCValue.Neutral {
+	color: var(--sapNeutralTextColor);
+}
+
+.sapMFCValue.Good {
+	color: var(--sapPositiveTextColor);
+}
+
+.sapMFCValue.Critical {
+	color: var(--sapCriticalTextColor);
+}
+
+.sapMFCValue.Error {
+	color: var(--sapNegativeTextColor);
+}
+
+html.sap-desktop .sapMFC:focus {
+	outline: var(--sapContent_FocusColor) var(--sapContent_FocusStyle) var(--sapContent_FocusWidth);
+}
+
+html.sap-desktop .sapMFC:focus:not([tabindex]) {
+	outline: none;
+}
+
+.sapMTileSmallPhone {
+
+	.sapMFC {
+		width: 17.75rem;
+		height: 3.438rem;
+	}
+
+	.sapMFCCTxt {
+		max-width: 17.75rem;
+		margin-top: 0.1rem;
+	}
+
+	.sapMFCSbh {
+		max-width: 17.75rem;
+	}
+
+	.sapMFCValue {
+		padding-top: 1.188rem;
+		padding-left: 0.4rem;
+		font-size: 2rem;
+		line-height: 2.25rem;
+		max-width: 8.25rem;
+		min-width: 2.5rem
+	}
+}

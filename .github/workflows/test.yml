@@ -1,0 +1,19 @@
+name: Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cds: [8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests (CDS ${{ matrix.cds }})
+        run: bash scripts/docker-test-cds.sh ${{ matrix.cds }}

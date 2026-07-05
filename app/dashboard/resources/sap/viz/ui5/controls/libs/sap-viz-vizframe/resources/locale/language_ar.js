@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'ar',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"فشل تحميل كائن التحكم {0}.",VIZ_FRAME_INVALID:"نسخة VizFrame غير صالحة.",VIZ_FRAME_DESTORYED:"تم إتلاف نسخة VizFrame.",}});

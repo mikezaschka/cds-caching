@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'fi',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Ohjausobjektin {0} lataus epäonnistui.",VIZ_FRAME_INVALID:"Virheellinen VizFrame-instanssi",VIZ_FRAME_DESTORYED:"VizFrame-instanssi tuhottiin",}});

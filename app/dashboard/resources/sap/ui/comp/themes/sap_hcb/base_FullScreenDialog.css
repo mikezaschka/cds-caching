@@ -1,0 +1,8 @@
+/* ============================================= */
+/* CSS for control sap.ui.comp/FullScreenDialog  */
+/* Base theme                                    */
+/* ============================================= */
+
+.sapUiCompSmartFullScreenDialog .sapMDialogScroll {
+	height: 100%;
+}

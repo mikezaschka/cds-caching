@@ -1,0 +1,116 @@
+/* ============================================== */
+/* CSS for control sap.ui.comp/VariantManagement  */
+/* Base theme                                     */
+/* ============================================== */
+
+.sapUiCompVarMngmt {
+	display: inline-block;
+	text-align: center;
+}
+
+.sapUiCompVarMngmt .sapMTitle.sapUICompVarMngmtTitle  {
+    color: @sapUiLink;	
+}
+
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:first-child {
+   vertical-align: middle;
+}
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:first-child>div {
+   vertical-align: middle;
+}
+
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:nth-child(2) {
+   vertical-align: top;   
+}
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:nth-child(2)>span {
+   vertical-align: top;   
+}
+
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:last-child {
+   vertical-align: middle;
+}
+.sapUiCompVarMngmt .sapUiHLayout.sapUICompVarMngmtLayout .sapUiHLayoutChildWrapper:last-child>button {
+   vertical-align: middle;
+}
+
+.sapMFlexBox .sapMIBar .sapUiCompVarMngmt.sapMBarChild {
+    margin-left: 0.25rem;
+}
+
+.sapUiCompVarMngmtSaveDialog  .sapUiRespGrid.sapUiRespGridVSpace1 > div {
+   margin-bottom: 0rem;
+   margin: 0rem;
+}
+
+.sapUiCompVarMngmtSaveDialog .sapUiCompVarMngmtSaveDialogLabel.sapMLabel::after {
+	content: ":";
+}
+
+.sapUICompVarMngmtModified {
+	color: @sapUiLink;
+	font-weight: bold;
+	padding-left: 0.125rem;
+	padding-right: 0.125rem;	
+}
+
+
+.sapUICompVarMngmtTriggerBtnHover>span {
+	background-image: none;
+	border-color: @sapUiButtonTrackSelectedBorderColor;
+	background-color: @sapUiButtonTrackHoverBackground;
+	color: @sapUiLinkHoverColor
+}
+
+.sapUICompVarMngmtErrorPopover>div {
+	padding-top: 1rem;
+}
+
+.sapUICompVarMngmtErrorPopover>div:last-child {
+	padding-left: 4rem;
+	padding-right: 4rem;
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtTextPhoneMaxWidth {
+	max-width: 5em;
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtTextMaxWidth {
+	max-width: 25rem;
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtClickable:hover {
+	color: @sapUiLinkHoverColor;
+	cursor: default;	
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtClickable:active {
+	color: @sapUiLinkActiveColor;
+	cursor: pointer;	
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtTriggerBtn {
+	padding-left: 0.125rem;
+}
+
+.sapUiCompVarMngmt .sapUICompVarMngmtDisabled {
+	opacity: 0.5;
+}
+
+.sapUICompVarMngmtPopover .sapMSelectList {
+	border: 0rem solid;
+}
+
+.sapUICompVarMngmtFavColor {
+	color: @sapUiContentMarkerIconColor;
+}
+.sapUICompVarMngmtFavNonInteractiveColor {
+	color: @sapUiContentNonInteractiveIconColor;
+}
+
+.sapUICompVarMngmtFavNonInteractiveColor:hover {
+	cursor: default;
+}
+
+.sapUiCompVarMngmtRolesEdit {
+	padding-left: 0.5rem;
+}

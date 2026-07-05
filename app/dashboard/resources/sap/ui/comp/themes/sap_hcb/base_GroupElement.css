@@ -1,0 +1,16 @@
+/* ========================================= */
+/* CSS for control sap.ui.comp/GroupElement  */
+/* Base theme                                */
+/* ========================================= */
+
+.sapUiCompGroupElementVBox{
+	margin-bottom: 1rem;
+}
+
+.sapUiForm .sapUiCompGroupElementVBox .sapMLabel:after {
+    content: ":";
+}
+
+.sapUiForm .sapUiCompGroupElementHBoxPadding {
+	padding-left: 0.5rem
+}

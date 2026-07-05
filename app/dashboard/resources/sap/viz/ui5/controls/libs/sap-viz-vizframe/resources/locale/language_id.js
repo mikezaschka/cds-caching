@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'id',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Gagal memuat objek kontrol {0}.",VIZ_FRAME_INVALID:"Instance VizFrame tidak valid.",VIZ_FRAME_DESTORYED:"Instance VizFrame dimusnahkan.",}});

@@ -23,13 +23,15 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | Guide | Description |
 |-------|-------------|
 | [Programmatic API](docs/programmatic-api.md) | Full API reference for cache operations |
+| [Protocol Support](docs/protocols.md) | Caching across OData, REST, GraphQL, HCQL, and MCP |
 | [Key Management](docs/key-management.md) | Key templates, context awareness, custom keys |
 | [Metrics Guide](docs/metrics-guide.md) | Statistics, monitoring, and performance tracking |
 | [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
 | [OData API](docs/odata-api.md) | REST endpoints for management and monitoring |
 | [Dashboard](docs/dashboard.md) | Setup and usage of the monitoring dashboard |
+| [Feature Activation](docs/feature-activation.md) | Reuse vs own: metrics, API, and dashboard activation |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
-| [Migration Guide](docs/migration-guide.md) | Upgrading from 0.x to 1.x, 1.1 to 1.2, and 1.2.x to 1.3.0 |
+| [Migration Guide](docs/migration-guide.md) | **Upgrading to 2.0** and earlier releases |
 | [Example Application](docs/example-app.md) | Sample app with caching patterns |
 
 ## Getting Started
@@ -39,6 +41,16 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 ```bash
 npm install cds-caching
 ```
+
+### Requirements
+
+| Dependency | Supported versions |
+|------------|--------------------|
+| SAP CAP (`@sap/cds`) | `>= 8` (including **cds 9** and **cds 10**) |
+| Node.js | `>= 22` (cds 10 requires Node 22+, v24 recommended) |
+| `@cap-js/sqlite` (SQLite store) | `^1` on cds 8, `^2` on cds 9, `^3` on cds 10 |
+
+> The plugin runtime supports cds 8, cds 9, and cds 10. When running on cds 10, use Node.js 22 or higher and `@cap-js/sqlite ^3`.
 
 ### Minimal Configuration
 
@@ -56,18 +68,25 @@ npm install cds-caching
 
 This uses the in-memory store — no additional setup needed for development.
 
+> **Upgrading from 1.x?** See [Upgrading to 2.0](docs/migration-guide.md#upgrading-to-20) — monitoring config now uses `metrics` with optional `metrics.reuse` instead of `statistics` / `dashboard: true`.
+
 ### Data Model
 
-The plugin ships CDS entity definitions for database-backed features. These are **auto-loaded conditionally** based on your configuration — no manual `model` property or `using from` needed:
+The plugin ships CDS entity definitions for database-backed features. These load **conditionally** based on your configuration — no manual `model` property needed.
 
-| Condition | Entities loaded | Purpose |
-|-----------|----------------|---------|
-| `statistics` block present | `Caches`, `Metrics`, `KeyMetrics` | Persist metrics and runtime config to the database |
-| `store: 'cds'` | `CacheStore` | Key-value table used by the CDS store adapter |
-| `using from 'cds-caching/index.cds'` | `CachingApiService` + statistics entities | OData API for the [dashboard](docs/dashboard.md) |
-| None of the above | Nothing | Plugin works with external stores only |
+> **Full guide:** [Feature Activation](docs/feature-activation.md) — decision tree, BTP/MTX best practices, and rules for avoiding duplicate model loading.
 
-The auto-loading works by injecting the relevant CDS files into `cds.env.roots` at plugin load time, before CAP compiles the model. This means `cds deploy` and `cds build` automatically pick up the required tables.
+| Option | Entities loaded | Purpose |
+|--------|-----------------|---------|
+| `"metrics": { "enabled": true, … }` | `Caches`, `Metrics`, `KeyMetrics` | Metrics persistence (skipped if API loaded via reuse or `using`) |
+| `"store": "cds"` | `CacheStore` | CDS-backed cache storage |
+| `metrics.reuse.api` or `using … index.cds` | `CachingApiService` + metrics entities | OData API (`/odata/v4/caching-api/`) |
+| `metrics.reuse.dashboard` | Same as reuse API + UI at `/caching-dashboard` | Package reuse (see [reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis)) |
+| None of the above | Nothing | External stores only; basic caching still works |
+
+Do **not** combine `metrics.reuse.*` with manual `using … index.cds` or `cds add caching-metrics` for the same concern — see the [Feature Activation guide](docs/feature-activation.md).
+
+The auto-loading injects CDS files into `cds.env.roots` at plugin load time, before CAP compiles the model. Run `cds deploy` after enabling database features.
 
 ### Basic Usage
 
@@ -106,6 +125,8 @@ service MyService {
 
 When `invalidateOnWrite` is set, the cache for that entity is automatically cleared after any CREATE, UPDATE, or DELETE operation, so subsequent reads always return fresh data.
 
+Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-handler level, so a single `@cache` annotation applies whether the request arrives via OData, REST, GraphQL, HCQL, or the new [MCP protocol adapter](https://cap.cloud.sap/docs/guides/protocols/mcp) — no protocol-specific configuration required. MCP is read-only, so its reads are cached while writes over other protocols still invalidate the shared entries. See the [Protocol Support guide](docs/protocols.md) for details.
+
 ## Configuration
 
 ### Store Types
@@ -135,9 +156,13 @@ When `invalidateOnWrite` is set, the cache for that entity is automatically clea
         "throwOnErrors": false,
         "transactionalOperations": false,
         "credentials": { },
-        "statistics": {
+        "metrics": {
           "enabled": true,
-          "persistenceInterval": 60000
+          "persistenceInterval": 60000,
+          "reuse": {
+            "api": false,
+            "dashboard": false
+          }
         },
         "keyManagement": {
           "isUserAware": false,
@@ -157,9 +182,13 @@ When `invalidateOnWrite` is set, the cache for that entity is automatically clea
 | `compression` | none | `"lz4"` or `"gzip"` |
 | `throwOnErrors` | `false` | Whether basic operations throw on cache errors |
 | `transactionalOperations` | `false` | Isolate basic ops in dedicated cache transactions |
-| `statistics` | none | When present, auto-loads the statistics data model and enables persistence (see [Statistics & Monitoring](#statistics--monitoring)) |
-| `statistics.enabled` | `false` | Enable metrics collection |
-| `statistics.persistenceInterval` | `60000` | Interval (ms) for persisting hourly stats to the database |
+| `metrics` | none | Metrics collection and persistence (see [Feature Activation](docs/feature-activation.md)) |
+| `metrics.enabled` | `false` | Enable metrics collection |
+| `metrics.persistenceInterval` | `60000` | Interval (ms) for persisting hourly stats to the database |
+| `metrics.reuse.api` | `false` | Register `CachingApiService` from the plugin package (alternative: `using … index.cds`) |
+| `metrics.reuse.dashboard` | `false` | Serve bundled UI from the plugin (alternative: `cds add caching-metrics`) |
+| `statistics` | — | **Deprecated** — use `metrics` (removed in v3.0) |
+| `dashboard` | — | **Deprecated** — use `metrics.reuse.dashboard` (removed in v3.0) |
 | `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |
 | `keyManagement.isUserAware` | `false` | Include user in cache keys |
 | `keyManagement.isLocaleAware` | `false` | Include locale in cache keys |
@@ -185,21 +214,56 @@ When `invalidateOnWrite` is set, the cache for that entity is automatically clea
 }
 ```
 
+### Redis Connection Tuning
+
+For `store: "redis"`, the `credentials` object is passed through to [`@keyv/redis`](https://keyv.org/docs/storage-adapters/redis/) / [`@redis/client`](https://github.com/redis/node-redis). You can use either a connection URL or explicit `socket` options:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "redis",
+        "throwOnErrors": false,
+        "credentials": {
+          "url": "rediss://your-redis:6380",
+          "pingInterval": 30000,
+          "socket": { "keepAlive": true }
+        }
+      }
+    }
+  }
+}
+```
+
+Use a `redis://` or `rediss://` URL, or connect via `socket.host` / `socket.port` instead of `url`.
+
+If you see `SocketClosedUnexpectedlyError` in the logs every few minutes — common with TLS Redis, load balancers, or firewalls that drop idle connections — add **`pingInterval`** (milliseconds). The client sends periodic `PING` commands to keep the connection alive. Place it at the **top level** of `credentials`, not inside `socket`. TCP `keepAlive` under `socket` is enabled by default in `@redis/client`; `pingInterval` helps when the network path does not honor it.
+
+With the default **`throwOnErrors: false`**, disconnects are logged but the application continues: cache operations fall back to misses and `@keyv/redis` reconnects automatically. If you set **`throwOnErrors: true`**, reconnection is disabled intentionally — connection errors surface as thrown errors instead.
+
 For detailed key configuration and deployment instructions, see [Key Management](docs/key-management.md) and [Deployment Guide](docs/deployment-guide.md).
 
 ### Service Integration
 
 The plugin includes `CachingApiService`, an OData service for managing caches, browsing entries, and viewing metrics. It powers the [dashboard](docs/dashboard.md) and can be consumed by any OData client.
 
-The easiest way to set this up is `cds add caching-dashboard`, which creates both the service exposure and the dashboard UI. To expose only the service without the dashboard, reference it in one of your `.cds` files:
+See **[Feature Activation](docs/feature-activation.md)** for reuse vs own activation, BTP/MTX best practices, and API authorization.
+
+**Quick reference:**
+
+| Goal | Approach |
+|------|----------|
+| Local dev with dashboard | `metrics.reuse.api` + `metrics.reuse.dashboard` + `metrics.enabled` |
+| BTP with HTML5 repo | `cds add caching-metrics` + `metrics.enabled` — no `metrics.reuse.dashboard` |
+| API only, no UI | `metrics.reuse.api` or `using … index.cds` + `metrics.enabled` |
+
+Restrict access with a fully-qualified annotate — do **not** repeat the `using` import:
 
 ```cds
-using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
-
-annotate CachingApiService with @requires: 'authenticated-user';
+annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
 ```
-
-This automatically loads the required database entities (`Caches`, `Metrics`, `KeyMetrics`) via a transitive `using from` dependency — no additional configuration needed. Without this step, the service won't be served by CAP and the dashboard won't work.
 
 ## Multi-Tenancy (MTX)
 
@@ -245,6 +309,8 @@ Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefi
 ```
 
 > `isTenantAware` is automatically set to `true` in MTX mode. Set `"isTenantAware": false` in `keyManagement` to explicitly opt out.
+
+For MTX production setup (dashboard, API authorization, `store: 'cds'`), see the [Feature Activation Guide — Multi-tenancy (MTX)](docs/feature-activation.md#multi-tenancy-mtx).
 
 ## Usage Patterns
 
@@ -328,7 +394,7 @@ For more usage patterns, error handling details, and TypeScript support, see [Pr
 
 ## Statistics & Monitoring
 
-To persist metrics to the database, add a `statistics` block to your configuration. This automatically loads the required data model (`Caches`, `Metrics`, `KeyMetrics` tables):
+To persist metrics to the database, add a `metrics` block. See the [Feature Activation Guide](docs/feature-activation.md).
 
 ```json
 {
@@ -337,7 +403,7 @@ To persist metrics to the database, add a `statistics` block to your configurati
       "caching": {
         "impl": "cds-caching",
         "store": "redis",
-        "statistics": {
+        "metrics": {
           "enabled": true,
           "persistenceInterval": 60000
         }
@@ -357,17 +423,9 @@ await cache.setKeyMetricsEnabled(true)
 const stats = await cache.getCurrentMetrics()
 ```
 
-To add the monitoring dashboard to your project, run:
-
-```bash
-cds add caching-dashboard
-```
-
-This copies a pre-built UI5 dashboard into your `app/` folder and exposes the `CachingApiService`. After running `cds watch`, the dashboard is available at `/caching-dashboard/index.html`.
+To add the monitoring dashboard, use `metrics.reuse.dashboard` for local reuse, or `cds add caching-metrics` for BTP. See the [Feature Activation Guide](docs/feature-activation.md) and [Dashboard Guide](docs/dashboard.md).
 
 ![Cache Dashboard](./docs/dashboard.jpg)
-
-See the [Dashboard Guide](docs/dashboard.md) for details on features, security, and customization.
 
 [See the full Metrics Guide →](docs/metrics-guide.md)
 
@@ -381,6 +439,8 @@ See the [Dashboard Guide](docs/dashboard.md) for details on features, security, 
 ## Contributing
 
 Contributions are welcome! Please submit pull requests to the [repository](https://github.com/mikezaschka/cds-caching).
+
+Dashboard UI sources live in [`app/dashboard-src/`](app/dashboard-src/). From the repo root, use `npm run start:dashboard` (with `cds watch` in `examples/app`) for TypeScript development, and `npm run build:dashboard` to regenerate the pre-built bundle in `app/dashboard/`.
 
 ## License
 

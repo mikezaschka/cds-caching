@@ -2,20 +2,51 @@ const cds = require('@sap/cds')
 const { fs, path } = cds.utils;
 const CachingService = require('./lib/CachingService')
 const { scanCachingAnnotations } = require('./lib/util')
+const { getCachingRequiresEntries } = require('./lib/config-normalizer')
+const { resolvePluginRoots } = require('./lib/plugin-roots')
+
+const LOG = cds.log("cds-caching");
 
 // Auto-register plugin entity models based on service configuration.
-// Pushes absolute file paths (without extension) into cds.env.roots so that
-// cds.resolve('*') picks them up during model compilation — before cds.model is set.
-const cachingConfigs = Object.values(cds.env.requires ?? {}).filter(r => r?.impl === 'cds-caching');
-if (cachingConfigs.some(c => c.store === 'cds')) {
-    cds.env.roots.push(path.join(__dirname, 'db', 'cache-store'));
+// See docs/feature-activation.md for reuse vs project-owned activation.
+const cachingEntries = getCachingRequiresEntries(cds.env.requires ?? {})
+const normalizedConfigs = cachingEntries.map(e => e.normalized)
+const { roots: pluginRoots, reuseDashboard, warnings } = resolvePluginRoots({
+    pluginDir: __dirname,
+    projectRoot: cds.root,
+    srvFolder: cds.env.folders?.srv || 'srv',
+    normalizedConfigs,
+})
+for (const root of pluginRoots) {
+    if (!cds.env.roots.includes(root)) cds.env.roots.push(root)
 }
-if (cachingConfigs.some(c => c.statistics)) {
-    cds.env.roots.push(path.join(__dirname, 'db', 'statistics'));
-}
+for (const message of warnings) LOG.warn(message)
 
 cds.on('served', scanCachingAnnotations)
-const LOG = cds.log("cds-caching");
+
+if (reuseDashboard) {
+    const dashboardPath = path.join(__dirname, 'app', 'dashboard');
+    const dashboardProbe = path.join(dashboardPath, 'resources', 'sap', 'ui', 'core', 'cldr', 'en.json');
+    if (!fs.existsSync(dashboardProbe)) {
+        LOG.warn(
+            'cds-caching dashboard static resources are incomplete (missing UI5 runtime files). ' +
+            'Upgrade cds-caching to a release that includes the full pre-built dashboard, ' +
+            'or run "npm run build:dashboard" in the cds-caching package before using metrics.reuse.dashboard.'
+        );
+    }
+    cds.once('bootstrap', (app) => {
+        app.use('/caching-dashboard', require('express').static(dashboardPath));
+        (app._app_links ??= []).push('/caching-dashboard');
+        LOG.info("Serving cds-caching dashboard at /caching-dashboard");
+    });
+}
+
+// Register `cds add` facets. `cds.add` is only present under @sap/cds-dk.
+if (cds.add?.register) {
+    const addFacet = require('./lib/add');
+    cds.add.register('caching-dashboard', addFacet);
+    cds.add.register('caching-metrics', addFacet);
+}
 
 // Register HANA build plugin to generate .hdbtable artifacts during `cds build`
 cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.Plugin {

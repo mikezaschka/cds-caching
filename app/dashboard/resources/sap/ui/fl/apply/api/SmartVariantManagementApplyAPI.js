@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/apply/_internal/flexState/compVariants/CompVariantManagementState","sap/ui/fl/apply/_internal/flexState/compVariants/CompVariantMerger","sap/ui/fl/apply/_internal/flexState/compVariants/Utils","sap/ui/fl/apply/_internal/flexState/FlexState","sap/ui/fl/apply/_internal/flexState/ManifestUtils","sap/ui/fl/LayerUtils","sap/ui/fl/Utils"],function(e,t,a,n,r,i,s){"use strict";function l(e){var t=e.control;var a=t.getVariantManagement?.()||t;var r=a.getId();return n.initialize({reference:e.reference,componentData:{},manifest:s.getAppDescriptor(t),componentId:s.getAppComponentForControl(t).getId()}).then(function(){var t=n.getCompVariantsMap(e.reference);n.setInitialNonFlCompVariantData(e.reference,e.persistencyKey,e.standardVariant,e.variants,r);return t._initialize(e.persistencyKey,e.variants,r)})}var p={async loadVariants(n){n.reference=r.getFlexReferenceForControl(n.control);n.persistencyKey=a.getPersistencyKey(n.control);const i=await l(n);const s=t.merge(n.persistencyKey,i,n.standardVariant,n.control);s.defaultVariantId=e.getDefaultVariantId({persistencyKey:n.persistencyKey,reference:n.reference,variants:s.variants});return s}};return p});
+//# sourceMappingURL=SmartVariantManagementApplyAPI.js.map

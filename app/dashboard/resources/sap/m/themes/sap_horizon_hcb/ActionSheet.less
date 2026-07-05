@@ -1,0 +1,44 @@
+/* ================================== */
+/* CSS for control sap.m/ActionSheet  */
+/* Horizon High Contrast Black theme  */
+/* ================================== */
+
+.sapMActionSheetPopover.sapMPopover {
+	box-shadow: var(--sapContent_Shadow2);
+}
+
+.sapMActionSheetDialog .sapMBar.sapMHeader-CTX > .sapMBarMiddle > .sapMBarPH > .sapMDialogTitle {
+	color: var(--sapPageHeader_TextColor);
+	font-size: var(--sapFontHeader5Size);
+	font-family: var(--sapFontHeaderFamily);
+}
+
+.sapMDialog.sapMActionSheetDialog {
+	background-color: var(--sapPageHeader_Background);
+	border-top-left-radius: var(--sapElement_BorderCornerRadius);
+	border-top-right-radius: var(--sapElement_BorderCornerRadius);
+	box-shadow: var(--sapContent_Shadow3);
+
+	&.sapMDialogPhone .sapMIBar.sapMHeader-CTX {
+		box-shadow: var(--sapContent_HeaderShadow);
+		background-color: var(--sapPageHeader_Background);
+		border-top-left-radius: var(--sapElement_BorderCornerRadius);
+		border-top-right-radius: var(--sapElement_BorderCornerRadius);
+	}
+
+	&.sapUiPopupWithPadding:not(.sapUiNoContentPadding) .sapMDialogScrollCont {
+		padding: 0;
+	}
+
+	& > .sapMDialogSection {
+		box-shadow: none;
+	}
+
+	&:not(.sapUiResponsiveContentPadding):not(.sapUiContentPadding).sapMDialog-NoFooter .sapMDialogScroll {
+		padding-bottom: 0;
+	}
+}
+
+.sapMActionSheetDialogWithTitle .sapMBarMiddle .sapMBarPH {
+	padding: 0 1rem;
+}

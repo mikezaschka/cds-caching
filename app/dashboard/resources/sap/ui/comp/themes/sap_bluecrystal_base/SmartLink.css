@@ -1,0 +1,25 @@
+/* ====================================== */
+/* CSS for control sap.ui.comp/SmartLink  */
+/* Base theme                             */
+/* ====================================== */
+
+.sapUiCompSmartLink.sapMLnkDsbl {
+	opacity: 1;
+	color: @sapUiBaseText;
+	text-decoration: none;
+}
+
+/* Condensed size */
+.sapUiSizeCondensed .sapUiTableCell>.sapUiCompSmartLink>.sapMText,
+.sapUiSizeCondensed .sapUiTableCell>.sapUiCompSmartLink>.sapMLnk,
+.sapUiSizeCondensed .sapUiTableCell>.sapUiCompSmartLink>.sapUiCompUOM {
+	box-sizing: border-box;
+	padding: 0 0.5rem;
+	line-height: 1.5rem;
+	vertical-align: middle;
+}
+
+html.sap-desktop .sapUiCompSmartLink.sapMLnk:hover:not(.sapMLnkDsbl) span,
+html.sap-desktop .sapUiCompSmartLink.sapMLnk:focus:not(.sapMLnkDsbl) span{
+	text-decoration: underline;
+}

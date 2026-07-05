@@ -1,0 +1,1 @@
+{"version":3,"file":"FakeLrepLocalStorage.js","names":["sap","ui","define","FakeLrepConnectorLocalStorage","deleteChanges","forTesting","synchronous","clearAll"],"sources":["FakeLrepLocalStorage-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CACb,2CACE,SACFC,GAuBA,aAEA,MAAO,CACN,aAAAC,GACC,OAAOD,EAA8BE,WAAWC,YAAYC,UAC7D,EAEF,EAAkB","ignoreList":[]}

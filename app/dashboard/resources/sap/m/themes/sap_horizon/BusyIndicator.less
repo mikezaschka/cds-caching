@@ -1,0 +1,15 @@
+/* ==================================== */
+/* CSS for control sap.m/BusyIndicator  */
+/* Horizon theme                        */
+/* ==================================== */
+
+/* Background animation element */
+.sapUiLocalBusyIndicatorAnimation > div::before {
+	background: var(--sapContent_BusyColor);
+	animation-duration: 0ms;
+}
+
+/* Shadow animation element */
+.sapUiLocalBusyIndicatorAnimation > div::after {
+	box-shadow: inset 0 0 0 0 var(--sapContent_BusyColor);
+}

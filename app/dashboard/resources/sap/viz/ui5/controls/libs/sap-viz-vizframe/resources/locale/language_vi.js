@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'vi',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Thất bại khi tải đối tượng kiểm soát {0}.",VIZ_FRAME_INVALID:"Thực thể VizFrame không hợp lệ.",VIZ_FRAME_DESTORYED:"Thực thể VizFrame bị hủy.",}});

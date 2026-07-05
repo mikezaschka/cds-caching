@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/base/util/merge","sap/ui/fl/apply/_internal/flexObjects/FlexObjectFactory","sap/ui/fl/write/_internal/flexState/changes/UIChangeManager","sap/ui/fl/ChangePersistenceFactory","sap/ui/fl/Utils"],function(e,t,n,i,s){"use strict";const r=function(e,t){this._mChangeFile=e;this._mChangeFile.packageName="";this._oInlineChange=t};r.prototype.submit=function(){this.store();const e=this._getChangePersistence(this._mChangeFile.reference);return e.saveDirtyChanges()};r.prototype.store=function(){const e=this._mChangeFile.reference;const t=s.getComponentForControl(this._mChangeFile.selector);const i=this._getChangeToSubmit();n.addDirtyChanges(e,[i],t);return i};r.prototype._getChangePersistence=function(e){return i.getChangePersistenceForComponent(e)};r.prototype._getChangeToSubmit=function(){return t.createAppDescriptorChange(this._getMap())};r.prototype._getMap=function(){var e=this._oInlineChange.getMap();this._mChangeFile.content=e.content;this._mChangeFile.texts=e.texts;return this._mChangeFile};r.prototype.getJson=function(){return e({},this._getMap())};return r});
+//# sourceMappingURL=DescriptorChange.js.map

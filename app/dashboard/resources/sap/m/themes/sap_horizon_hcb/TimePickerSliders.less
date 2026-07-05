@@ -1,0 +1,174 @@
+/* ======================================== */
+/* CSS for control sap.m/TimePickerSliders  */
+/* Horizon High Contrast Black theme        */
+/* ======================================== */
+
+/* TimePicker Dropdown */
+.sapMTimePickerSlider {
+
+	.sapMTimePickerItem {
+		border-radius: var(--sapElement_BorderCornerRadius);
+	}
+}
+
+.sapMTimePickerContainer {
+
+	.sapMTPColumn:not(:last-child),
+	.sapMTPColumn.sapMTPSliderExpanded:not(:last-child) {
+		margin-right: 0.5rem;
+	}
+}
+
+.sapMTimePickerContainer .sapMTPColumn {
+
+	.sapMTimePickerSlider,
+	.sapMTimePickerLabel,
+	.sapMTimePickerSlider {
+
+		.sapMTimePickerItem,
+		.sapMTPPickerSelectionFrame,
+		.sapMTPSliderExpanded {
+			width: 3rem;
+			height: 2.875rem;
+		}
+
+		width: 3rem;
+		height: 2.875rem;
+	}
+}
+
+.sapUiSizeCompact .sapMTimePickerContainer .sapMTPColumn {
+
+	.sapMTimePickerSlider,
+	.sapMTimePickerLabel,
+	.sapMTimePickerSlider {
+
+		.sapMTimePickerItem,
+		.sapMTPPickerSelectionFrame,
+		.sapMTPSliderExpanded {
+			width: 3rem;
+		}
+
+		width: 3rem;
+		height: 2rem;
+	}
+}
+
+.sapMTimePickerContainer {
+
+	.sapMTPColumn {
+
+		.sapMTimePickerSlider {
+
+			.sapMTimePickerItem {
+				background: var(--sapContent_Selected_Background);
+				border: 0.0625rem solid var(--sapList_SelectionBorderColor);
+
+				&:hover {
+					background: var(--sapContent_Selected_Hover_Background);
+				}
+			}
+		}
+
+		&.sapMTPSliderExpanded {
+
+			.sapMTimePickerSlider {
+
+				.sapMTimePickerItem {
+					background: var(--sapLegend_WorkingBackground);
+					border: 0.0625rem solid var(--sapList_Background);
+
+					&:hover {
+						background: var(--sapList_Hover_Background);
+						border: solid 0.0625rem var(--sapList_SelectionBorderColor);
+					}
+
+					&:active {
+						background: var(--sapContent_Selected_Background);
+						color: var(--sapContent_Selected_TextColor);
+					}
+
+					&.sapMTimePickerItemSelected {
+						background: var(--sapList_Background)
+					}
+				}
+
+				.sapMTPPickerSelectionFrame {
+					border: solid 0.0625rem var(--sapList_SelectionBorderColor);
+					border-radius: var(--sapElement_BorderCornerRadius);
+					outline: none;
+
+					&:hover {
+
+						+ ul > li.sapMTimePickerItem.sapMTimePickerItemSelected {
+							background: var(--sapList_Hover_Background);
+							border: solid 0.0625rem var(--sapList_SelectionBorderColor);
+						}
+					}
+
+					&:active {
+
+						& + ul > li.sapMTimePickerItem.sapMTimePickerItemSelected {
+							background: var(--sapContent_Selected_Background);
+							color: var(--sapContent_Selected_TextColor);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.sapMTPDisabled {
+		opacity: 0.5;
+	}
+}
+
+/* PHONE STYLES */
+.sap-phone {
+
+	/* TimePicker Dropdown */
+	.sapMTimePickerContainer {
+
+		.sapMTPColumn {
+
+			.sapMTimePickerSlider,
+			.sapMTimePickerLabel,
+			.sapMTimePickerSlider {
+
+				.sapMTimePickerItem,
+				.sapMTPPickerSelectionFrame,
+				.sapMTPSliderExpanded {
+					width: 3rem;
+					height: 2.875rem;
+				}
+
+				width: 3rem;
+				height: 2.875rem;
+			}
+
+			.sapMTimePickerSlider {
+
+				.sapMTimePickerItem {
+					border: 1px solid var(--sapList_Background);
+				}
+			}
+
+			&.sapMTPSliderExpanded {
+
+				.sapMTimePickerSlider {
+
+					.sapMTimePickerItem {
+						background: var(--sapLegend_WorkingBackground);
+						border: 1px solid var(--sapList_Background);
+						width: 3rem;
+					}
+
+					.sapMTPPickerSelectionFrame {
+						outline: 0.0625rem solid var(--sapList_SelectionBorderColor);
+						outline-offset: -0.188rem;
+					}
+				}
+			}
+		}
+	}
+}

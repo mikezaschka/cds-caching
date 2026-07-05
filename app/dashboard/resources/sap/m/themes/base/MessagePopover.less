@@ -1,0 +1,73 @@
+/* ===================================== */
+/* CSS for control sap.m/MessagePopover  */
+/* Base theme                            */
+/* ===================================== */
+
+.sapMMsgPopover.sapMMsgPopover-init {
+
+	.sapMNavItem.sapMPage {
+		position: relative;
+	}
+
+	.sapMIBar {
+		border-bottom: 0;
+	}
+}
+
+.sapMMsgPopoverCloseBtn {
+
+	.sapMBtnIcon {
+		width: 2.5rem;
+		height: 2.5rem;
+		font-size: 1rem;
+	}
+}
+
+/* Compact size */
+.sapUiSizeCompact.sapMMsgPopover {
+
+	.sapMMsgPopoverCloseBtn .sapMBtnIcon {
+		width: 1.626rem;
+		height: 1.626rem;
+		font-size: 0.75rem;
+	}
+
+	.sapMMsgPopoverCloseBtn .sapMBtnIcon {
+		margin-right: 0;
+	}
+
+	.sapMBtnCustomIcon {
+		margin-left: 0;
+	}
+}
+
+.sapMPopover.sapMMsgPopover.sapMMsgPopover-init {
+
+	.sapMPopoverArr::after {
+		border-top-color: var(--sapPageHeader_Background);
+	}
+}
+
+.sapMMsgPopoverCloseBtn .sapMBtnIcon {
+	color: var(--sapButton_IconColor);
+}
+
+/* style links in the description as Link control */
+.sapMMsgPopoverDescriptionText a {
+	text-decoration: none;
+	color: var(--sapLinkColor);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--sapLink_Hover_Color);
+	}
+
+	&:visited {
+		text-decoration: none;
+		color: var(--sapLink_Visited_Color);
+	}
+
+	&:active {
+		color: var(--sapLink_Active_Color);
+	}
+}

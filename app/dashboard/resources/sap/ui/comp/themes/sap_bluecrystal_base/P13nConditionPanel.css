@@ -1,0 +1,11 @@
+/* ==================================================== */
+/* CSS for control sap.ui.comp.p13n/P13nConditionPanel  */
+/* Base theme                                           */
+/* ==================================================== */
+
+.conditionAddBtnMarginTop {
+    margin-top: 1rem;
+}
+.sapMP13nContainer .sapMITH.sapMITBInLine .sapMITBHead {
+    padding-top: 5px;
+}

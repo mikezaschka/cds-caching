@@ -1,0 +1,49 @@
+/* ======================================================== */
+/* CSS for control sap.suite.ui.microchart/BulletMicroChart */
+/* High Contrast White Theme                                */
+/* ======================================================== */
+
+html.sap-desktop .sapSuiteBMCContent:focus {
+  outline: 2px dotted @sapUiContentFocusColor;
+}
+
+.sapSuiteBMCTargetValue {
+	color: @sapUiHcStandardForeground ;
+}
+
+.sapSuiteBMCBarValue {
+	border-left: 1px @sapUiHcStandardBackground solid;
+	border-right: 1px @sapUiHcStandardBackground solid;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCForecast {
+	border-bottom: 1px @sapUiHcStandardBackground solid;
+	border-left: 0;
+	border-right: 0;
+}
+
+html[dir=rtl] .sapSuiteBMCForecastBarValue {
+	border-left: 1px @sapUiHcStandardBackground solid;
+	border-right: 0;
+}
+
+.sapSuiteBMCForecastBarValue {
+	border-left: 0;
+	border-right: 1px @sapUiHcStandardBackground solid;
+}
+
+.sapSuiteBMCBarValueMarker.sapSuiteBMCModeTypeDelta {
+	border-left: 1px @sapUiHcStandardBackground solid;
+	border-right: 1px @sapUiHcStandardBackground solid;
+}
+
+/* Scale Colors Start */
+
+.sapSuiteBMCBar {
+	box-sizing: border-box;
+	background-color: @sapUiHcStandardBackground;
+	border-width: 1px;
+	border-style: solid;
+}
+
+/* Scale Colors End */

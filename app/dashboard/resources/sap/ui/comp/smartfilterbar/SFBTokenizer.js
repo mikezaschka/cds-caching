@@ -1,0 +1,6 @@
+/*!
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["sap/m/Tokenizer","sap/m/TokenizerRenderer"],function(t,e){"use strict";var a=t.extend("sap.ui.comp.smartfilterbar.SFBTokenizer",{metadata:{library:"sap.ui.comp"},renderer:e});a.prototype._copy=function(){this._fillClipboard("copy")};a.prototype._fillClipboard=function(t){var e=this.getSelectedTokens();var a=false;var r=e.map(function(t){if(!a&&t.getTextForCopy){a=true}return t.getTextForCopy?t.getTextForCopy():t.getText()}).join("\r\n");var i="<table><tr>"+e.map(function(t){return"<td>"+t.getText()+"</td>"}).join("</tr><tr>")+"</tr></table>";var n=function(t){if(t.clipboardData){t.clipboardData.setData("text/plain",r);if(a){t.clipboardData.setData("text/html",i)}}else{t.originalEvent.clipboardData.setData("text/plain",r);if(a){t.originalEvent.clipboardData.setData("text/html",i)}}t.preventDefault()};document.addEventListener(t,n);document.execCommand(t);document.removeEventListener(t,n)};return a});
+//# sourceMappingURL=SFBTokenizer.js.map

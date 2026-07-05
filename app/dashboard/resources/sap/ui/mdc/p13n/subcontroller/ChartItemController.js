@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["./SelectionController","sap/ui/core/Lib","sap/ui/mdc/enums/ChartItemRoleType"],(t,e,o)=>{"use strict";const i=e.getResourceBundleFor("sap.ui.mdc");const n=t.extend("sap.ui.mdc.p13n.subcontroller.ChartItemController");n.prototype.initAdaptationUI=function(t){return this.getAdaptationControl().getAdaptationUI().then(e=>{this._oPanel=e;e.setTitle(i.getText("p13nDialog.TAB_Chart"));const o=this.mixInfoAndState(t);e.setP13nData(o.items);return e})};n.prototype.update=function(e){t.prototype.update.apply(this,arguments)};n.prototype.getDelta=function(e){e.deltaAttributes.push("role");return t.prototype.getDelta.apply(this,arguments)};n.prototype.mixInfoAndState=function(t){const e=this.getCurrentState();const o=this.arrayToMap(e);const i=this.prepareAdaptationData(t,(t,e)=>{const i=o[e.name];t.visible=!!i;t.position=i?i.position:-1;t.role=i?i.role:e.role;if(e.groupable){t.kind="Groupable"}else if(e.aggregatable){t.kind="Aggregatable"}return e.visible});this.sortP13nData({visible:"visible",position:"position"},i.items);i.items.forEach(t=>{delete t.position});return i};n.prototype.getChangeOperations=function(){return{add:"addItem",remove:"removeItem",move:"moveItem"}};return n});
+//# sourceMappingURL=ChartItemController.js.map

@@ -53,8 +53,9 @@ class AppService extends cds.ApplicationService {
         });
         this.on('getBoundCachedValue', async (req) => {
             const data = req.data;
-            const param = req.params[0];
-            return `cached value for ${param.ID} and data ${data.param1}`;
+            const param = Array.isArray(req.params) ? req.params[0] : req.params;
+            const id = param?.ID ?? param;
+            return `cached value for ${id} and data ${data.param1}`;
         });
         this.on('manualCachedValue', async (req) => {
             const data = req.data;

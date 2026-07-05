@@ -1,0 +1,16 @@
+{
+	"pathSymbolsConfig": {
+		"root" : {
+			"SuccessBalloon" :  {
+				"sizeReplacement": {
+					"Dot": "Spot"
+				}
+			},
+			"SuccessCheckMark" :  {
+				"sizeReplacement": {
+					"Dot": "Spot"
+				}
+			}
+		}
+	}
+}

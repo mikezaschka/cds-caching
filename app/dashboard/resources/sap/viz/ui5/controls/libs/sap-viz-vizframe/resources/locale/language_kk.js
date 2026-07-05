@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'kk',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"{0} басқару нысаны жүктелмеді.",VIZ_FRAME_INVALID:"Жарамсыз VizFrame инстанциясы.",VIZ_FRAME_DESTORYED:"VizFrame инстанциясы бүлінді.",}});

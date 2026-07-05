@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/m/Breadcrumbs","sap/m/Link"],(t,e)=>{"use strict";const i=t.extend("sap.ui.mdc.chart.DrillBreadcrumbs",{metadata:{library:"sap.ui.mdc",properties:{},aggregations:{},associations:{},events:{linkPressed:{parameters:{key:{type:"string"},index:{type:"int"}}}}},renderer:{apiVersion:2}});i.prototype.init=function(){t.prototype.init.apply(this,arguments);this.addStyleClass("sapUiMDCChartBreadcrumbs")};i.prototype.update=function(t){const e=[];this.setVisible(t?.length>0);if(t?.length>0){t.reverse();t.forEach(function(t,i){if(i==0){this.setCurrentLocationText(t.text)}else{e.push(this._createLink(t.key,t.text))}},this)}else{this.setCurrentLocationText("")}const i=this.getLinks();e.reverse();let s=false;if(i.length!==e.length){s=true}else{for(let t=0;t<e.length;t++){if(e[t].getText()!=i[t].getText()){s=true;break}}}if(s){if(this.getLinks()){this.destroyLinks()}for(let t=0;t<e.length;t++){this.addLink(e[t])}}return this};i.prototype.onAfterRendering=function(e){t.prototype.onAfterRendering.apply(this,arguments);if(this._bSetFocus){delete this._bSetFocus;const t=this.getLinks()[0]||this;t.focus()}};i.prototype._createLink=function(t,i){const s=new e({text:i,press:function(t){const e=t.getSource();const i=this.indexOfLink(e);this.fireLinkPressed({key:e.data().key,index:i});this._bSetFocus=true}.bind(this)});s.data("key",t);return s};return i});
+//# sourceMappingURL=DrillBreadcrumbs.js.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"PopoverRenderer.js","names":["sap","ui","define","PopoverRenderer","apiVersion","render","oRm","oControl","openStart","openEnd","close"],"sources":["PopoverRenderer-dbg.js"],"mappings":";;;;AAIAA,IAAIC,GAAGC,OAAO,WACb,aAMA,IAAIC,EAAkB,CAClBC,WAAY,EAQZC,OAAQ,SAAUC,EAAKC,GACnBD,EAAIE,UAAU,MAAOD,GAChBE,UACAC,MAAM,MACf,GAIJ,OAAOP,CAER,EAAkB","ignoreList":[]}

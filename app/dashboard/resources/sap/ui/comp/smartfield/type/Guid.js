@@ -1,0 +1,6 @@
+/*
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["sap/ui/model/odata/type/Guid","sap/ui/model/ValidateException","sap/ui/core/Lib"],function(t,e,i){"use strict";var o=/^[A-F0-9]{8}-([A-F0-9]{4}-){3}[A-F0-9]{12}$/i;function n(t){if(!t.resourceBundle){t.resourceBundle="sap.ui.core"}return i.getResourceBundleFor(t.resourceBundle).getText(t.text)}function s(t){throw new e(n(t))}var r=t.extend("sap.ui.comp.smartfield.type.Guid",{constructor:function(e,i,o){t.apply(this,arguments);this.oSettings=o;this.oFieldControl=null;this.oValidateExceptionSettings=this.oSettings&&this.oSettings.validateException||{resourceBundle:"",text:"EnterGuid"}}});r.prototype.parseValue=function(e,i){e=t.prototype.parseValue.apply(this,arguments);if(typeof this.oFieldControl==="function"){this.oFieldControl(e,i)}return e};r.prototype.validateValue=function(t){if(t===null){if(this.oConstraints&&this.oConstraints.nullable===false){s.call(this,this.oValidateExceptionSettings)}return}if(typeof t!=="string"){throw new e("Illegal "+this.getName()+" value: "+t)}if(!o.test(t)){s.call(this,this.oValidateExceptionSettings)}};r.prototype.destroy=function(){t.prototype.destroy.apply(this,arguments);this.oFieldControl=null};r.prototype.getName=function(){return"sap.ui.comp.smartfield.type.Guid"};return r});
+//# sourceMappingURL=Guid.js.map

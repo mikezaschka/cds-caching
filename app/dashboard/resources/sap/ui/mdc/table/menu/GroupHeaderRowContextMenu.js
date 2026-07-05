@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["../utils/Personalization","sap/m/Menu","sap/m/MenuItem","sap/ui/core/Element","sap/ui/core/Lib"],(e,t,n,o,s)=>{"use strict";const i=o.extend("sap.ui.mdc.table.menu.GroupHeaderRowContextMenu",{metadata:{library:"sap.ui.mdc",interfaces:["sap.ui.core.IContextMenu"],aggregations:{menu:{type:"sap.m.Menu",multiple:false}}}});i.prototype.invalidate=function(){};i.prototype.openAsContextMenu=function(e,t){this.getMenu()?.openAsContextMenu(e,t)};i.prototype.close=function(){this.getMenu()?.close()};i.prototype.initContent=function(e,n){this._iGroupLevel=n.groupLevel;if(!this.getMenu()){this.setMenu(new t({items:[this._createUngroupItem(e)]}))}};i.prototype.isEmpty=function(){return!this.getMenu()?.getItems().some(e=>e.getVisible())};i.prototype._createUngroupItem=function(t){const o=s.getResourceBundleFor("sap.ui.mdc");return new n({text:o.getText("table.TBL_UNGROUP"),visible:"{$sap.ui.mdc.Table>/@custom/activeP13nModes/Group}",items:[new n({text:o.getText("table.TBL_UNGROUP_LEVEL"),press:()=>{const n=t._getGroupedProperties().map(e=>e.name);const o=n[this._iGroupLevel-1];e.createGroupChange(t,{propertyKey:o})}}),new n({text:o.getText("table.TBL_UNGROUP_ALL"),press:()=>{e.createClearGroupsChange(t)}})]})};return i});
+//# sourceMappingURL=GroupHeaderRowContextMenu.js.map

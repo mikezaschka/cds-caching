@@ -1,0 +1,1 @@
+{"version":3,"file":"ColoringType.js","names":["sap","ui","define","DataType","ColoringType","Criticality","Emphasis","Gradation","registerEnum"],"sources":["ColoringType-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAC7C,aAUA,IAAIC,EAAe,CA4TfC,YAAa,cAsDbC,SAAU,WA0RVC,UAAW,aAGfJ,EAASK,aAAa,yBAA0BJ,GAEhD,OAAOA,CAEX,EAAkB","ignoreList":[]}

@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/write/_internal/flexState/compVariants/CompVariantState","sap/ui/fl/apply/_internal/flexState/ManifestUtils","sap/ui/fl/apply/_internal/flexState/compVariants/Utils","sap/ui/fl/apply/_internal/flexState/FlexState","sap/ui/fl/Layer"],function(e,t,r,i,n){"use strict";return a=>{if(!a){return Promise.reject("A property bag must be provided")}if(!a.control){return Promise.reject("variant management control must be provided")}if(!a.id){return Promise.reject("variant ID must be provided")}if(!a.content){return Promise.reject("content must be provided")}a.reference=t.getFlexReferenceForControl(a.control);a.persistencyKey=r.getPersistencyKey(a.control);const o=i.getFlexObjectsDataSelector().get(a);const s=o.find(e=>e.getId()===a.id);if(s?.getFileType()!=="variant"){return Promise.reject("no variant with the ID found")}a.layer=s.getLayer();if(![n.USER,n.PUBLIC].includes(a.layer)){return Promise.reject("only variants in the USER and PUBLIC layer can be updated")}if(!s.isEditEnabled()){return Promise.reject("the user is not authorized to edit the PUBLIC variant (no author nor key user)")}e.updateVariant(a);return e.persist(a)}});
+//# sourceMappingURL=SACIntegrationUpdateVariant.js.map

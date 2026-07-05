@@ -22,46 +22,57 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/core/UIComponent", "sap/ui/
     },
     /**
      * Convenience method for getting the i18n resource bundle of the component.
-     * @returns {Promise<sap.base.i18n.ResourceBundle>} The i18n resource bundle of the component
+     * @returns The i18n resource bundle of the component
      */
     getResourceBundle: function _getResourceBundle() {
-      const oModel = this.getOwnerComponent().getModel("i18n");
-      return oModel.getResourceBundle();
+      const model = this.getOwnerComponent().getModel("i18n");
+      return model.getResourceBundle();
     },
     /**
      * Returns a translated string from the i18n bundle (ResourceModel is async).
      */
-    i18nText: async function _i18nText(sKey, aArgs) {
-      const oBundle = await this.getResourceBundle();
-      return aArgs && aArgs.length ? oBundle.getText(sKey, aArgs) : oBundle.getText(sKey);
+    i18nText: async function _i18nText(key, args) {
+      const bundle = await this.getResourceBundle();
+      return args && args.length ? bundle.getText(key, args) : bundle.getText(key);
     },
     /**
      * Convenience method for getting the view model by name in every controller of the application.
-     * @param [sName] The model name
+     * @param name The model name
      * @returns The model instance
      */
-    getModel: function _getModel(sName) {
-      return this.getView().getModel(sName);
+    getModel: function _getModel(name) {
+      return this.getView().getModel(name);
+    },
+    /**
+     * Returns the application JSON model.
+     */
+    getAppModel: function _getAppModel() {
+      return this.getModel("app");
+    },
+    /**
+     * Returns the default OData V4 model.
+     */
+    getODataModel: function _getODataModel() {
+      return this.getModel();
     },
     /**
      * Convenience method for setting the view model in every controller of the application.
-     * @param oModel The model instance
-     * @param [sName] The model name
+     * @param model The model instance
+     * @param name The model name
      * @returns The current base controller instance
      */
-    setModel: function _setModel(oModel, sName) {
-      this.getView().setModel(oModel, sName);
+    setModel: function _setModel(model, name) {
+      this.getView().setModel(model, name);
       return this;
     },
     /**
      * Convenience method for triggering the navigation to a specific target.
-     * @public
-     * @param sName Target name
-     * @param [oParameters] Navigation parameters
-     * @param [bReplace] Defines if the hash should be replaced (no browser history entry) or set (browser history entry)
+     * @param name Target name
+     * @param parameters Navigation parameters
+     * @param replace Defines if the hash should be replaced (no browser history entry) or set (browser history entry)
      */
-    navTo: function _navTo(sName, oParameters, bReplace) {
-      this.getRouter().navTo(sName, oParameters, undefined, bReplace);
+    navTo: function _navTo(name, parameters, replace) {
+      this.getRouter().navTo(name, parameters, undefined, replace);
     },
     /**
      * Convenience event handler for navigating back.
@@ -69,8 +80,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/core/UIComponent", "sap/ui/
      * If not, it will replace the current entry of the browser history with the main route.
      */
     onNavBack: function _onNavBack() {
-      const sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash !== undefined) {
+      const previousHash = History.getInstance().getPreviousHash();
+      if (previousHash !== undefined) {
         window.history.go(-1);
       } else {
         this.getRouter().navTo("main", {}, undefined, true);

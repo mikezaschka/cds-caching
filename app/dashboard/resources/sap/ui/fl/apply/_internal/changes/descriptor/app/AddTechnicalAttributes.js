@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define([],function(){"use strict";const t=new RegExp("^[A-Z0-9_\\-\\/]+$");const e={applyChange(e,r){e["sap.app"]||={};e["sap.app"].tags||={};const n=e["sap.app"].tags;n.technicalAttributes||=[];const s=n.technicalAttributes;const a=r.getContent().technicalAttributes;if(!r.getContent().hasOwnProperty("technicalAttributes")){throw new Error("Property 'technicalAttributes' in change content is not provided")}if(!Array.isArray(a)){throw new Error(`The property 'technicalAttributes' has type '${typeof a}'. Only allowed types for property 'technicalAttributes' is 'array'`)}if(!a.every(t=>typeof t==="string")){throw new Error("The array for the property 'technicalAttributes' does not only consist of strings. Only allowed values for the array is string")}if(!a.every(e=>t.test(e))){throw new Error(`The array contains disallowed values. Supported values for 'technicalAttributes' should adhere to the regular expression ${t}`)}n.technicalAttributes=Array.from(new Set(s.concat(a)));return e}};return e});
+//# sourceMappingURL=AddTechnicalAttributes.js.map

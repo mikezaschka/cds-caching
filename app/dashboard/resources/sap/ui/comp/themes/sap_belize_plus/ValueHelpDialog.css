@@ -1,0 +1,16 @@
+/* ============================================ */
+/* CSS for control sap.ui.comp/ValueHelpDialog  */
+/* Belize Plus theme                            */
+/* ============================================ */
+
+.compValueHelpDialog.sapMDialog.sapMPopup-CTX > header .sapMHeader-CTX.sapContrastPlus,
+.compValueHelpDialog.sapMDialog.sapMPopup-CTX > header .sapMSubHeader-CTX.sapContrastPlus {
+	background-color: @sapUiPageHeaderBackground;
+	box-shadow: inset 0 -1px @sapUiPageHeaderBorderColor;
+}
+
+.compValueHelpDialog.sapMDialog > header > .sapMDialogTitleGroup.sapContrastPlus .sapMTitle,
+.compValueHelpDialog.sapMDialog > header > .sapMDialogTitleGroup .sapContrastPlus .sapMTitle {
+	color: @sapUiPageHeaderTextColor;
+	text-shadow: @sapUiShadowText;
+}

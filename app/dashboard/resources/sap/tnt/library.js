@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["./IllustratedMessageType","sap/ui/base/DataType","sap/ui/core/Lib","sap/ui/core/library","sap/m/library"],function(t,i,e){"use strict";var a=e.init({apiVersion:2,name:"sap.tnt",version:"1.136.0",dependencies:["sap.ui.core","sap.m"],designtime:"sap/tnt/designtime/library.designtime",types:["sap.tnt.IllustratedMessageType","sap.tnt.RenderMode","sap.tnt.NavigationListItemDesign","sap.tnt.SideNavigationDesign"],interfaces:["sap.tnt.IToolHeader"],controls:["sap.tnt.NavigationList","sap.tnt.ToolHeaderUtilitySeparator","sap.tnt.ToolHeader","sap.tnt.SideNavigation","sap.tnt.ToolPage","sap.tnt.InfoLabel"],elements:["sap.tnt.NavigationListItem","sap.tnt.NavigationListGroup"],extensions:{flChangeHandlers:{"sap.tnt.NavigationList":"sap/tnt/flexibility/NavigationList","sap.tnt.NavigationListItem":"sap/tnt/flexibility/NavigationListItem","sap.tnt.NavigationListGroup":"sap/tnt/flexibility/NavigationListGroup"}}});a.IllustratedMessageType=t;a.RenderMode={Narrow:"Narrow",Loose:"Loose"};a.NavigationListItemDesign={Default:"Default",Action:"Action"};a.SideNavigationDesign={Decorated:"Decorated",Plain:"Plain"};i.registerEnum("sap.tnt.RenderMode",a.RenderMode);i.registerEnum("sap.tnt.NavigationListItemDesign",a.NavigationListItemDesign);i.registerEnum("sap.tnt.SideNavigationDesign",a.SideNavigationDesign);return a});
+//# sourceMappingURL=library.js.map

@@ -35,3 +35,6 @@ mta_archives/
 
 # @cap-js/cds-typer
 @cds-models
+
+# Synced UI5 webapp for dashboard build/dev (source of truth: app/dashboard-src/)
+app/webapp/

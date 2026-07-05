@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'ca',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Error en carregar l'objecte de control {0}.",VIZ_FRAME_INVALID:"Instància de VizFrame no vàlida.",VIZ_FRAME_DESTORYED:"La instància de VizFrame s'ha destruït.",}});

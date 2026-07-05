@@ -1,0 +1,105 @@
+/* ================================== */
+/* CSS for control sap.f/AvatarGroup  */
+/* Evening Horizon theme              */
+/* ================================== */
+
+.applyBorderColorAccent(@counter) when (@counter > 0) {
+	.applyBorderColorAccent(@counter - 1);
+
+	.sapFAvatar.sapFAvatarColorAccent@{counter} {
+		border: 0.0625rem solid~"@{sapUiAccent@{counter}}";
+	}
+}
+
+.sapFAvatarGroup {
+	padding: 0.125rem;
+
+	.sapFAvatar {
+		border: none;
+	}
+
+	&:focus {
+		box-shadow: 0 0 0 0.125rem var(--sapContent_FocusColor);
+		outline: none;
+		border-radius: 0.35rem;
+	}
+
+	&.sapFAvatarGroupIndividual {
+
+		.sapFAvatarGroupItem {
+
+			&:hover:not(:active):not(:focus) {
+				.applyBorderColorAccent(10)
+			}
+
+			&:active {
+
+				.sapFAvatar {
+					background-color: var(--sapButton_Active_Background);
+
+					.sapFAvatarInitialsHolder {
+						color: var(--sapButton_Active_TextColor);
+					}
+				}
+			}
+
+			&:focus {
+				outline: none;
+
+				.sapFAvatar {
+					outline: none;
+					box-shadow: 0 0 0 0.125rem var(--sapContent_FocusColor);
+				}
+			}
+		}
+	}
+
+	&.sapFAvatarGroupGroup {
+
+		&:hover:not(:active) {
+
+			.sapFAvatarGroupItem {
+				.applyBorderColorAccent(10);
+			}
+		}
+
+		&:active {
+
+			.sapFAvatarGroupItem {
+
+				.sapFAvatar {
+					border: 0.0625rem solid var(--sapButton_Active_BorderColor);
+					background-color: var(--sapButton_Active_Background);
+
+					.sapFAvatarInitialsHolder {
+						color: var(--sapButton_Active_TextColor);
+					}
+				}
+			}
+
+			.sapFAvatarGroupMoreButton {
+
+				.sapMBtnInner {
+					background-color: var(--sapButton_Active_Background);
+					border: 0.0625rem solid var(--sapButton_Active_BorderColor);
+
+					.sapMBtnContent {
+						color: var(--sapButton_Active_TextColor);
+					}
+				}
+			}
+		}
+	}
+}
+
+.sapFAvatarGroupPopover .sapFCard {
+	border-radius: 0;
+}
+
+html.sap-desktop .sapFAvatarGroupMoreButton.sapMBtn:focus > .sapMFocusable:not(.sapMBadgeIndicator)::before {
+	border-radius: 50%;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}

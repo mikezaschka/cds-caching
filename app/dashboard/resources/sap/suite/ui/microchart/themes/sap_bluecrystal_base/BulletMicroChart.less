@@ -1,0 +1,359 @@
+/* ======================================================== */
+/* CSS for control sap.suite.ui.microchart/BulletMicroChart */
+/* Base Theme                                               */
+/* ======================================================== */
+
+.sapSuiteBMCContent {
+	position: relative;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	outline: none;
+	font-weight: bold;
+	font-family: @sapUiFontHeaderFamily;
+	font-size: @sapMFontMediumSize;
+	display: flex;
+	align-items: center;
+	&.sapSuiteBMCSmallFont {
+		font-size: @sapMFontSmallSize;
+	}
+}
+
+html.sap-desktop .sapSuiteBMCContent:focus {
+    outline: 1px dotted @sapUiContentFocusColor;
+  	outline-offset: 1px;
+
+}
+
+html.sap-desktop .sapSuiteBMCContent:focus:not([tabindex]),
+.sapSuiteBMCContent:focus:not([tabindex]) {
+	outline: none;
+}
+
+.sapSuiteBMCContent.sapSuiteBMCSizeL {
+	height: 5.875rem;
+	width: 12rem;
+}
+
+html.sapUiMedia-Std-Desktop .sapSuiteBMCContent.sapSuiteBMCSizeAuto,
+html.sapUiMedia-Std-Tablet .sapSuiteBMCContent.sapSuiteBMCSizeAuto,
+.sapSuiteBMCContent.sapSuiteBMCSizeM {
+	height: 4.5rem;
+	width: 10.5rem;
+}
+
+html.sapUiMedia-Std-Phone .sapSuiteBMCContent.sapSuiteBMCSizeAuto,
+.sapSuiteBMCContent.sapSuiteBMCSizeS {
+	height: 3.5rem;
+	width: 8.25rem;
+}
+
+.sapSuiteBMCContent.sapSuiteBMCSizeXS {
+	height: 1.125rem;
+	width: 6rem;
+}
+
+.sapSuiteBMCChart {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: inherit;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.sapSuiteBMCBarValueMarkerHidden {
+	visibility: hidden;
+}
+
+.sapSuiteBMCThresholdHidden .sapSuiteBMCThreshold,
+.sapSuiteBMCThresholdHidden .sapSuiteBMCDiamond {
+  visibility: hidden;
+}
+
+.sapSuiteBMCBarValueMarker {
+	position: absolute;
+	width: .125rem;
+	transform: translateX(-100%);
+}
+
+
+.sapSuiteBMCTargetBarValue {
+	position: absolute;
+	width: .125rem;
+	border-left-width: 1px;
+	border-left-style: solid;
+	height: 100%;
+}
+
+.sapSuiteBMCItemValue, .sapSuiteBMCTargetValue {
+	display: inline-block;
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+}
+
+.sapSuiteBMCItemValue {
+	margin: 0 1px;
+	color: @sapUiTextDisabled;
+}
+
+.sapSuiteBMCTargetValue {
+	top: 0.1125rem;
+	font-weight: normal;
+}
+
+.sapSuiteBMCThreshold {
+	position: absolute;
+	background-color: @sapUiTextDisabled;
+	margin-left: 1px;
+	width: .125rem;
+	top: 6.25%;
+	height: 75%;
+}
+
+.sapSuiteBMCBar {
+	position: absolute;
+	left: 1%;
+	right: 0;
+}
+
+.sapSuiteBMCBarValue {
+	position: absolute;
+	left: 1%;
+	right: 1%;
+	min-width: .125rem;
+	box-sizing: border-box;
+}
+
+.sapSuiteBMCDiamond {
+	position: absolute;
+	-webkit-transform: rotate(-45deg) translate(-.02rem,0);
+	-moz-transform: rotate(-45deg) translate(-.02rem,0);
+	-ms-transform: rotate(-45deg) translate(-.02rem,0);
+	transform: rotate(-45deg) translate(-.02rem,0);
+}
+
+html[dir=rtl] .sapSuiteBMCDiamond {
+	-webkit-transform: rotate(-45deg) translate(.02rem,0);
+	-moz-transform: rotate(-45deg) translate(.02rem,0);
+	-ms-transform: rotate(-45deg) translate(.02rem,0);
+	transform: rotate(-45deg) translate(.02rem,0);
+}
+
+.sapSuiteBMCForecastBarValue {
+	position: absolute;
+	left: 1%;
+	right: 1%;
+}
+
+.sapSuiteBMCContent.sapSuiteBMCResponsive{
+	width: 100%;
+	height: 100%;
+}
+
+.sapSuiteBMCVerticalAlignmentContainer{
+	position:relative;
+	width: 100%;
+	height: 100%;
+	max-height: 4.5rem;
+	min-height: 1.125rem;
+	min-width: 4rem;
+	max-width: 20rem;
+}
+
+.sapSuiteBMCTopLabel {
+	margin-bottom: 0.1875rem;
+}
+
+.sapSuiteBMCTopLabel, .sapSuiteBMCBottomLabel {
+	position: relative;
+	height: 1rem;
+	text-align: left;
+}
+
+.sapSuiteBMCChartCanvas {
+	position: relative;
+	flex: 1;
+	width: 100%;
+	max-height: 2rem;
+	min-height: 1.125rem;
+}
+
+.sapSuiteBMCDiamond {
+	top: 75%;
+	width: .25rem;
+	height: .25rem;
+}
+
+.sapSuiteBMCBar,
+.sapSuiteBMCForecastBarValue,
+.sapSuiteBMCBarValue {
+	top: 18.75%;
+	height: 50%;
+	min-width: 0.25rem;
+}
+
+.sapSuiteBMCBarValueMarker {
+	top: -12.5%;
+	height: 68.75%;
+}
+.sapSuiteBMCForecast {
+	top: 31.25%;
+	height: 25%;
+}
+
+.sapSuiteBMCSmallLook {
+	.sapSuiteBMCBar,
+	.sapSuiteBMCForecastBarValue,
+	.sapSuiteBMCBarValue {
+		top: calc(4/21 * 100%);
+		height: calc(12/21 * 100%);
+	}
+
+	.sapSuiteBMCForecast {
+		top: calc(1/3 * 100%);
+		height: calc(6/21 * 100%);
+	}
+
+	.sapSuiteBMCThreshold {
+		top: calc(1/21 * 100%);
+		height: calc(6/7 * 100%);
+		width: 1px;
+	}
+
+	.sapSuiteBMCBarValueMarker{
+		top: calc(-4/21 * 100%);
+		height: calc(11/21 * 100%);
+	}
+
+	.sapSuiteBMCDiamond {
+		top:80%;
+	}
+
+  // size of the chart should be fixed
+	.sapSuiteBMCChartCanvas {
+		max-height: 1.3125rem;
+  }
+}
+
+.sapSuiteBMCExtraSmallLook {
+	.sapSuiteBMCBar,
+	.sapSuiteBMCForecastBarValue,
+	.sapSuiteBMCBarValue {
+		top: calc(1/6 * 100%);
+		height: calc(6/9 * 100%);
+	}
+
+	.sapSuiteBMCForecast {
+		top: calc(2/6 * 100%);
+		height: calc(3/9 * 100%);
+	}
+
+	.sapSuiteBMCThreshold {
+		top:0;
+		height: 100%;
+		width: 1px;
+	}
+
+	.sapSuiteBMCDiamond {
+		top:90%;
+		height: 0.125rem;
+		width: 0.125rem;
+		transform: rotate(-45deg) translateX(25%);
+	}
+
+	.sapSuiteBMCBarValueMarker {
+		visibility: hidden;
+	}
+
+  // size of the chart should be fixed
+	.sapSuiteBMCChartCanvas {
+		max-height: 1.125rem;
+  }
+}
+
+.sapSuiteBMCNoLabels {
+	.sapSuiteBMCTopLabel, .sapSuiteBMCBottomLabel {
+		display: none;
+	}
+}
+
+.sapSuiteBMCBar.sapSuiteBMCScaleColorTransparent {
+	background-color: transparent;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorNeutral,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorNeutral {
+	background-color: @sapUiChartPaletteSemanticNeutralDark1;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorGood,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorGood {
+	background-color: @sapUiChartPaletteSemanticGood;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorCritical,
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorCritical {
+	background-color: @sapUiChartPaletteSemanticCritical;
+}
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorCritical {
+	background-color: @sapUiCriticalElement;
+}
+
+.sapSuiteBMCBarValue.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCBarValueMarker.sapSuiteBMCSemanticColorError {
+	background-color: @sapUiChartPaletteSemanticBad;
+}
+.sapSuiteBMCThreshold.sapSuiteBMCSemanticColorError,
+.sapSuiteBMCDiamond {
+	background-color: @sapUiNegativeElement;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorNeutral {
+	background-color: @sapUiChartPaletteSemanticNeutralLight2;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorGood {
+	background-color: @sapUiChartPaletteSemanticGoodLight3;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorCritical {
+	background-color: @sapUiChartPaletteSemanticCriticalLight3;
+}
+
+.sapSuiteBMCForecastBarValue.sapSuiteBMCSemanticColorError {
+	background-color: @sapUiChartPaletteSemanticBadLight3;
+}
+
+.sapSuiteBMCBar {
+	background-color: @sapUiChartDataPointBG;
+	border-color: @sapUiChartDataPointBGBorderColor;
+}
+
+.sapSuiteBMCTargetBarValue {
+	border-left-color: @sapUiChartTargetShadowColor;
+	background-color: @sapUiChartTargetColor;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorNeutral {
+	color: @sapUiChartCategoryAxisLabelFontColor;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorGood {
+	color: @sapUiPositiveText;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorCritical {
+	color: @sapUiCriticalText;
+}
+
+.sapSuiteBMCItemValue.sapSuiteBMCSemanticColorError {
+	color: @sapUiNegativeText;
+}
+

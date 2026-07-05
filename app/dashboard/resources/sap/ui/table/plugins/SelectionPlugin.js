@@ -1,0 +1,7 @@
+/*
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["./PluginBase"],function(e){"use strict";const t=e.extend("sap.ui.table.plugins.SelectionPlugin",{metadata:{abstract:true,library:"sap.ui.table",properties:{enabled:{type:"boolean",defaultValue:true}},events:{selectionChange:{}}}});t.findOn=e.findOn;t.prototype.exit=function(){e.prototype.exit.apply(this,arguments);this.getParent()?._onSelectionPluginChange()};t.prototype.setParent=function(t){const n=this.getParent();e.prototype.setParent.apply(this,arguments);n?._onSelectionPluginChange();if(n!==t){t?._onSelectionPluginChange()}return this};t.prototype.getRenderConfig=function(){return{headerSelector:{type:"none"}}};t.prototype.onHeaderSelectorPress=function(){};t.prototype.onKeyboardShortcut=function(e,t){};t.prototype.setSelected=function(e,t,n){throw new Error(this+" does not implement #setSelected")};t.prototype.isSelected=function(e){throw new Error(this+" does not implement #isSelected")};t.prototype.getSelectedCount=function(){throw new Error(this+" does not implement #getSelectedCount")};return t});
+//# sourceMappingURL=SelectionPlugin.js.map

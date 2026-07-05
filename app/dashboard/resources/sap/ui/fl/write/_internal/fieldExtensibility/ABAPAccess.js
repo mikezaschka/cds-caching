@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/util/openWindow","sap/ui/fl/write/_internal/fieldExtensibility/ABAPExtensibilityVariantFactory","sap/ui/fl/write/_internal/fieldExtensibility/ServiceValidation"],function(n,t,e){"use strict";var i=null;var r=null;function u(){if(!r){return t.getInstance(i).then(function(n){r=n;return n})}return Promise.resolve(r)}var o={};o.getTexts=function(){return u(i).then(function(n){return n.getTexts().then(function(n){return n})})};o.isExtensibilityEnabled=function(n){return u(n).then(function(n){return n.getNavigationUri().then(function(n){return Boolean(n)})})};o.getExtensionData=function(){return u(i).then(function(n){return n.getExtensionData().then(function(n){return n})})};o.onControlSelected=function(n){if(n!==i){i=n;r=null}};o.onTriggerCreateExtensionData=function(t,e,i){return u().then(function(t){return t.getNavigationUri(i).then(function(t){if(t){n(t,"_blank")}})})};o.reset=function(){i=null;r=null};o.isServiceOutdated=function(n){return e.isServiceOutdated(n)};o.setServiceValid=function(n){e.setServiceValid(n)};o.setServiceInvalid=function(n){e.setServiceInvalid(n)};return o},true);
+//# sourceMappingURL=ABAPAccess.js.map

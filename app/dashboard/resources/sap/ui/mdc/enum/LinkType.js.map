@@ -1,0 +1,1 @@
+{"version":3,"file":"LinkType.js","names":["sap","ui","define","DataType","LinkType","Text","DirectLink","Popover","registerEnum"],"sources":["LinkType-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAYA,MAAMC,EAAW,CAKhBC,KAAM,EAKNC,WAAY,EAKZC,QAAS,GAMVJ,EAASK,aAAa,2BAA4BJ,GAGlD,OAAOA,GAEU","ignoreList":[]}

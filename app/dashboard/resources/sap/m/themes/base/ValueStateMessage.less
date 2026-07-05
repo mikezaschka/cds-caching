@@ -1,0 +1,36 @@
+/* ======================================== */
+/* CSS for control sap.m/ValueStateMessage  */
+/* Base theme                               */
+/* ======================================== */
+
+.sapMValueStateMessage {
+	box-sizing: border-box;
+	background: var(--sapField_Background);
+	display: inline-block;
+	color: var(--sapTextColor);
+	font-size: var(--sapFontSmallSize);
+	font-family: var(--sapFontFamily);
+	padding: 0.3rem 0.625rem;
+	min-width: 6rem;
+	max-width: 22rem;
+	white-space: pre-line;
+	word-wrap: break-word;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	.sapMFT {
+		font-size: var(--sapFontSmallSize);
+	}
+}
+
+.sapMValueStateMessageError {
+	background: var(--sapErrorBackground);
+}
+
+.sapMValueStateMessageWarning {
+	background: var(--sapWarningBackground);
+}
+
+.sapMValueStateMessageInformation {
+	background: var(--sapInformationBackground);
+}

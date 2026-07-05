@@ -1,0 +1,112 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.SingleKeyMetric"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.f"
+	xmlns:form="sap.ui.layout.form" core:require="{
+		formatter: 'cds/plugin/caching/dashboard/model/formatter'
+	}">
+
+	<f:DynamicPage title="{i18n>keyMetricDetailsPageTitle}" showFooter="false">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{= ${i18n>keyMetricPagePrefix} + ' ' + ${ui>/keyName} }" />
+				</f:heading>
+				<f:actions>
+					<Button icon="sap-icon://refresh" text="{i18n>refreshButton}" type="Transparent" press="onRefresh" />
+				</f:actions>
+				<f:navigationActions>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://full-screen" press="handleFullScreen" tooltip="{i18n>ttFullScreenEnter}" visible="{= ${app>/layout} !== 'EndColumnFullScreen' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://exit-full-screen" press="handleExitFullScreen" tooltip="{i18n>ttFullScreenExit}" visible="{= ${app>/layout} === 'EndColumnFullScreen' }"/>
+					<OverflowToolbarButton type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="{i18n>ttCloseEndColumn}"/>
+				</f:navigationActions>
+			</f:DynamicPageTitle>
+		</f:title>
+
+		<f:content>
+			<VBox class="sapUiSmallMargin">
+				<Title text="{i18n>sectionReadThroughPerformance}" titleStyle="H5" class="sapUiMediumMarginBottom" />
+
+				<f:GridContainer>
+					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>hitRatio}">
+						<TileContent unit="%">
+							<NumericContent value="{ path: 'ui>/hitRatio', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+						</TileContent>
+						<f:layoutData>
+							<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+						</f:layoutData>
+					</GenericTile>
+					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>headerCacheEfficiency}">
+						<TileContent unit="x">
+							<NumericContent value="{path: 'ui>/cacheEfficiency', type: 'sap.ui.model.type.Float', formatOptions: {style: 'short', decimals: 2}}" />
+						</TileContent>
+						<f:layoutData>
+							<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+						</f:layoutData>
+					</GenericTile>
+					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>colHits}">
+						<TileContent>
+							<NumericContent value="{ path: 'ui>/hits', type: 'sap.ui.model.type.Integer'}" />
+						</TileContent>
+						<f:layoutData>
+							<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+						</f:layoutData>
+					</GenericTile>
+					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>colMisses}">
+						<TileContent>
+							<NumericContent value="{ path: 'ui>/misses', type: 'sap.ui.model.type.Integer'}" />
+						</TileContent>
+						<f:layoutData>
+							<f:GridContainerItemLayoutData columns="2" minRows="2"/>
+						</f:layoutData>
+					</GenericTile>
+				</f:GridContainer>
+
+				<Title text="{i18n>ctxGroup}" titleStyle="H5" class="sapUiLargeMarginTop sapUiMediumMarginBottom" />
+
+				<form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="3" labelSpanS="12">
+					<form:content>
+						<Label text="{i18n>colOperation}" />
+						<Text text="{ui>/operation}" />
+						<Label text="{i18n>colType}" />
+						<Text text="{ui>/dataType}" />
+						<Label text="{i18n>colOperationType}" />
+						<Text text="{ui>/operationType}" />
+						<Label text="{i18n>colTarget}" />
+						<Text text="{ui>/target}" />
+						<Label text="{i18n>colTenant}" />
+						<Text text="{ui>/tenant}" />
+						<Label text="{i18n>colUser}" />
+						<Text text="{ui>/user}" />
+						<Label text="{i18n>colLocale}" />
+						<Text text="{ui>/locale}" />
+						<Label text="{i18n>colLastAccess}" />
+						<Text text="{ui>/lastAccess}" />
+						<Label text="{i18n>colFirstAccess}" />
+						<Text text="{ui>/timestamp}" />
+					</form:content>
+				</form:SimpleForm>
+
+				<Title text="{i18n>colMetadata}" titleStyle="H5" class="sapUiLargeMarginTop sapUiMediumMarginBottom" />
+
+				<IconTabBar>
+					<items>
+						<IconTabFilter text="{i18n>keyTabMetadata}">
+							<TextArea value="{ui>/metadata}" rows="12" width="100%" editable="false" />
+						</IconTabFilter>
+						<IconTabFilter text="{i18n>keyTabSubject}">
+							<TextArea value="{ui>/subject}" rows="12" width="100%" editable="false" />
+						</IconTabFilter>
+						<IconTabFilter text="{i18n>keyTabQuery}">
+							<TextArea value="{ui>/query}" rows="12" width="100%" editable="false" />
+						</IconTabFilter>
+						<IconTabFilter text="{i18n>keyTabCacheOptions}">
+							<TextArea value="{ui>/cacheOptions}" rows="12" width="100%" editable="false" />
+						</IconTabFilter>
+					</items>
+				</IconTabBar>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

@@ -1,0 +1,80 @@
+/* =========================================================== */
+/* CSS for control sap.suite.ui.microchart/InteractiveBarChart */
+/* High Contrast Black Theme                                   */
+/* =========================================================== */
+
+.sapSuiteIBCBar {
+	background-color: @sapUiHcStandardBackground;
+	border-style: solid;
+	border-width: 1px 0px 1px 0px;
+	border-color: @sapUiHcStandardForeground;
+	&.sapSuiteIBCBarNegative.sapSuiteIBCValueNegative {
+		border-left-width: 1px;
+	}
+	&.sapSuiteIBCBarPositive.sapSuiteIBCValuePositive {
+		border-right-width: 1px;
+	}
+	&.sapSuiteIBCBarValueNull {
+		border: none;
+	}
+}
+
+/* hover */
+.sapSuiteIBCBarInteractionArea:hover {
+	background-color: @sapHighlightColor !important;
+	border: 1px solid @sapUiContentContrastTextColor !important;
+}
+
+.sapSuiteIBCBarInteractionArea:hover .sapSuiteIBCBarLabelText,
+.sapSuiteIBCBarInteractionArea:hover .sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	color: @sapUiContentLabelColor;
+}
+
+.sapSuiteIBCBarSelected.sapSuiteIBCBarInteractionArea:hover .sapSuiteIBCBarLabelText,
+.sapSuiteIBCBarSelected.sapSuiteIBCBarInteractionArea:hover .sapSuiteIBCBarValue.sapSuiteIBCBarValueOutside {
+	color: @sapUiBaseText;
+}
+
+.sapSuiteIBCBarSelected.sapSuiteIBCBarInteractionArea:hover {
+	background-color: @sapHighlightColor;
+}
+
+.sapSuiteIBCBarSelected {
+	border: 1px solid @sapUiContentContrastTextColor;
+	background-color: @sapUiSelected;
+}
+
+html.sap-desktop .sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+	outline: 2px dotted @sapUiHcStandardForeground;
+	outline-offset: -2px;
+	border-color: transparent;
+}
+
+/* IE and Edge ignores outline-offset. Firefox stretches the outline */
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop,
+html[data-sap-ui-browser^="ff"].sap-desktop {
+	.sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus {
+		outline: none;
+		position: relative;
+	}
+	.sapSuiteIBC:not(.sapSuiteIBCNonInteractive) .sapSuiteIBCBarInteractionArea:focus:before {
+		content: " ";
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		border: 2px dashed @sapUiHcStandardForeground;
+		pointer-events: none;
+	}
+}
+
+.sapSuiteIBCDivider {
+	background-color: @sapUiHcStandardForeground;
+}
+
+.sapSuiteIBCSemanticMarker {
+	border-right: 1px solid @sapUiHcStandardBackground;
+}

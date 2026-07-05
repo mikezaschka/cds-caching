@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>UI5 QUnit TestRunner</title>
+	<script src="TestRunner.js"></script>
+	<link rel="stylesheet" href="testrunner.css">
+</head>
+<body>
+	<div>
+		<h1>UI5 QUnit TestRunner</h1>
+		<div id="test-selection" class="uiArea expanded">
+			<div id="selectionHeader" class="uiAreaHeader">
+				<div>Select Tests</div>
+				<div id="progressSection">
+					<div id="progress">Progress</div>
+					<div id="bar">
+					</div>
+					<input id="stop" type="button" value="Stop">
+				</div>
+				<div>
+					<div id="duration">Duration</div>
+					<div id="time">0 Seconds</div>
+				</div>
+				<div id="open" class="expandCollapseBtn"></div>
+			</div>
+			<div id="elements" class="uiAreaContent testSelection">
+				<!-- test-resources/qunit/testsuite.qunit.html -->
+				<div>
+					<div>
+						<label id="testPageLabel" for="testPage">Test Page</label>
+						<input id="testPage" type="text" size="50">
+					</div>
+					<div>
+						<input id="sequential" type="checkbox" title="Sequential?">
+						<input id="find" type="button" value="Find">
+						<input id="run" type="button" value="Run">
+					</div>
+				</div>
+
+				<progress id="busy" style="display: none;"></progress>
+				<!-- <br> -->
+				<div id="filterElements" style="display: none;">
+					<label id="filterLabel" for="filter">Filter: </label>
+					<input id="filter" type="text" size="50">
+				</div>
+				<div id="select" style="display: none;">
+					<div id="testPageSelectDiv">
+						<select id="testPageSelect" name="testPages" size="10" multiple></select>
+					</div>
+					<div id="copyButtons">
+						<input id="copy" type="button" value=">">
+						<input id="copyall" type="button" value=">>">
+						<input id="remove" type="button" value="<">
+						<input id="removeall" type="button" value="<<">
+					</div>
+					<div id="selectedTestsDiv">
+						<select id="selectedTests" size="10" multiple></select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="test-execution"></div>
+		<div id="test-reporting" class="uiArea expanded" style="display: none;">
+			<div id="reportingHeader" class="uiAreaHeader">
+				<div>Test Reporting</div>
+				<div>
+					Number of executed test:<span class="total">0</span>
+					Number of passed tests: <span class="passed">0</span>
+					Number of failed tests: <span class="failed">0</span>
+				</div>
+				<input id="showResults" type="button" value="Show all results">
+				<div id="openReporting" class="expandCollapseBtn"></div>
+			</div>
+			<div id="reportingContent" class="uiAreaContent"></div>
+		</div>
+	</div>
+</body>

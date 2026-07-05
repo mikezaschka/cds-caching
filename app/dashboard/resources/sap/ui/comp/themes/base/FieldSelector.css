@@ -1,0 +1,37 @@
+/* ========================================== */
+/* CSS for control sap.ui.comp/FieldSelector  */
+/* Base theme                                 */
+/* ========================================== */
+
+.sapUiCompFieldSelectorHeader {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.sapUiCompFieldSelectorHeaderSearch {
+	margin-right: 4px;	
+}
+
+.sapUiCompFieldSelectorComboBox {	
+	display: flex;
+}
+
+.sapUiCompFieldSelectorCreateButton {	
+	margin-left:2px;
+}
+
+.sapUiCompFieldSelectorHeaderText {
+  margin: auto;
+}
+
+.sapUiCompFieldSelectorScrollContainer {
+  width: 100%;
+}
+
+.sapUiCompFieldSelectorScrollContainer>div:first-child {
+  width: 100%;
+}
+
+.sapUiCompFieldSelectorHeaderEntitySelection > div:first-child {
+	margin:auto;
+}

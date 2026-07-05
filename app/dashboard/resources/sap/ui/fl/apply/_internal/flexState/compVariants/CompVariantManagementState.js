@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/apply/_internal/flexState/FlexState","sap/ui/fl/apply/_internal/flexState/DataSelector","sap/ui/fl/apply/_internal/flexObjects/CompVariant"],function(e,t,n){"use strict";const a={};const r="sap.ui.fl.apply._internal.flexObjects.UpdatableChange";const s=e=>e?.isA(r)&&e.getFileType()==="change"&&e.getChangeType()==="defaultVariant";const i=new t({id:"compSetDefault",parameterKey:"persistencyKey",parentDataSelector:e.getFlexObjectsDataSelector(),executeFunction(e,t){return e.filter(e=>s(e)&&String(e.getSelector()?.persistencyKey)===t.persistencyKey)},checkInvalidation(e,t){const n=["addFlexObject","removeFlexObject"].includes(t.type);return n&&s(t.updatedObject)}});a.getSetDefaultDataSelector=function(){return i};a.getDefaultVariantId=e=>{const t=e.variants;const a=t.map(e=>e.getVariantId());a.push(n.STANDARD_VARIANT_ID);e.persistencyKey=String(e.persistencyKey);const r=[...i.get(e)].reverse();const s=r.map(e=>e.getContent().defaultVariantName);return s.find(e=>a.includes(e))||""};a.getDefaultChanges=e=>{e.persistencyKey=String(e.persistencyKey);return i.get(e)};return a});
+//# sourceMappingURL=CompVariantManagementState.js.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"IFrame.flexibility.js","names":["sap","ui","define","UpdateIFrame","updateIFrame","hideControl","unhideControl"],"sources":["IFrame.flexibility-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CACb,wCACE,SACFC,GAEA,aAEA,MAAO,CACNC,aAAcD,EACdE,YAAa,UACbC,cAAe,UAEjB","ignoreList":[]}

@@ -1,0 +1,107 @@
+{
+  "_version": "1.21.0",
+  "sap.app": {
+    "id": "sap.ui.fl",
+    "type": "library",
+    "embeds": [
+      "support/apps/contentbrowser",
+      "variants/context"
+    ],
+    "applicationVersion": {
+      "version": "1.136.0"
+    },
+    "title": "SAPUI5 library with sap.ui.fl controls.",
+    "description": "SAPUI5 library with sap.ui.fl controls.",
+    "ach": "CA-UI5-FL",
+    "resources": "resources.json",
+    "offline": true
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "supportedThemes": [
+      "base",
+      "sap_hcb"
+    ]
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.136",
+      "libs": {
+        "sap.ui.core": {
+          "minVersion": "1.136.0"
+        },
+        "sap.m": {
+          "minVersion": "1.136.0"
+        }
+      }
+    },
+    "library": {
+      "i18n": {
+        "bundleUrl": "messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cnr",
+          "cs",
+          "cy",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-GB",
+          "en-US-sappsd",
+          "en-US-saprigi",
+          "en-US-saptrc",
+          "es",
+          "es-MX",
+          "et",
+          "fi",
+          "fr",
+          "fr-CA",
+          "hi",
+          "hr",
+          "hu",
+          "id",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "mk",
+          "ms",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "pt-PT",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sr",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      "content": {
+        "controls": [
+          "sap.ui.fl.variants.VariantManagement",
+          "sap.ui.fl.util.IFrame"
+        ],
+        "elements": [],
+        "types": [],
+        "interfaces": []
+      }
+    }
+  }
+}

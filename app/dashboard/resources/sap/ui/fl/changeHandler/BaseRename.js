@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/changeHandler/condenser/Classification"],function(e){"use strict";const t={createRenameChangeHandler(t){t.changePropertyName||="newText";return{async applyChange(e,r,n){const o=n.modifier;const a=t.propertyName;const i=e.getText(t.changePropertyName);if(i){const t=await o.getPropertyBindingOrProperty(r,a);e.setRevertData(t);await o.setPropertyBindingOrProperty(r,a,i)}},revertChange(e,r,n){const o=n.modifier;const a=t.propertyName;const i=e.getRevertData();if(i||i===""){o.setPropertyBindingOrProperty(r,a,i);e.resetRevertData();return}throw new Error("Change without sufficient information to be reverted. It probably didn't go through applyChange.")},async completeChangeContent(e,r,n){const o=t.changePropertyName;const a=t.translationTextType;const i=await n.modifier.bySelector(e.getSelector(),n.appComponent);e.setContent({originalControlType:n.modifier.getControlType(i)});const s=r.content||r;if(typeof s.value==="string"){e.setText(o,s.value,a)}else{throw new Error("oSpecificChangeInfo.value attribute required")}},getCondenserInfo(r){return{affectedControl:r.getSelector(),classification:e.LastOneWins,uniqueKey:t.propertyName||t.changePropertyName}},getChangeVisualizationInfo(e){const r=e.getTexts()&&e.getTexts()[t.changePropertyName];return{descriptionPayload:{originalLabel:e.getRevertData(),newLabel:r&&r.value}}}}}};return t});
+//# sourceMappingURL=BaseRename.js.map

@@ -1,0 +1,312 @@
+/* ==================================================================== */
+/* CSS for control sap.suite.ui.microchart/LineMicroChart               */
+/* Base Theme                                                           */
+/* ==================================================================== */
+
+.sapSuiteLMC {
+	height: inherit;
+	width: inherit;
+	outline: none;
+	position: relative;
+	background-color: transparent;
+	display: flex;
+	align-items: center;
+}
+
+html.sap-desktop .sapSuiteLMC:focus:not([tabindex]),
+.sapSuiteLMC:focus:not([tabindex]) {
+	outline: none;
+}
+
+html.sap-desktop .sapSuiteLMC:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+  	outline-offset: 1px;
+}
+
+.sapSuiteLMCContentWrapper {
+	position: relative;
+	flex: 1 1 auto;
+	display: flex;
+	height: 100%;
+	width: 100%;
+}
+
+.sapSuiteLMCSvgCanvas {
+	position: relative;
+	width: 100%;
+	// margin to take up for size of the emphasized points (5.5px each side)
+	margin: 0.344rem;
+}
+
+.sapSuiteLMCNoTopLabels .sapSuiteLMCLabelsTop,
+.sapSuiteLMCNoBottomLabels .sapSuiteLMCLabelsBottom,
+.sapSuiteLMCNoLabels .sapSuiteLMCLabel,
+.sapSuiteLMCNoLabels .sapSuiteLMCThresholdLabel,
+.sapSuiteLMCNoThresholdLabel .sapSuiteLMCThresholdLabel{
+  display: none;
+}
+
+.sapSuiteLMCSvgElement {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	preserveAspectRatio: none;
+	overflow: visible;
+}
+
+.sapSuiteLMCPointsContainer {
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+
+html[dir=rtl] {
+	.sapSuiteLMCSvgElement {
+		transform: scaleX(-1);
+	}
+
+	.sapSuiteLMCPointsContainer {
+	  transform: scaleX(-1);
+	}
+
+	.sapSuiteLMCPoint {
+	  transform: translate(50%,-50%);
+	}
+}
+
+.sapSuiteLMCVerticalAlignmentContainer {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	min-width: 4rem;
+	max-width: 20rem;
+	min-height: 1.125rem;
+	max-height: 5.875rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+// for IE only, IE doesn't support text-align start/end
+// TODO can be removed when IE finally gets dropped
+html[data-sap-ui-browser^="ie"] {
+  .sapSuiteLMCLeftTopLabel,
+  .sapSuiteLMCLeftBottomLabel {
+	text-align: left;
+  }
+  .sapSuiteLMCRightTopLabel,
+  .sapSuiteLMCRightBottomLabel {
+	text-align: right;
+  }
+}
+
+html[dir=rtl][data-sap-ui-browser^="ie"] {
+  .sapSuiteLMCLeftTopLabel,
+  .sapSuiteLMCLeftBottomLabel {
+	text-align: right;
+  }
+  .sapSuiteLMCRightTopLabel,
+  .sapSuiteLMCRightBottomLabel {
+	text-align: left;
+  }
+}
+
+.sapSuiteLMCLeftTopLabel,
+.sapSuiteLMCLeftBottomLabel {
+	text-align: start;
+}
+.sapSuiteLMCRightTopLabel,
+.sapSuiteLMCRightBottomLabel {
+	text-align: end;
+}
+
+.sapSuiteLMCLabel {
+	font-size: @sapMFontMediumSize;
+	font-weight: normal;
+	color: @sapUiChartCategoryAxisLabelFontColor;
+	width: 50%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sapSuiteLMCThresholdLabelWrapper {
+	position: relative;
+	height: ~"calc(100% - 0.344rem)"; // to compensate for the sapSuiteLMCSvgCanvas margin
+	top: 0.172rem; // half of the margin
+	flex: 0 0 auto;
+	max-width: 50%;
+}
+
+.sapSuiteLMCThresholdLabel {
+	position: relative;
+	border-color: @sapUiChartPaletteSemanticNeutralLight1;
+	border-style: solid;
+	border-width: 1px;
+	color: @sapUiBaseText;
+	font-size: 0.6875rem;
+	line-height: 0.6875rem;
+	height: 0.6875rem;
+	padding: 0.1875rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.sapSuiteLMCLabels {
+	display: flex;
+	flex: 0 0 auto;
+}
+
+.sapSuiteLMCLineThreshold {
+	stroke: @sapUiChartPaletteSemanticNeutralLight1;
+	stroke-width: 1px;
+}
+.sapSuiteLMCLine {
+	stroke-width: 0.125rem;
+}
+
+.sapSuiteLMCPoint {
+	position: absolute;
+	border-radius: 50%;
+	transform: translate(-50%,-50%);
+	border-color: @sapUiChartDataPointBorderColor;
+	border-width: 1px;
+	border-style: solid;
+	background-clip: padding-box;
+	width: 0.375rem;
+	height: 0.375rem;
+}
+
+.sapSuiteLMCPointEmphasized {
+	width: 0.5625rem;
+	height: 0.5625rem;
+}
+
+/* Point Colors */
+.sapSuiteLMCPointGood {
+	background-color: @sapUiChartGood;
+}
+.sapSuiteLMCPointError {
+	background-color: @sapUiChartBad;
+}
+.sapSuiteLMCPointNeutral {
+	background-color: @sapUiChartNeutral;
+}
+.sapSuiteLMCPointCritical {
+	background-color: @sapUiChartCritical;
+}
+
+/* Point Type colors */
+.sapSuiteLMCPoint.sapSuiteLMCPointDotted {
+	background-color: @sapUiChartDataPointBorderColor;
+}
+
+.sapSuiteLMCPointGood.sapSuiteLMCPointDotted {
+	border-color: @sapUiChartGood;
+}
+.sapSuiteLMCPointError.sapSuiteLMCPointDotted {
+	border-color: @sapUiChartBad;
+}
+.sapSuiteLMCPointNeutral.sapSuiteLMCPointDotted {
+	border-color: @sapUiChartNeutral;
+}
+.sapSuiteLMCPointCritical.sapSuiteLMCPointDotted {
+	border-color: @sapUiChartCritical;
+}
+
+/* Line Colors */
+.sapSuiteLMCLineGood {
+	stroke: @sapUiChartGood;
+}
+.sapSuiteLMCLineError {
+	stroke: @sapUiChartBad;
+}
+.sapSuiteLMCLineNeutral {
+	stroke: @sapUiChartNeutral;
+}
+.sapSuiteLMCLineCritical {
+	stroke: @sapUiChartCritical;
+}
+
+/* Line Patterns */
+.sapSuiteLMCLineDashed {
+	stroke-dasharray: 5, 3;
+}
+
+.sapSuiteLMCLineDotted {
+	stroke-dasharray: 0, 4;
+	stroke-linecap: round;
+}
+
+/* Label Colors */
+.sapSuiteLMCLabelCritical {
+	color: @sapUiCriticalText;
+}
+.sapSuiteLMCLabelGood {
+	color: @sapUiPositiveText;
+}
+.sapSuiteLMCLabelError {
+	color: @sapUiNegativeText;
+}
+
+/* SIZES */
+.sapSuiteLMC.sapSuiteLMCSizeResponsive {
+  height: 100%;
+  width: 100%;
+}
+
+.sapSuiteLMC.sapSuiteLMCSizeL {
+	height: 5.875rem;
+	width: 12rem;
+}
+
+html.sapUiMedia-Std-Desktop .sapSuiteLMC.sapSuiteLMCSizeAuto,
+html.sapUiMedia-Std-Tablet .sapSuiteLMC.sapSuiteLMCSizeAuto,
+.sapSuiteLMC.sapSuiteLMCSizeM {
+	height: 4.5rem;
+	width: 10.5rem;
+}
+
+html.sapUiMedia-Std-Phone .sapSuiteLMC.sapSuiteLMCSizeAuto,
+.sapSuiteLMC.sapSuiteLMCSizeS {
+	height: 3.5rem;
+	width: 8.25rem;
+}
+
+.sapSuiteLMC.sapSuiteLMCSizeXS {
+  height: 1.125rem;
+  width: 6rem;
+}
+
+// different possible looks that are changed base on the current height of the container
+.sapSuiteLMC.sapSuiteLMCLookM {
+  .sapSuiteLMCLabel {
+	font-size: @sapMFontSmallSize;
+  }
+}
+
+.sapSuiteLMC.sapSuiteLMCLookS {
+  .sapSuiteLMCLabel {
+	font-size: @sapMFontSmallSize;
+  }
+}
+
+.sapSuiteLMC.sapSuiteLMCLookXS {
+  .sapSuiteLMCLabel,
+  .sapSuiteLMCThresholdLabel {
+	display: none;
+  }
+
+  .sapSuiteLMCVerticalAlignmentContainer {
+	max-width: 12rem;
+  }
+
+  .sapSuiteLMCPoint {
+	display: none;
+  }
+
+  .sapSuiteLMCSvgCanvas {
+	margin: 0;
+  }
+}

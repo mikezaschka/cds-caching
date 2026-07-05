@@ -1,0 +1,182 @@
+/* ================================================================ */
+/* CSS for control sap.suite.ui.microchart/RadialMicroChart.control */
+/* Base Theme                                                       */
+/* ================================================================ */
+
+.sapSuiteRMC {
+	background-color: transparent;
+	position: relative;
+  	outline: none;
+	display: flex;
+	align-items: center;
+}
+
+.sapSuiteRMC .sapSuiteRMCVerticalAlignmentContainer {
+	width: 100%;
+	height: 100%;
+  	position: relative;
+	max-height: 5.875rem;
+	max-width: 20rem;
+	min-height: 1.125rem;
+	min-width: 4rem;
+	display: flex;
+	flex-direction: row;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer .sapSuiteRMCInnerContainer {
+  	position: relative;
+  	height: 100%;
+	display: inline-block;
+}
+
+.sapSuiteRMCInnerContainer .sapSuiteRMCInsideLabel {
+  	position: absolute;
+  	top: 0;
+  	left: 0;
+  	width: 100%;
+	height: 100%;
+  	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer .sapSuiteRMCOutsideLabel {
+  	width: auto;
+  	height: auto;
+  	display: flex;
+  	align-items: center;
+  	padding-left: 0.25rem;
+  	overflow: hidden;
+  	white-space: nowrap;
+  	text-overflow: ellipsis;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer .sapSuiteRMCSvg {
+  	height: 100%;
+  	width: 100%;
+  	min-width: 1.125rem;
+  	min-height: 1.125rem;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer.sapSuiteRMCAlignLeft {
+  	justify-content: flex-start;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer.sapSuiteRMCAlignCenter {
+  	justify-content: center;
+}
+
+.sapSuiteRMCVerticalAlignmentContainer.sapSuiteRMCAlignRight {
+  	justify-content: flex-end;
+}
+
+.sapSuiteRMC .sapSuiteRMCLabelHide {
+  	display: none;
+}
+
+.sapSuiteRMC:focus:not([tabindex]) {
+	outline: none;
+}
+
+html.sap-desktop .sapSuiteRMC:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+}
+
+.sapSuiteRMC.sapSuiteRMCSizeL {
+	height: 5.875rem;
+	width: 12rem;
+}
+
+html.sapUiMedia-Std-Desktop .sapSuiteRMC.sapSuiteRMCSizeAuto,
+html.sapUiMedia-Std-Tablet .sapSuiteRMC.sapSuiteRMCSizeAuto,
+.sapSuiteRMC.sapSuiteRMCSizeM {
+	height: 4.5rem;
+	width: 10.5rem;
+}
+
+html.sapUiMedia-Std-Phone .sapSuiteRMC.sapSuiteRMCSizeAuto,
+.sapSuiteRMC.sapSuiteRMCSizeS {
+	height: 3.5rem;
+	width: 8.25rem;
+}
+
+.sapSuiteRMC.sapSuiteRMCSizeXS {
+	height: 1.125rem;
+	width: 6rem;
+}
+
+.sapSuiteRMC.sapSuiteRMCSizeResponsive {
+	height: 100%;
+	width: 100%;
+}
+
+.sapSuiteRMC.sapSuiteRMCLookL {
+  	.sapSuiteRMCFont {
+	  	font-size: @sapMFontHeader4Size;
+  	}
+}
+
+.sapSuiteRMC.sapSuiteRMCLookM {
+	.sapSuiteRMCFont {
+	  	font-size: @sapMFontLargeSize;
+	}
+}
+
+.sapSuiteRMC.sapSuiteRMCLookS {
+	.sapSuiteRMCFont {
+	  	font-size: @sapMFontSmallSize;
+	}
+}
+
+.sapSuiteRMC.sapSuiteRMCLookXS {
+	.sapSuiteRMCFont {
+	  	font-size: @sapMFontSmallSize;
+	}
+}
+
+.sapSuiteRMCRing{
+	fill: transparent;
+	stroke: transparent;
+}
+
+.sapSuiteRMCNeutralTextColor {
+	color: @sapUiTileTextColor;
+}
+
+.sapSuiteRMCGoodTextColor {
+	color: @sapUiPositiveText;
+}
+
+.sapSuiteRMCErrorTextColor {
+	color: @sapUiNegativeText;
+}
+
+.sapSuiteRMCCriticalTextColor {
+	color: @sapUiCriticalText;
+}
+
+.sapSuiteRMCPathNeutral {
+	stroke: @sapUiChartPaletteSequentialHue1;
+}
+
+.sapSuiteRMCPathGood {
+	stroke: @sapUiChartGood;
+}
+
+.sapSuiteRMCPathError {
+	stroke: @sapUiChartBad;
+}
+
+.sapSuiteRMCPathCritical {
+	stroke: @sapUiChartCritical;
+}
+
+.sapSuiteRMCCircleBackground {
+	stroke: @sapUiChartRadialBG;
+	fill: @sapUiChartRadialBG;
+}
+
+/* PATH COLORS */
+.sapSuiteRMCRemainingCircle {
+	stroke: @sapUiChartRadialRemainingCircle;
+}

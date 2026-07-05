@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/UIComponent"],function(e){"use strict";return e.extend("sap.ui.fl.variants.context.Component",{metadata:{manifest:"json"},onInit(){var e=this.getModel("selectedContexts");e.setProperty("/selected",[])},getSelectedContexts(){var e=this.getModel("selectedContexts").getProperty("/selected");var t=e.map(function(e){return e.id});return{role:t}},setEmptyListTextWithAdvice(){var e=this.getModel("selectedContexts");e.setProperty("/noDataText",this.getRootControl().getController().oI18n.getText("NO_SELECTED_ROLES_WITH_ADVICE"));e.refresh(true)},getSelectedContextsModel(){return this.getModel("selectedContexts")},setSelectedContexts(e){var t=e.role.map(function(e){return{id:e,description:""}});var s=this.getModel("selectedContexts");s.setProperty("/selected",t);s.refresh(true)},resetSelectedContexts(){var e=this.getModel("selectedContexts");e.setProperty("/selected",[]);e.refresh(true)},hasErrorsAndShowErrorMessage(){return false},showMessageStrip(e){var t=this.getModel("selectedContexts");t.setProperty("/showMessageStrip",e);t.refresh(true)}})});
+//# sourceMappingURL=Component.js.map

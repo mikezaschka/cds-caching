@@ -1,0 +1,166 @@
+{
+  "_version": "1.28.0",
+  "sap.app": {
+    "id": "sap.ui.fl.variants.context",
+    "type": "component",
+    "i18n": {
+      "bundleUrl": "i18n/i18n.properties",
+      "supportedLocales": [
+        "",
+        "ar",
+        "bg",
+        "ca",
+        "cnr",
+        "cs",
+        "cy",
+        "da",
+        "de",
+        "el",
+        "en",
+        "en-GB",
+        "en-US-x-sappsd",
+        "en-US-x-saprigi",
+        "en-US-x-saptrc",
+        "es",
+        "es-MX",
+        "et",
+        "fi",
+        "fr",
+        "fr-CA",
+        "hi",
+        "hr",
+        "hu",
+        "id",
+        "it",
+        "iw",
+        "ja",
+        "kk",
+        "ko",
+        "lt",
+        "lv",
+        "mk",
+        "ms",
+        "nl",
+        "no",
+        "pl",
+        "pt",
+        "pt-PT",
+        "ro",
+        "ru",
+        "sh",
+        "sk",
+        "sl",
+        "sr",
+        "sv",
+        "th",
+        "tr",
+        "uk",
+        "vi",
+        "zh-CN",
+        "zh-TW"
+      ]
+    },
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "title": "",
+    "description": "",
+    "resources": "resources.json",
+    "ach": "CA-UI5-ABA-AIDX"
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "sap.ui.fl.variants.context.view.ContextVisibility",
+      "type": "XML",
+      "async": true,
+      "id": "ContextVisibility"
+    },
+    "dependencies": {
+      "minUI5Version": "1.87.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "sap.ui.fl.variants.context.i18n.i18n",
+          "supportedLocales": [
+            "",
+            "ar",
+            "bg",
+            "ca",
+            "cnr",
+            "cs",
+            "cy",
+            "da",
+            "de",
+            "el",
+            "en",
+            "en-GB",
+            "en-US-x-sappsd",
+            "en-US-x-saprigi",
+            "en-US-x-saptrc",
+            "es",
+            "es-MX",
+            "et",
+            "fi",
+            "fr",
+            "fr-CA",
+            "hi",
+            "hr",
+            "hu",
+            "id",
+            "it",
+            "iw",
+            "ja",
+            "kk",
+            "ko",
+            "lt",
+            "lv",
+            "mk",
+            "ms",
+            "nl",
+            "no",
+            "pl",
+            "pt",
+            "pt-PT",
+            "ro",
+            "ru",
+            "sh",
+            "sk",
+            "sl",
+            "sr",
+            "sv",
+            "th",
+            "tr",
+            "uk",
+            "vi",
+            "zh-CN",
+            "zh-TW"
+          ]
+        }
+      },
+      "contexts": {
+        "type": "sap.ui.model.json.JSONModel"
+      },
+      "selectedContexts": {
+        "type": "sap.ui.model.json.JSONModel"
+      }
+    }
+  }
+}

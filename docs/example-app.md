@@ -2,7 +2,7 @@
 
 The cds-caching plugin includes a comprehensive example application that demonstrates various caching use cases.
 
-For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md).
+For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md) and [Feature Activation Guide](feature-activation.md).
 
 ## Example App Overview
 
@@ -72,11 +72,29 @@ cds deploy
 ### 2. Start the Example App with Dashboard
 
 ```bash
-cd examples/dashboard
-DEBUG=cds-caching npm start
+cd examples/app
+DEBUG=cds-caching cds watch
 ```
 
-Open http://localhost:8080/index.html to access the dashboard.
+Open http://localhost:4004/caching-dashboard/index.html to access the dashboard.
+
+The example uses `metrics.reuse` on the caching configuration, so the pre-built dashboard and `CachingApiService` are served by CAP — no separate UI project required.
+
+### Dashboard UI development (contributors)
+
+Edit sources in `app/dashboard-src/`. For live TypeScript development with transpile middleware:
+
+```bash
+# Terminal 1
+cd examples/app && cds watch
+
+# Terminal 2 (repo root)
+npm run start:dashboard
+```
+
+Open http://localhost:8080/index.html (UI5 dev server proxies the CAP backend on port 4004).
+
+Build the publishable pre-built dashboard with `npm run build:dashboard` from the repo root.
 
 ### 3. Test Caching
 

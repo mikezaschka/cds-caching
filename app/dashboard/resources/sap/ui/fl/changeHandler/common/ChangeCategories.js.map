@@ -1,0 +1,1 @@
+{"version":3,"file":"ChangeCategories.js","names":["sap","ui","define","ADD","MOVE","RENAME","COMBINESPLIT","REMOVE","OTHER"],"sources":["ChangeCategories-dbg.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,GAAI,WACjB,aACA,MAAO,CACNC,IAAK,MACLC,KAAM,OACNC,OAAQ,SACRC,aAAc,eACdC,OAAQ,SACRC,MAAO,QAET","ignoreList":[]}

@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/layout/VerticalLayout","sap/ui/layout/VerticalLayoutRenderer","sap/m/Label"],(e,t,i)=>{"use strict";const l=e.extend("sap.ui.mdc.filterbar.aligned.FilterItemLayout",{metadata:{library:"sap.ui.mdc"},renderer:{apiVersion:2,render:t.render}});l.prototype._setLabel=function(e){this._oLabel=new i(e.getId()+"-label",{required:e.getRequired()});this._oLabel.setParent(this);e.connectLabel(this._oLabel);if(this._getFieldPath()==="$search"){this._oLabel.setText(" ")}else{this._oLabel.addStyleClass("sapUiMdcFilterBarBaseLabel")}};l.prototype._getFilterField=function(){return this._oFilterField};l.prototype._getFieldPath=function(){return this._oFilterField?this._oFilterField.getPropertyKey():null};l.prototype.setFilterField=function(e){this._oFilterField=e;this._setLabel(e)};l.prototype.getContent=function(){const e=[];e.push(this._oLabel);e.push(this._oFilterField);return e};l.prototype.exit=function(){this._oFilterField=null;if(this._oLabel&&!this._oLabel.bIsDestroyed){this._oLabel.destroy();this._oLabel=undefined}e.prototype.exit.apply(this,arguments)};return l});
+//# sourceMappingURL=FilterItemLayout.js.map

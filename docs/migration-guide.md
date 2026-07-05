@@ -1,5 +1,147 @@
 # Migration Guide
 
+## Upgrading to 2.0
+
+Version 2.0 aligns monitoring configuration around a single `metrics` object and CAP-style **reuse** flags ([reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis)). Cache runtime behavior, store types, and programmatic APIs are unchanged.
+
+### What changed
+
+Monitoring is no longer spread across top-level `statistics`, `dashboard`, and manual `using`/`cds add` choices without a clear model. Instead:
+
+| Concern | v2 approach |
+|---------|-------------|
+| Metrics collection & DB persistence | `metrics.enabled`, `metrics.persistenceInterval`, … |
+| OData API from the plugin package | `metrics.reuse.api: true` |
+| Dashboard UI from the plugin package | `metrics.reuse.dashboard: true` (implies `reuse.api`) |
+| Project-owned API | `using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';` |
+| Project-owned UI (BTP) | `cds add caching-metrics` |
+
+`metrics.enabled` and persistence options are now applied at service init (previously documented but not consistently wired from config).
+
+### Configuration mapping
+
+| v1 (deprecated) | v2 (preferred) |
+|-----------------|----------------|
+| `"statistics": { "enabled": true, … }` | `"metrics": { "enabled": true, … }` |
+| `"dashboard": true` | `"metrics": { "reuse": { "api": true, "dashboard": true } }` |
+| `cds add caching-dashboard` | `cds add caching-metrics` (alias — old name still works) |
+
+### Example migration
+
+**Local dev (reuse API + dashboard from the plugin):**
+
+```diff
+  "caching": {
+    "impl": "cds-caching",
+    "store": "redis",
+-   "dashboard": true,
+-   "statistics": {
++   "metrics": {
+      "enabled": true,
+-     "persistenceInterval": 60000
++     "persistenceInterval": 60000,
++     "reuse": {
++       "api": true,
++       "dashboard": true
++     }
+    }
+  }
+```
+
+**Metrics only (no API/UI reuse):**
+
+```diff
+-   "statistics": {
++   "metrics": {
+      "enabled": true,
+      "persistenceInterval": 60000
+    }
+```
+
+**BTP production (own the UI, optional reuse API):**
+
+```json
+"metrics": {
+  "enabled": true,
+  "persistenceInterval": 60000
+}
+```
+
+```bash
+cds add caching-metrics
+cds add html5-repo && cds add mta
+```
+
+Do **not** set `metrics.reuse.dashboard` when deploying to the HTML5 Application Repository — use the copied `app/caching-dashboard/` project instead.
+
+### Reuse vs own
+
+| Mode | When | How |
+|------|------|-----|
+| **Reuse (config)** | Zero project files; CAP serves static UI | `metrics.reuse.api`, `metrics.reuse.dashboard` |
+| **Own (manual)** | BTP HTML5 repo, customization | `using … index.cds` and/or `cds add caching-metrics` |
+
+Do not combine reuse flags with their manual equivalent for the same concern (e.g. `metrics.reuse.api` + `using … index.cds` causes duplicate `CachingApiService`). See [Feature Activation](feature-activation.md).
+
+### Deprecation shims (v2.x → removed in v3.0)
+
+v1 config still works with **one-time startup warnings**:
+
+- `statistics` → normalized to `metrics`
+- `dashboard: true` → normalized to `metrics.reuse.dashboard` + `metrics.reuse.api`
+
+Migrate at your convenience before v3.0.
+
+### Upgrade checklist
+
+1. Update `package.json`: replace `statistics` with `metrics`; replace `dashboard: true` with `metrics.reuse.*`.
+2. Run `cds deploy` if you use database-backed metrics or `store: cds`.
+3. Remove redundant `using … index.cds` if you enable `metrics.reuse.api`.
+4. Remove `metrics.reuse.dashboard` if you use `cds add caching-metrics` (or the deprecated `cds add caching-dashboard`).
+5. Secure production APIs: `annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';`
+
+### No changes needed
+
+- Cache runtime API (`cache.rt.run`, `get`/`set`, `@cache` annotations)
+- Store types (`memory`, `redis`, `cds`, etc.)
+- OData API paths and entity names
+- Existing `using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds'` in projects that do not also set `metrics.reuse.api`
+
+---
+
+## Using cds-caching with cds 8
+
+cds-caching supports **SAP CAP cds 8** for core caching (read-through, memory/SQLite/Redis/Postgres stores, annotations, and programmatic API). Run `npm run test:cds8` to verify in an isolated Docker container (`@cap-js/sqlite ^1`).
+
+### cds 8 notes
+
+- **`express` dev dependency** — cds 8 does not bundle `express` for `cds.test()`; the repo includes it for the test harness.
+- **`@cap-js/sqlite ^1`** — use `@cap-js/sqlite ^1` with cds 8 (see `test/docker/install-cds.sh`).
+- **Database-backed metrics / CDS store** — persisting metrics or using `store: 'cds'` relies on `@cap-js/db-service` deep CQN handling that differs on cds 8; full coverage for those features starts with cds 9 in CI (`test:cds9` / `test:matrix`).
+- **HCQL / MCP protocol tests** — skipped below cds 10 (those adapters ship with newer CAP releases).
+
+---
+
+## Using cds-caching with cds 10 (June 2026 release)
+
+cds-caching is compatible with **SAP CAP cds 10** while continuing to support cds 9. The plugin runtime is unchanged — the notes below cover the environment requirements introduced by cds 10.
+
+### Action Required
+
+- **Node.js 22+** — cds 10 drops support for Node 20 (EOL). Use Node.js `>= 22` (v24 recommended). The plugin's `engines.node` is `>= 22`.
+- **`@cap-js/sqlite ^3`** — On cds 10, upgrade the SQLite driver from `^2` to `^3` (cds 10 ships `@cap-js/sqlite@3`, which uses Node's native SQLite instead of `better-sqlite3`). This only affects apps that use the SQLite database or the `store: 'sqlite'` cache backend.
+- **`@sap/cds-dk 10`** — If you build HANA artifacts (`store: 'hana'` or `store: 'cds'` on HANA), use a matching `@sap/cds-dk@10`. The plugin's `cds build` task (`.hdbtable` generation) works unchanged on cds 10.
+
+### No changes needed
+
+- **Configuration** — Cache store, TTL, tags, and `@cache` annotations are unchanged on cds 10. If you use cds-caching 2.x, monitoring uses the `metrics` block (see [Upgrading to 2.0](#upgrading-to-20)).
+- **APIs** — The read-through (`rt.run`/`rt.wrap`/`rt.send`), basic (`get`/`set`/`has`/`delete`), and invalidation APIs behave identically. cds 10's consolidated write-result shape (`{ affected }`) does not affect cache invalidation, which reacts to CUD events rather than their return payloads.
+- **Drafts** — cds 10's "bypass drafts by default" change is handled at the CAP/OData layer; the plugin caches reads transparently and has no draft-specific logic.
+
+### Note for contributors
+
+The test suite was migrated from Jest to **Vitest** (see `vitest.config.js`). Run tests locally with `npm test` on Node 22+ (CDS 10). To verify all supported CAP versions in isolated containers, use `npm run test:matrix` (`test:cds8` / `test:cds9` / `test:cds10` via Docker). Docker-backed store tests (Redis/Postgres) run via `npm run test:all`.
+
 ## Upgrading from 1.2.x to 1.3.0
 
 Version 1.3.0 adds **multi-tenancy support** and a new **CDS database store adapter**. These are additive features — existing configurations continue to work without changes.

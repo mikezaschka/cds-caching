@@ -1,6 +1,7 @@
 const cds = require('@sap/cds')
 const { test, GET, expect } = cds.test().in(__dirname + '/app')
-beforeEach (test.data.reset)
+const { resetTestData, cdsMajor } = require('./helpers/cds-version')
+beforeEach (async () => resetTestData(test))
 
 describe('Read-Through Operations', () => {
 
@@ -69,7 +70,7 @@ describe('Read-Through Operations', () => {
             expect(cache.createKey(query)).to.be.undefined  
         })
 
-        it("should execute an UPDATE query but not cache it", async () => {
+        it.skipIf(cdsMajor < 9)("should execute an UPDATE query but not cache it", async () => {
             const query = UPDATE(Foo).set({ ID: 1 }).where({ ID: 1 })
             await cache.rt.run(query, cds)
             expect(await cache.get(query)).to.be.undefined

@@ -1,0 +1,53 @@
+/* ================================== */
+/* CSS for control sap.f/SidePanel    */
+/* Horizon High Contrast White theme  */
+/* ================================== */
+
+@_sap_ui_layout_Splitter_BarDecorationColors: var(--sapObjectHeader_BorderColor), fade(@sapUiObjectHeaderBorderColor, 0);
+@_sap_ui_layout_Splitter_BarActiveDecorationColors: var(--sapObjectHeader_BorderColor), var(--sapObjectHeader_BorderColor);
+
+.sapFSP {
+
+	.sapFSPSplitterBar {
+
+		&:hover {
+
+			.sapFSPSplitterBarGripIcon {
+				background: var(--sapHighlightColor);
+			}
+		}
+	}
+
+	.sapFSPSide {
+
+		.sapFSPSideInner {
+			border: 0.0625rem solid var(--sapGroup_ContentBorderColor);
+			box-sizing: content-box;
+
+			.sapFSPActionBar {
+
+				.sapFSPItem {
+
+					&.sapFSPSelected {
+
+						.sapUiIcon {
+							background-color: var(--sapContent_Selected_Background);
+							border-width: 0.125rem;
+						}
+
+						&::before {
+							width: 0.25rem;
+						}
+					}
+
+					&:focus {
+
+						&::after {
+							border: 0.125rem dotted var(--sapContent_FocusColor);
+						}
+					}
+				}
+			}
+		}
+	}
+}

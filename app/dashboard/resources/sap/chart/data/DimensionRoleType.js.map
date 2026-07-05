@@ -1,0 +1,1 @@
+{"version":3,"file":"DimensionRoleType.js","names":["sap","ui","define","DataType","DimensionRoleType","category","series","category2","registerEnum"],"sources":["DimensionRoleType-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAC7C,aAUA,IAAIC,EAAoB,CAQpBC,SAAU,WAKVC,OAAQ,SAKRC,UAAW,aAGfJ,EAASK,aAAa,mCAAoCJ,GAE1D,OAAOA,CAEX,EAAkB","ignoreList":[]}

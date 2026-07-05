@@ -1,0 +1,1 @@
+{"version":3,"file":"MeasureRoleType.js","names":["sap","ui","define","DataType","MeasureRoleType","axis1","axis2","axis3","axis4","registerEnum"],"sources":["MeasureRoleType-dbg.js"],"mappings":";;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAAyB,SAASC,GAC7C,aAUA,IAAIC,EAAkB,CAWlBC,MAAO,QAMPC,MAAO,QAKPC,MAAO,QAOPC,MAAO,SAGXL,EAASM,aAAa,iCAAkCL,GAExD,OAAOA,CAEX,EAAkB","ignoreList":[]}

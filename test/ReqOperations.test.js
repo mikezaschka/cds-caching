@@ -8,6 +8,10 @@ describe('Read-Through Request Caching', () => {
         impl: "cds-caching"
     }
     let cache;
+    let AppService;
+    let Foo;
+    let ManualCachedFoo;
+    let CachedFoo;
 
     describe('req caching', () => {
 
@@ -56,8 +60,11 @@ describe('Read-Through Request Caching', () => {
         })
 
         it("should respect the cache key template", async () => {
+            // Note: the hash covers the CQN query for requests whose URL carries
+            // no query string (so HCQL/MCP/programmatic reads hash correctly),
+            // hence this literal reflects that content hash.
             const { headers } = await GET`/odata/v4/app/CachedFoo`
-            expect(headers['x-sap-cap-cache-key']).to.equal('56691dd9158c66b8225fb44e4177e3b6_anonymous');
+            expect(headers['x-sap-cap-cache-key']).to.equal('9a5b65f6adea80c25c0a8133fbd44b31_anonymous');
         })
 
         it("should cache a request for an annotated entity of an ApplicationService", async () => {
@@ -164,12 +171,14 @@ describe('Read-Through Request Caching', () => {
             // an own property. JSON.stringify only serializes own enumerable properties,
             // so `where` is silently dropped from the hash.
             //
-            // In this test env the request type is ODataRequest (cds v9), which may
-            // populate `where` as an own property. We log the actual behavior here.
-            // The fix (using the HTTP URL) is correct regardless — it never relies on
-            // JSON.stringify capturing prototype-inherited query properties.
-            expect(constructorName).to.equal('ODataRequest');
+            // Depending on the OData adapter in use, the request may be ODataRequest or
+            // NoaRequest. The fix (using the HTTP URL) is correct regardless — it never
+            // relies on JSON.stringify capturing prototype-inherited query properties.
+            expect(['ODataRequest', 'NoaRequest']).to.include(constructorName);
             expect(hasWhereInQuery).to.be.true;
+            if (constructorName === 'NoaRequest') {
+                expect(whereIsOwnProperty).to.be.false;
+            }
         })
 
         it("should generate different cache keys for requests with and without $filter when using service.prepend()", async () => {

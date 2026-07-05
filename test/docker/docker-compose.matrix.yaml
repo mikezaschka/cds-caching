@@ -1,0 +1,17 @@
+services:
+  test:
+    build:
+      context: ../..
+      dockerfile: test/docker/Dockerfile.test
+      args:
+        CDS_MAJOR: ${CDS_MAJOR:-10}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: docker
+      # Inside the compose network, services are reachable by name — not localhost.
+      CDS_REQUIRES_CACHING_REDIS_CREDENTIALS_SOCKET__HOST: redis
+      CDS_REQUIRES_CACHING_POSTGRES_CREDENTIALS_URL: postgresql://postgres:postgres@postgres:5432/postgres

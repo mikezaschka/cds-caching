@@ -10,6 +10,21 @@ const {
     AggregationTemporality
 } = require('@opentelemetry/sdk-metrics');
 
+// The test setup registers chai-as-promised onto the chai instance Vitest shares
+// with cds.test, which overrides Vitest's native `expect(promise).rejects`
+// matcher. This helper asserts a rejection without relying on that matcher.
+async function expectRejection(promise, message) {
+    let error;
+    try {
+        await promise;
+    } catch (e) {
+        error = e;
+    }
+    expect(error, 'expected promise to reject').toBeDefined();
+    if (message) expect(error.message).toContain(message);
+    return error;
+}
+
 // ---------------------------------------------------------------------------
 // Suite 1 — Telemetry.js with OTel SDK available
 // ---------------------------------------------------------------------------
@@ -36,7 +51,7 @@ describe('Telemetry (OTel available)', () => {
 
         // Require Telemetry AFTER providers are registered so it picks up
         // the real @opentelemetry/api instead of falling back to null.
-        jest.resetModules();
+        vi.resetModules();
         telemetry = require('../lib/support/Telemetry');
     });
 
@@ -230,34 +245,34 @@ describe('Telemetry integration (span creation)', () => {
 
     function mockCache() {
         return {
-            has: jest.fn().mockResolvedValue(false),
-            send: jest.fn().mockResolvedValue(undefined),
+            has: vi.fn().mockResolvedValue(false),
+            send: vi.fn().mockResolvedValue(undefined),
         };
     }
 
     function mockKeyManager() {
         return {
-            createKey: jest.fn().mockReturnValue('generated-key'),
+            createKey: vi.fn().mockReturnValue('generated-key'),
         };
     }
 
     function mockStatistics() {
         return {
-            recordHit: jest.fn(),
-            recordMiss: jest.fn(),
-            recordSet: jest.fn(),
-            recordDelete: jest.fn(),
-            recordError: jest.fn(),
-            recordNativeSet: jest.fn(),
-            recordNativeGet: jest.fn(),
-            recordNativeDelete: jest.fn(),
+            recordHit: vi.fn(),
+            recordMiss: vi.fn(),
+            recordSet: vi.fn(),
+            recordDelete: vi.fn(),
+            recordError: vi.fn(),
+            recordNativeSet: vi.fn(),
+            recordNativeGet: vi.fn(),
+            recordNativeDelete: vi.fn(),
         };
     }
 
     beforeAll(async () => {
         // Restore modules after Suite 1 teardown / Suite 2 mocking
-        jest.restoreAllMocks();
-        jest.resetModules();
+        vi.restoreAllMocks();
+        vi.resetModules();
 
         // AsyncOperations uses `cds` as a global (provided by CAP runtime).
         // Provide a minimal stub so the class can be instantiated standalone.
@@ -302,7 +317,7 @@ describe('Telemetry integration (span creation)', () => {
         it('creates a span named "cds-caching - wrap" on cache miss', async () => {
             const cache = mockCache();
             const ops = new AsyncOperations(cache, mockKeyManager(), mockStatistics());
-            ops.log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+            ops.log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
             const fn = async () => 'result-value';
             const wrapped = ops.wrap('my-key', fn);
@@ -325,7 +340,7 @@ describe('Telemetry integration (span creation)', () => {
             cache.send.mockResolvedValue({ value: 'cached-value', tags: [], timestamp: Date.now() });
 
             const ops = new AsyncOperations(cache, mockKeyManager(), mockStatistics());
-            ops.log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+            ops.log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
             const fn = async () => 'should-not-be-called';
             const wrapped = ops.wrap('my-key', fn);
@@ -341,12 +356,12 @@ describe('Telemetry integration (span creation)', () => {
         it('sets span error status when the wrapped function throws', async () => {
             const cache = mockCache();
             const ops = new AsyncOperations(cache, mockKeyManager(), mockStatistics());
-            ops.log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+            ops.log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
             const fn = async () => { throw new Error('boom'); };
             const wrapped = ops.wrap('my-key', fn);
 
-            await expect(wrapped()).rejects.toThrow('boom');
+            await expectRejection(wrapped(), 'boom');
 
             const spans = spanExporter.getFinishedSpans();
             expect(spans.length).toBe(1);
@@ -360,7 +375,7 @@ describe('Telemetry integration (span creation)', () => {
         it('creates a span named "cds-caching - exec" on cache miss', async () => {
             const cache = mockCache();
             const ops = new AsyncOperations(cache, mockKeyManager(), mockStatistics());
-            ops.log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+            ops.log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
             const fn = async (a, b) => a + b;
             const { result, cacheKey } = await ops.exec('exec-key', fn, [3, 4]);
@@ -379,11 +394,11 @@ describe('Telemetry integration (span creation)', () => {
         it('sets span error status when exec function throws', async () => {
             const cache = mockCache();
             const ops = new AsyncOperations(cache, mockKeyManager(), mockStatistics());
-            ops.log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+            ops.log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
             const fn = async () => { throw new Error('exec-fail'); };
 
-            await expect(ops.exec('exec-key', fn)).rejects.toThrow('exec-fail');
+            await expectRejection(ops.exec('exec-key', fn), 'exec-fail');
 
             const spans = spanExporter.getFinishedSpans();
             expect(spans.length).toBe(1);
@@ -405,27 +420,27 @@ describe('Telemetry integration (BasicOperations span decoration)', () => {
         const cache = {
             options: { throwOnErrors: false },
             cache: {
-                has: jest.fn().mockResolvedValue(false),
-                iterator: jest.fn().mockImplementation(async function* () {}),
+                has: vi.fn().mockResolvedValue(false),
+                iterator: vi.fn().mockImplementation(async function* () {}),
             },
-            send: jest.fn().mockResolvedValue(sendResult),
+            send: vi.fn().mockResolvedValue(sendResult),
             name: 'test-cache',
         };
-        const keyManager = { createKey: jest.fn().mockReturnValue('resolved-key') };
-        const tagResolver = { resolveTags: jest.fn().mockReturnValue([]) };
+        const keyManager = { createKey: vi.fn().mockReturnValue('resolved-key') };
+        const tagResolver = { resolveTags: vi.fn().mockReturnValue([]) };
         const statistics = {
-            recordNativeSet: jest.fn(),
-            recordNativeGet: jest.fn(),
-            recordNativeDelete: jest.fn(),
-            recordNativeClear: jest.fn(),
-            recordNativeDeleteByTag: jest.fn(),
+            recordNativeSet: vi.fn(),
+            recordNativeGet: vi.fn(),
+            recordNativeDelete: vi.fn(),
+            recordNativeClear: vi.fn(),
+            recordNativeDeleteByTag: vi.fn(),
         };
         return { cache, keyManager, tagResolver, statistics };
     }
 
     beforeAll(async () => {
-        jest.restoreAllMocks();
-        jest.resetModules();
+        vi.restoreAllMocks();
+        vi.resetModules();
 
         spanExporter = new InMemorySpanExporter();
         tracerProvider = new NodeTracerProvider({
@@ -570,36 +585,36 @@ describe('Telemetry integration (CapOperations span creation)', () => {
     function makeService(sendImpl) {
         return {
             name: 'TestService',
-            send: sendImpl || jest.fn().mockResolvedValue({ data: 'response' }),
+            send: sendImpl || vi.fn().mockResolvedValue({ data: 'response' }),
         };
     }
 
     function makeMocks({ hasResult = false, getValue = null } = {}) {
         const cache = {
-            has: jest.fn().mockResolvedValue(hasResult),
-            send: jest.fn().mockImplementation(async (op) => {
+            has: vi.fn().mockResolvedValue(hasResult),
+            send: vi.fn().mockImplementation(async (op) => {
                 if (op === 'GET') return getValue;
                 return undefined;
             }),
             options: { throwOnErrors: false },
         };
         const keyManager = {
-            createKey: jest.fn().mockReturnValue('cap-key'),
-            createContentHash: jest.fn().mockReturnValue('hash'),
+            createKey: vi.fn().mockReturnValue('cap-key'),
+            createContentHash: vi.fn().mockReturnValue('hash'),
         };
         const statistics = {
-            recordHit: jest.fn(),
-            recordMiss: jest.fn(),
-            recordSet: jest.fn(),
-            recordError: jest.fn(),
+            recordHit: vi.fn(),
+            recordMiss: vi.fn(),
+            recordSet: vi.fn(),
+            recordError: vi.fn(),
         };
-        const log = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
         return { cache, keyManager, statistics, log };
     }
 
     beforeAll(async () => {
-        jest.restoreAllMocks();
-        jest.resetModules();
+        vi.restoreAllMocks();
+        vi.resetModules();
 
         _originalCds = globalThis.cds;
         globalThis.cds = { context: { user: { id: 'u1' }, tenant: 't1', locale: 'en' } };
@@ -682,10 +697,10 @@ describe('Telemetry integration (CapOperations span creation)', () => {
 
     it('sets span error status when the underlying service throws', async () => {
         const { cache, keyManager, statistics, log } = makeMocks({ hasResult: false });
-        const service = makeService(jest.fn().mockRejectedValue(new Error('service-error')));
+        const service = makeService(vi.fn().mockRejectedValue(new Error('service-error')));
         const ops = new CapOperations(cache, keyManager, statistics, log);
 
-        await expect(ops.send(makeRequest('GET'), service, {})).rejects.toThrow('service-error');
+        await expectRejection(ops.send(makeRequest('GET'), service, {}), 'service-error');
 
         const spans = spanExporter.getFinishedSpans();
         expect(spans.length).toBe(1);
@@ -694,69 +709,6 @@ describe('Telemetry integration (CapOperations span creation)', () => {
     });
 });
 
-// ---------------------------------------------------------------------------
-// Suite 2 — Telemetry.js when @opentelemetry/api is absent (no-op mode)
-// ---------------------------------------------------------------------------
-describe('Telemetry (OTel absent / no-op)', () => {
-
-    let telemetry;
-
-    beforeAll(() => {
-        jest.resetModules();
-        jest.mock('@opentelemetry/api', () => {
-            const err = new Error('Cannot find module \'@opentelemetry/api\'');
-            err.code = 'MODULE_NOT_FOUND';
-            throw err;
-        });
-        telemetry = require('../lib/support/Telemetry');
-    });
-
-    afterAll(() => {
-        jest.restoreAllMocks();
-        jest.resetModules();
-    });
-
-    it('isAvailable() returns false', () => {
-        expect(telemetry.isAvailable()).toBe(false);
-    });
-
-    it('getActiveSpan() returns undefined', () => {
-        expect(telemetry.getActiveSpan()).toBeUndefined();
-    });
-
-    it('getTracer() returns undefined', () => {
-        expect(telemetry.getTracer('test')).toBeUndefined();
-    });
-
-    it('getMeter() returns undefined', () => {
-        expect(telemetry.getMeter('test')).toBeUndefined();
-    });
-
-    it('SpanStatusCode uses fallback values', () => {
-        expect(telemetry.SpanStatusCode).toEqual({ ERROR: 2, OK: 1 });
-    });
-
-    it('setDefaultAttributes() does not throw', () => {
-        expect(() => telemetry.setDefaultAttributes({ foo: 'bar' })).not.toThrow();
-    });
-
-    it('recordHit() does not throw', () => {
-        expect(() => telemetry.recordHit(10, { k: 'v' })).not.toThrow();
-    });
-
-    it('recordMiss() does not throw', () => {
-        expect(() => telemetry.recordMiss(5)).not.toThrow();
-    });
-
-    it('recordSet() does not throw', () => {
-        expect(() => telemetry.recordSet()).not.toThrow();
-    });
-
-    it('recordDelete() does not throw', () => {
-        expect(() => telemetry.recordDelete()).not.toThrow();
-    });
-
-    it('recordError() does not throw', () => {
-        expect(() => telemetry.recordError({ op: 'get' })).not.toThrow();
-    });
-});
+// The "OTel absent / no-op" suite lives in TelemetryNoOp.test.js, because it
+// requires @opentelemetry/api to be mocked as missing at the module level —
+// which must happen in an isolated test file with a hoisted mock.

@@ -1,0 +1,6 @@
+/*!
+ * SAPUI5
+ * (c) Copyright 2025 SAP SE. All rights reserved.
+ */
+sap.ui.define(["./FilterItem","sap/ui/comp/library"],function(e,t){"use strict";var i=e.extend("sap.ui.comp.filterbar.FilterGroupItem",{metadata:{library:"sap.ui.comp",properties:{groupTitle:{type:"string",group:"Misc",defaultValue:null},groupName:{type:"string",group:"Misc",defaultValue:null},visibleInAdvancedArea:{type:"boolean",group:"Misc",defaultValue:false}},aggregations:{_debug:{type:"sap.ui.core.Control",multiple:false,visibility:"hidden"}}}});i.prototype.init=function(){this.setVisibleInAdvancedArea(false);this.setVisibleInFilterBar(false);this._setParameter(false)};i.prototype._setParameter=function(e){this._bIsParameter=e};i.prototype.setGroupTitle=function(e){this.setProperty("groupTitle",e);this.fireChange({propertyName:"groupTitle"});return this};i.prototype.setVisibleInAdvancedArea=function(e){this.setVisibleInFilterBar(e);return this};i.prototype.getVisibleInAdvancedArea=function(){return this.getVisibleInFilterBar()};i.prototype._getControl=function(){return this.getControl.apply(this,arguments)};i.prototype.destroy=function(){e.prototype.destroy.apply(this,arguments)};return i});
+//# sourceMappingURL=FilterGroupItem.js.map

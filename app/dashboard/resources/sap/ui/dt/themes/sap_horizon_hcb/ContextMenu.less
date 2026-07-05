@@ -1,0 +1,29 @@
+/******************************************************************
+	Style of the DT Contextmenu - Horizon High Contrast Black theme
+*******************************************************************/
+@_sap_ui_dt_ContextMenu_BorderRadius: @sapUiButtonBorderCornerRadius; // 0.375rem
+@_sap_ui_dt_ContextMenu_OpenSubMenuBackgroundColor: @sapUiSelected; //#0f5c93
+
+.sapUiDtContextMenu {
+	.sapUiMnuLst {
+		.sapUiMnuItm {
+
+			&.sapUiMnuItmDsbl {
+				opacity: 1;
+			}
+
+			&:focus {
+				border-radius: @_sap_ui_dt_ContextMenu_BorderRadius;
+			}
+
+			&.sapUiMnuItmSubMnuOpen {
+				border-bottom: 0.0625rem solid transparent !important; //remove border
+				border-radius: @_sap_ui_dt_ContextMenu_BorderRadius;
+
+				&:not(.sapUiMnuItmHov) {
+					background-color: @_sap_ui_dt_ContextMenu_OpenSubMenuBackgroundColor;
+				}
+			}
+		}
+	}
+}

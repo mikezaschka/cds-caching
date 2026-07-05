@@ -1,0 +1,1 @@
+sap.viz.extapi.env.Language.register({id:'hi',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"नियंत्रण ऑब्जेक्ट लोड करने में विफल {0}.",VIZ_FRAME_INVALID:"अमान्य Vizफ़्रेम दृष्टांत.",VIZ_FRAME_DESTORYED:"Vizफ़्रेम दृष्टांत को नष्ट किया गया.",}});

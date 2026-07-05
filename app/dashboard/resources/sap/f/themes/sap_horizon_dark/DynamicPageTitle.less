@@ -1,0 +1,145 @@
+/* ======================================= */
+/* CSS for control sap.f/DynamicPageTitle  */
+/* Evening Horizon theme                   */
+/* ======================================= */
+
+.sapFDynamicPageTitle {
+	padding: 0.5rem 2rem;
+	word-wrap: break-word;
+}
+
+.sapFDynamicPage-Std-Desktop-XL .sapFDynamicPageTitle {
+	padding: 0.5rem 3rem;
+}
+
+.sapFDynamicPage-Std-Tablet {
+
+	.sapFDynamicPageTitle,
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
+		padding: 0.5rem 2rem;
+	}
+
+	/* Needed because on some high-end phones in landscape mode,
+	the width of the viewport is bigger than 600 (Tablet breakpoint). */
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 2rem;
+	}
+}
+
+.sapFDynamicPage-Std-Phone {
+
+	.sapFDynamicPageTitle,
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleOnly > .sapFDynamicPageTitle,
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
+		padding: 0.5rem 1rem;
+	}
+
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 1rem;
+	}
+}
+
+.sapFDynamicPageTitle.sapFDynamicPageTitleTranslucent {
+	background: var(--sapObjectHeader_Background);
+}
+
+.sapFDynamicPageTitle.sapFDynamicPageTitleTransparent {
+	background: transparent;
+}
+
+.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnappedTitleOnMobile > .sapFDynamicPageTitle {
+	box-shadow: @sapUiShadowHeader;
+}
+
+.sapFDynamicPageNavigation .sapFDynamicPageTitleWrapper {
+
+	&.sapFDynamicPageTitleSnapped,
+	&.sapFDynamicPageTitleOnly {
+
+		& > .sapFDynamicPageTitle {
+			box-shadow: none;
+		}
+	}
+}
+
+.sapFDynamicPageTitle .sapMTB {
+	background: transparent;
+	padding: 0;
+}
+
+/* General alignment styles for header text */
+.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainHeading {
+	align-self: center;
+}
+
+.sapFDynamicPageTitleMainNavigationArea > .sapMTBSeparator {
+	margin: 0 0.5rem;
+}
+
+.sapUxAPObjectPageLayoutNoHeaderContent.sapUxAPObjectPageLayoutNoAnchorBar .sapFDynamicPageTitle {
+		box-shadow: @sapUiShadowHeader;
+}
+
+/* ========================= */
+/* Delta Styles for Horizon  */
+/* ========================= */
+
+.sapFDynamicPageTitleMain>.sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainHeading .sapFDynamicPageTitleMainHeadingInner .sapMTitle:not(.sapUICompVarMngmtTitle) {
+	font-size: var(--sapObjectHeader_Title_FontSize);
+	font-family: var(--sapObjectHeader_Title_FontFamily);
+}
+
+
+/* Expanded Header title is small on small screens */
+.sapFDynamicPage-Std-Phone .sapFDynamicPageTitleMain>.sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainHeading .sapFDynamicPageTitleMainHeadingInner .sapMTitle:not(.sapUICompVarMngmtTitle) {
+	font-size: var(--sapObjectHeader_Title_SnappedFontSize);
+	font-family: var(--sapObjectHeader_Title_FontFamily);
+}
+
+
+/* Snapped Header title is small on all screen sizes */
+.sapFDynamicPageTitleSnapped .sapFDynamicPageTitleMain>.sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainHeading .sapFDynamicPageTitleMainHeadingInner .sapMTitle:not(.sapUICompVarMngmtTitle) {
+	font-size: var(--sapObjectHeader_Title_SnappedFontSize);
+	font-family: var(--sapObjectHeader_Title_FontFamily);
+}
+
+/* Overview Page using Dynamic page Header */
+.ovpApplication .sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped>.sapFDynamicPageTitle,
+.ovpApplication .sapFDynamicPageTitleWrapper.sapFDynamicPageTitleOnly>.sapFDynamicPageTitle {
+    box-shadow: var(--sapContent_HeaderShadow);
+}
+
+/* Dynamic page Title Focus - Experimental */
+html.sap-desktop {
+
+	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus {
+		outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+		outline-offset: -0.125rem;
+	}
+}
+
+/* =========== */
+/* GenericTag  */
+/* =========== */
+
+.sapFDynamicPageTitleMain .sapMGenericTag.sapMBarChild  {
+	margin-top: 1rem;
+}
+
+.sapFDynamicPageTitleSnapped .sapMGenericTag.sapMBarChild  {
+	margin-top: 0.3125rem;
+}
+
+.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainContent {
+
+	.sapMGenericTag.sapMBarChild {
+		margin-top: 0.5625rem;
+		margin-bottom: 0.5625rem;
+	}
+}
+
+.sapUiSizeCompact {
+	.sapFDynamicPageTitle .sapMTB {
+		height: 2.75rem;
+	}
+}

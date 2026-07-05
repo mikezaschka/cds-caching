@@ -1,0 +1,20 @@
+/* ====================================== */
+/* CSS for control sap.ui.comp/SmartForm  */
+/* Base theme                             */
+/* ====================================== */
+
+.sapMSemanticPage .sapUiCompSmartForm .sapMBarChild.sapMLabel {
+	font-style: normal;
+}
+
+.sapUiCompSmartForm .sapMPanelContent {
+	padding: 0rem;
+}
+
+.sapUiCompSmartForm .sapUiCompEmptyValue {
+	float: left;
+}
+
+.sapUiCompSmartForm .sapUiCompEmptyValue::after {
+	content: "\2013\a0";
+}

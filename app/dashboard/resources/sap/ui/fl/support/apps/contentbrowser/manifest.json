@@ -1,0 +1,136 @@
+{
+	"_version": "1.21.0",
+	"sap.app": {
+		"id": "sap.ui.fl.support.apps.contentbrowser.app",
+		"type": "application",
+		"i18n": {
+		  "bundleUrl": "i18n/i18n.properties",
+		  "supportedLocales": [
+		    ""
+		  ],
+		  "fallbackLocale": ""
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"ach": "CA-UI5-FL",
+		"resources": "resources.json"
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "sap.ui.fl.support.apps.contentbrowser.view.MainView",
+			"type": "XML",
+			"id": "rootView",
+			"async": true
+		},
+		"dependencies": {
+			"minUI5Version": "1.45",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.layout": {}
+			}
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "sap.ui.fl.support.apps.contentbrowser.i18n.i18n",
+					"supportedLocales": [
+					  ""
+					],
+					"fallbackLocale": ""
+				}
+			},
+			"@i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "sap.ui.fl.support.apps.contentbrowser.i18n.i18n"
+				}
+			}
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.m.routing.Router",
+				"viewType": "XML",
+				"viewPath": "sap.ui.fl.support.apps.contentbrowser.view",
+				"controlId": "container-contentbrowser---rootView--splitApp",
+				"controlAggregation": "masterPages",
+				"async": true
+			},
+			"routes": [
+				{
+					"pattern": "",
+					"name": "Layers",
+					"target": "Layers"
+				},
+				{
+					"pattern": "{layer}/:namespace:",
+					"name": "LayerContentMaster",
+					"target": ["LayerContentMaster", "EmptyDetails"],
+					"subroutes": [
+						{
+							"pattern": "{layer}/{namespace}/{fileName}.{fileType}",
+							"name": "ContentDetailsFlip",
+							"target": "ContentDetailsFlip"
+						},
+						{
+							"pattern": "{layer}/{namespace}/{fileName}.{fileType}",
+							"name": "ContentDetails",
+							"target": "ContentDetails"
+						}
+					]
+				},
+				{
+					"pattern": "edit/{layer}/{namespace}/{fileName}.{fileType}",
+					"name": "ContentDetailsEdit",
+					"target": "ContentDetailsEdit"
+				}
+			],
+			"targets": {
+				"overview": {
+					"viewName": "Overview"
+				},
+				"Layers": {
+					"viewName": "Layers",
+					"viewLevel": 1
+				},
+				"LayerContentMaster": {
+					"viewName": "LayerContentMaster",
+					"viewLevel": 2
+				},
+				"EmptyDetails": {
+					"viewName": "EmptyDetails",
+					"controlAggregation": "detailPages"
+				},
+				"ContentDetails": {
+					"viewName": "ContentDetails",
+					"controlAggregation": "detailPages"
+				},
+				"ContentDetailsFlip": {
+					"viewName": "ContentDetails",
+					"transition": "flip",
+					"controlAggregation": "detailPages"
+				},
+				"ContentDetailsEdit": {
+					"viewName": "ContentDetailsEdit",
+					"transition": "flip",
+					"controlAggregation": "detailPages"
+				}
+			}
+		},
+		"contentDensities": {
+			"compact": false,
+			"cozy": false
+		}
+	}
+}

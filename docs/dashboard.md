@@ -10,13 +10,49 @@ The cds-caching plugin includes a pre-built UI5 dashboard for monitoring cache p
 cds add caching-dashboard
 ```
 
-Then start your application:
+By default this copies a **pre-built**, self-contained UI5 app — ready for `cds watch` and for BTP/HTML5 repo deployment without extra setup.
+
+To copy **TypeScript source** instead (for customizing views, controllers, and styles), use:
 
 ```bash
+cds add caching-dashboard --source
+```
+
+Then install UI5 tooling dependencies and start your application:
+
+```bash
+cd app/caching-dashboard && npm install && cd ../..
 cds watch
 ```
 
 The dashboard is available at [http://localhost:4004/caching-dashboard/index.html](http://localhost:4004/caching-dashboard/index.html).
+
+## Zero-config Alternative (reuse & compose)
+
+If you don't want any files copied into your project, you can have the plugin serve its bundled dashboard directly from `node_modules`, following CAP's [reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis) pattern. Just set `dashboard: true` on your caching configuration:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "statistics": { "enabled": true, "persistenceInterval": 60000 },
+        "dashboard": true
+      }
+    }
+  }
+}
+```
+
+With this flag the plugin automatically:
+
+- serves the pre-built UI at `/caching-dashboard` (via `app.serve('/caching-dashboard').from('cds-caching', 'app/dashboard')` at bootstrap), and
+- exposes the `CachingApiService` OData API — so you don't need `srv/caching-api.cds` either.
+
+No files are copied, and the dashboard always tracks the installed plugin version. Use **either** this flag **or** `cds add caching-dashboard`, not both (they both serve `/caching-dashboard`).
+
+> **Production note:** `app.serve().from()` serves the UI from the CAP Node.js server. This works out of the box locally and in deployments where the CAP backend serves the UI. In the standard SAP BTP setup (managed/standalone approuter + HTML5 Application Repository), UIs are served from the HTML5 repo — not the backend — so the `dashboard: true` route is not reachable through the approuter unless you add an explicit route to the backend. For those deployments, use `cds add caching-dashboard` and the [deployment](#deploying-the-dashboard) flow below. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
 
 ## Prerequisites
 
@@ -44,12 +80,19 @@ See the [Metrics Guide](metrics-guide.md) for details on statistics configuratio
 
 ## What Gets Created
 
-Running `cds add caching-dashboard` adds two things to your project:
+Running `cds add caching-dashboard` adds the following to your project:
 
 | Path | Purpose |
 |------|---------|
-| `app/caching-dashboard/webapp/` | Pre-built UI5 dashboard application |
+| `app/caching-dashboard/webapp/` | UI5 dashboard application (pre-built by default, TypeScript source with `--source`) |
+| `app/caching-dashboard/ui5.yaml` | UI5 build configuration |
+| `app/caching-dashboard/ui5-deploy.yaml` | Deploy configuration (ABAP `deploy-to-abap` template — edit placeholders) |
+| `app/caching-dashboard/xs-app.json` | Approuter routing for HTML5 App Repo deployments |
+| `app/caching-dashboard/package.json` | Build/deploy scripts for the UI app |
+| `app/caching-dashboard/tsconfig.json` | TypeScript configuration (only with `--source`) |
 | `srv/caching-api.cds` | Exposes the `CachingApiService` OData API |
+
+Existing files are never overwritten, so your customizations and deploy settings are safe across re-runs (except `app/caching-dashboard/webapp/`, which is refreshed — see [Updating](#updating)).
 
 The `srv/caching-api.cds` file contains a single `using` statement that tells CAP to serve the plugin's OData API:
 
@@ -69,24 +112,50 @@ This also transitively loads the required database entities (`Caches`, `Metrics`
 
 ## Securing the Dashboard
 
-By default the `CachingApiService` is accessible without authentication. To restrict access, annotate the service in a separate `.cds` file (or append to `srv/caching-api.cds`):
+By default the `CachingApiService` is accessible without authentication. To restrict access, annotate the service using its **fully-qualified name**. Add this single line to your existing `srv/caching-api.cds` (the file created by `cds add caching-dashboard`):
 
 ```cds
-using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
-
-annotate CachingApiService with @requires: 'authenticated-user';
+annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
 ```
+
+> **Important:** annotate the fully-qualified name (`plugin.cds_caching.CachingApiService`) and do **not** repeat the `using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';` import. Importing the same service name twice in the same model causes a `Duplicate definition of CachingApiService` error at startup (see [issue #24](https://github.com/mikezaschka/cds-caching/issues/24)). The fully-qualified `annotate` needs no `using` and works in any `.cds` file under `srv/`.
+
+## Deploying the Dashboard
+
+How you deploy the dashboard depends on your runtime topology:
+
+**1. CAP backend serves the UI (simplest).** If your CAP server serves static content itself (e.g. directly exposed, or an approuter route that forwards to the backend), the dashboard is served by CAP just like locally. In this case the [zero-config `dashboard: true`](#zero-config-alternative-reuse--compose) flag is enough — nothing extra to deploy.
+
+**2. SAP BTP with HTML5 App Repository + approuter (standard productive setup).** Here UIs are served from the HTML5 repo, not the backend, so the dashboard must be built and deployed as its own HTML5 app. `cds add caching-dashboard` lays down the required artifacts (`ui5.yaml`, `xs-app.json`, `package.json`). Then wire it into your deployment with the standard CAP facets:
+
+```bash
+cds add html5-repo
+cds add mta          # or: cds add approuter
+```
+
+The generated `xs-app.json` forwards `/odata/v4/caching-api/*` to the CAP backend via the `srv-api` destination (created by `cds add mta`) and serves the UI from `html5-apps-repo-rt`. Adjust the destination name if yours differs, and secure the service (see [Securing the Dashboard](#securing-the-dashboard)).
+
+**3. ABAP front-end server.** Use the generated `ui5-deploy.yaml` (a `deploy-to-abap` template) — replace the `MY_ABAP_DESTINATION`, `MY_PACKAGE`, and `MY_TRANSPORT` placeholders, then run `npm run deploy` from `app/caching-dashboard/`.
+
+> The shipped dashboard is a **self-contained UI5 build** (the SAPUI5 runtime is bundled), so it does not depend on the public SAPUI5 CDN at runtime.
 
 ## Customization
 
-The dashboard files copied into `app/caching-dashboard/webapp/` are fully owned by your project. You can modify views, controllers, and styles as needed. Changes are preserved across `cds watch` restarts.
+The dashboard files copied into `app/caching-dashboard/webapp/` are fully owned by your project.
+
+**Default (pre-built):** Works immediately with `cds watch`, but controllers are transpiled/minified JavaScript bundled with the SAPUI5 runtime — fine for deployment, awkward for deep UI changes.
+
+**Source mode (`--source`):** Copies the original TypeScript sources, `tsconfig.json`, and a `ui5.yaml` with transpile middleware. Run `npm install` in `app/caching-dashboard/` before `cds watch`. Local development uses the SAPUI5 CDN; run `npm run build` from that folder before deploying to HTML5 App Repo or ABAP.
+
+Re-running `cds add caching-dashboard` (with or without `--source`) refreshes `webapp/` from the installed plugin version. Back up local changes before updating, and use the same flag you chose initially if you want to keep the same variant.
 
 ## Updating
 
-To update the dashboard to the latest version shipped with cds-caching, re-run:
+To update the dashboard to the latest version shipped with cds-caching, re-run the same command you used initially:
 
 ```bash
-cds add caching-dashboard
+cds add caching-dashboard           # pre-built
+cds add caching-dashboard --source  # TypeScript source
 ```
 
 This overwrites the files in `app/caching-dashboard/webapp/` with the latest build. If you have made local modifications, back them up before updating.

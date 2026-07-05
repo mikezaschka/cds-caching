@@ -28,7 +28,8 @@
     "srv/**",
     "index.cds",
     "lib/**",
-    "app/dashboard/**"
+    "app/dashboard/**",
+    "app/dashboard-src/**"
   ],
   "scripts": {
     "test": "jest --runInBand --silent",
@@ -38,7 +39,8 @@
     "test:all": "npm run test:docker:start && npm test; status=$?; npm run test:docker:stop; exit $status",
     "lint": "eslint .",
     "release": "release-it",
-    "prepublishOnly": "cd examples/dashboard && npx ui5 build self-contained --clean-dest --dest ../../app/dashboard"
+    "prepublishOnly": "npm run sync:dashboard-src && cd examples/dashboard && npx ui5 build self-contained --clean-dest --dest ../../app/dashboard",
+    "sync:dashboard-src": "rm -rf app/dashboard-src && cp -R examples/dashboard/webapp app/dashboard-src"
   },
   "peerDependencies": {
     "@keyv/compress-gzip": "^2.0.3",

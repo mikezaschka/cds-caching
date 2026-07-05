@@ -1,0 +1,18 @@
+<mvc:View controllerName="cds.plugin.caching.dashboard.controller.App" displayBlock="true"
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.f"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:fb="sap.ui.comp.filterbar"
+	xmlns:card="sap.f.cards"
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+	xmlns:mvc="sap.ui.core.mvc">
+
+	<App id="app">
+		<f:FlexibleColumnLayout id="fcl" layout="{app>/layout}">
+		</f:FlexibleColumnLayout>
+	</App>
+
+</mvc:View> 

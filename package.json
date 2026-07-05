@@ -32,15 +32,18 @@
     "app/dashboard-src/**"
   ],
   "scripts": {
-    "test": "jest --runInBand --silent",
-    "test:watch": "jest --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cds9": "bash scripts/docker-test-cds.sh 9",
+    "test:cds10": "bash scripts/docker-test-cds.sh 10",
+    "test:matrix": "bash scripts/docker-test-matrix.sh",
     "test:docker:start": "docker compose -f test/docker/docker-compose.yaml up -d --wait",
     "test:docker:stop": "docker compose -f test/docker/docker-compose.yaml down",
     "test:all": "npm run test:docker:start && npm test; status=$?; npm run test:docker:stop; exit $status",
     "lint": "eslint .",
     "release": "release-it",
-    "prepublishOnly": "npm run sync:dashboard-src && cd examples/dashboard && npx ui5 build self-contained --clean-dest --dest ../../app/dashboard",
-    "sync:dashboard-src": "rm -rf app/dashboard-src && cp -R examples/dashboard/webapp app/dashboard-src"
+    "sync:dashboard-src": "rm -rf app/dashboard-src && cp -R examples/dashboard/webapp app/dashboard-src",
+    "prepublishOnly": "npm run sync:dashboard-src && cd examples/dashboard && npx ui5 build self-contained --clean-dest --dest ../../app/dashboard"
   },
   "peerDependencies": {
     "@keyv/compress-gzip": "^2.0.3",
@@ -50,7 +53,7 @@
     "@keyv/sqlite": "^4.0.5",
     "@opentelemetry/api": "^1.0.0",
     "@resolid/keyv-sqlite": "^4.0.5",
-    "@sap/cds": ">=8",
+    "@sap/cds": ">=9",
     "@sap/cds-dk": ">=9",
     "keyv-hana": ">=1.0.0"
   },
@@ -91,6 +94,8 @@
   },
   "devDependencies": {
     "@cap-js/cds-test": "^0.4.1",
+    "@sap/cds": "^10",
+    "@sap/cds-dk": "^10",
     "@keyv/compress-gzip": "~2.0.3",
     "@keyv/compress-lz4": "~1.0.1",
     "@keyv/postgres": "~2.2.3",
@@ -103,11 +108,11 @@
     "@resolid/keyv-sqlite": "~5.0.1",
     "eslint": "^10.0.0",
     "husky": "^9.1.7",
-    "jest": "^30.2.0",
-    "release-it": "^19.2.4"
+    "release-it": "^19.2.4",
+    "vitest": "^4.1.9"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "cds": {
     "requires": {

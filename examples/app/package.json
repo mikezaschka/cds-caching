@@ -38,6 +38,7 @@
       },
       "caching": {
         "impl": "cds-caching",
+        "dashboard": true,
         "namespace": "my-cache",
         "store": "redis",
         "statistics": {

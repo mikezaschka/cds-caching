@@ -1,5 +1,25 @@
 # Migration Guide
 
+## Using cds-caching with cds 10 (June 2026 release)
+
+cds-caching is compatible with **SAP CAP cds 10** while continuing to support cds 9. The plugin runtime is unchanged — the notes below cover the environment requirements introduced by cds 10.
+
+### Action Required
+
+- **Node.js 22+** — cds 10 drops support for Node 20 (EOL). Use Node.js `>= 22` (v24 recommended). The plugin's `engines.node` is `>= 22`.
+- **`@cap-js/sqlite ^3`** — On cds 10, upgrade the SQLite driver from `^2` to `^3` (cds 10 ships `@cap-js/sqlite@3`, which uses Node's native SQLite instead of `better-sqlite3`). This only affects apps that use the SQLite database or the `store: 'sqlite'` cache backend.
+- **`@sap/cds-dk 10`** — If you build HANA artifacts (`store: 'hana'` or `store: 'cds'` on HANA), use a matching `@sap/cds-dk@10`. The plugin's `cds build` task (`.hdbtable` generation) works unchanged on cds 10.
+
+### No changes needed
+
+- **Configuration** — All cache configuration (stores, TTLs, tags, `@cache` annotations, statistics) is unchanged.
+- **APIs** — The read-through (`rt.run`/`rt.wrap`/`rt.send`), basic (`get`/`set`/`has`/`delete`), and invalidation APIs behave identically. cds 10's consolidated write-result shape (`{ affected }`) does not affect cache invalidation, which reacts to CUD events rather than their return payloads.
+- **Drafts** — cds 10's "bypass drafts by default" change is handled at the CAP/OData layer; the plugin caches reads transparently and has no draft-specific logic.
+
+### Note for contributors
+
+The test suite was migrated from Jest to **Vitest** (see `vitest.config.js`). Run tests locally with `npm test` on Node 22+ (CDS 10). To verify both supported CAP versions in isolated containers, use `npm run test:matrix` (`test:cds9` / `test:cds10` via Docker). Docker-backed store tests (Redis/Postgres) run via `npm run test:all`.
+
 ## Upgrading from 1.2.x to 1.3.0
 
 Version 1.3.0 adds **multi-tenancy support** and a new **CDS database store adapter**. These are additive features — existing configurations continue to work without changes.

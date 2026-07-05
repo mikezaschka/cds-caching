@@ -23,6 +23,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | Guide | Description |
 |-------|-------------|
 | [Programmatic API](docs/programmatic-api.md) | Full API reference for cache operations |
+| [Protocol Support](docs/protocols.md) | Caching across OData, REST, GraphQL, HCQL, and MCP |
 | [Key Management](docs/key-management.md) | Key templates, context awareness, custom keys |
 | [Metrics Guide](docs/metrics-guide.md) | Statistics, monitoring, and performance tracking |
 | [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
@@ -39,6 +40,16 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 ```bash
 npm install cds-caching
 ```
+
+### Requirements
+
+| Dependency | Supported versions |
+|------------|--------------------|
+| SAP CAP (`@sap/cds`) | `>= 9` (including **cds 10**) |
+| Node.js | `>= 22` (cds 10 requires Node 22+, v24 recommended) |
+| `@cap-js/sqlite` (SQLite store) | `^2` on cds 9, `^3` on cds 10 |
+
+> The plugin runtime supports both cds 9 and cds 10. When running on cds 10, use Node.js 22 or higher and `@cap-js/sqlite ^3`.
 
 ### Minimal Configuration
 
@@ -105,6 +116,8 @@ service MyService {
 ```
 
 When `invalidateOnWrite` is set, the cache for that entity is automatically cleared after any CREATE, UPDATE, or DELETE operation, so subsequent reads always return fresh data.
+
+Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-handler level, so a single `@cache` annotation applies whether the request arrives via OData, REST, GraphQL, HCQL, or the new [MCP protocol adapter](https://cap.cloud.sap/docs/guides/protocols/mcp) — no protocol-specific configuration required. MCP is read-only, so its reads are cached while writes over other protocols still invalidate the shared entries. See the [Protocol Support guide](docs/protocols.md) for details.
 
 ## Configuration
 
@@ -195,8 +208,12 @@ The easiest way to set this up is `cds add caching-dashboard`, which creates bot
 
 ```cds
 using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';
+```
 
-annotate CachingApiService with @requires: 'authenticated-user';
+To restrict access, add the `@requires` annotation using the service's **fully-qualified name** — do not repeat the `using` import (importing the same name twice throws `Duplicate definition of CachingApiService` at startup):
+
+```cds
+annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
 ```
 
 This automatically loads the required database entities (`Caches`, `Metrics`, `KeyMetrics`) via a transitive `using from` dependency — no additional configuration needed. Without this step, the service won't be served by CAP and the dashboard won't work.
@@ -363,7 +380,7 @@ To add the monitoring dashboard to your project, run:
 cds add caching-dashboard
 ```
 
-This copies a pre-built UI5 dashboard into your `app/` folder and exposes the `CachingApiService`. After running `cds watch`, the dashboard is available at `/caching-dashboard/index.html`.
+This copies a pre-built UI5 dashboard into your `app/` folder and exposes the `CachingApiService`. For TypeScript source you can customize, use `cds add caching-dashboard --source` and run `npm install` in `app/caching-dashboard/`. After running `cds watch`, the dashboard is available at `/caching-dashboard/index.html`.
 
 ![Cache Dashboard](./docs/dashboard.jpg)
 

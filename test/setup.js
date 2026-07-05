@@ -2,9 +2,18 @@
 
 const fs = require('fs');
 const path = require('path');
+const { cdsMajor } = require('./helpers/cds-version');
 
-// Safety net: remove stale file-based SQLite DB from local dev so cds.test() never
-// reuses a partial schema across Vitest workers (see test/app db :memory: config).
+// CDS 8: full deploy to :memory: fails on CSV insert (resolve.transitions).
+// CDS 9+: in-memory DB ensures full schema deploy per cds.test() worker on Linux.
+if (cdsMajor < 9) {
+    process.env.CDS_REQUIRES_DB_CREDENTIALS_URL = 'db.sqlite';
+} else {
+    process.env.CDS_REQUIRES_DB_CREDENTIALS_URL = ':memory:';
+}
+
+// Safety net: remove stale file-based SQLite DB so cds.test() never reuses a
+// partial schema across Vitest workers (relevant for CDS 8 file-based sqlite).
 const testAppDir = path.join(__dirname, 'app');
 for (const suffix of ['', '-shm', '-wal']) {
     const dbFile = path.join(testAppDir, `db.sqlite${suffix}`);

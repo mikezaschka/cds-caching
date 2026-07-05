@@ -6,17 +6,17 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^9",
-    "express": "^4",
     "@sap-cloud-sdk/http-client": "~4.0.2",
     "@sap-cloud-sdk/resilience": "~4.0.2",
-    "cds-caching": "*"
+    "@sap/cds": "^10",
+    "cds-caching": "*",
+    "express": "^4"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^2",
-    "@cap-js/cds-types": "^0.13.0",
-    "@resolid/keyv-sqlite": "^5.0.1",
+    "@cap-js/cds-types": "^0.18.0",
+    "@cap-js/sqlite": "^3.0.2",
     "@keyv/postgres": "~2.2.3",
+    "@resolid/keyv-sqlite": "^5.0.1",
     "pgpass": "~1.0.5"
   },
   "scripts": {
@@ -60,6 +60,11 @@
           "url": "postgresql://postgres:postgres@localhost:5432/postgres",
           "schema": "public",
           "table": "cache"
+        },
+        "[docker]": {
+          "credentials": {
+            "url": "postgresql://postgres:postgres@postgres:5432/postgres"
+          }
         }
       },
       "caching-redis": {
@@ -72,6 +77,13 @@
             "port": 6379,
             "keepAlive": true,
             "pingInterval": 1000
+          }
+        },
+        "[docker]": {
+          "credentials": {
+            "socket": {
+              "host": "redis"
+            }
           }
         }
       },

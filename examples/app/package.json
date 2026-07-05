@@ -6,16 +6,16 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^9",
+    "@sap/cds": "^10",
     "express": "^4",
     "@sap-cloud-sdk/http-client": "~4.0.2",
     "cds-caching": "*",
     "@keyv/redis": "5.1.6"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^2.0.1",
+    "@cap-js/sqlite": "^3",
     "@sap/cds-foss": "^5.0.1",
-    "@cap-js/cds-types": "^0.10.0",
+    "@cap-js/cds-types": "^0.18.0",
     "antlr4": "^4.13.2"
   },
   "scripts": {
@@ -35,7 +35,7 @@
         "credentials": {
           "url": "https://services.odata.org/Experimental/OData/OData.svc/"
         }
-      }, 
+      },
       "caching": {
         "impl": "cds-caching",
         "namespace": "my-cache",

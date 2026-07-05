@@ -25,7 +25,10 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "sqlite"
+        "kind": "sqlite",
+        "credentials": {
+          "url": ":memory:"
+        }
       },
       "caching": {
         "impl": "cds-caching",

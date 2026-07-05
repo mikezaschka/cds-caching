@@ -1,5 +1,16 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+// Safety net: remove stale file-based SQLite DB from local dev so cds.test() never
+// reuses a partial schema across Vitest workers (see test/app db :memory: config).
+const testAppDir = path.join(__dirname, 'app');
+for (const suffix of ['', '-shm', '-wal']) {
+    const dbFile = path.join(testAppDir, `db.sqlite${suffix}`);
+    if (fs.existsSync(dbFile)) fs.unlinkSync(dbFile);
+}
+
 // @cap-js/cds-test exposes `expect` via real chai and normally registers the
 // chai-as-promised and chai-subset plugins itself. However, it first checks for
 // an existing `global.chai` and reuses it if present. Vitest injects its own

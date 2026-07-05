@@ -1,6 +1,7 @@
 const cds = require('@sap/cds')
 const { test, GET, expect } = cds.test().in(__dirname + '/app')
-beforeEach (() => test.data.reset())
+const { resetTestData } = require('./helpers/cds-version')
+beforeEach (async () => resetTestData(test))
 
 describe('DeprecatedMethods', () => {
 

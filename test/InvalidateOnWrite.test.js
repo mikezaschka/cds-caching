@@ -1,7 +1,8 @@
 const cds = require('@sap/cds');
 const { GET, POST, PATCH, DELETE, expect } = cds.test().in(__dirname + '/app')
+const { describeFromCds } = require('./helpers/cds-version')
 
-describe('invalidateOnWrite', () => {
+describeFromCds(9, 'invalidateOnWrite', () => {
 
     let cache;
     const createdIds = [];

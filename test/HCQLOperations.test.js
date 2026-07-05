@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const { Request } = cds;
 const { expect } = cds.test().in(__dirname + '/app')
+const { describeFromCds } = require('./helpers/cds-version')
 
 /**
  * HCQL Protocol Adapter support.
@@ -21,7 +22,7 @@ const { expect } = cds.test().in(__dirname + '/app')
  *    must treat a POST that carries a SELECT as a cacheable read, while still
  *    bypassing genuine mutations.
  */
-describe('HCQL Protocol Adapter support', () => {
+describeFromCds(10, 'HCQL Protocol Adapter support', () => {
 
     let cache;
 

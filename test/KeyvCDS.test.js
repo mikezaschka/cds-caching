@@ -1,7 +1,8 @@
 const cds = require('@sap/cds');
 const { GET, POST, expect } = cds.test().in(__dirname + '/app/')
+const { describeFromCds } = require('./helpers/cds-version')
 
-describe('KeyvCDS Store Adapter', () => {
+describeFromCds(9, 'KeyvCDS Store Adapter', () => {
 
     let cache;
     let appService;

@@ -1,7 +1,8 @@
 const cds = require('@sap/cds');
 const { GET, POST, expect } = cds.test().in(__dirname + '/app/')
+const { describeFromCds } = require('./helpers/cds-version')
 
-describe('Caching API Service', () => {
+describeFromCds(9, 'Caching API Service', () => {
 
     let cache;
     let appService;

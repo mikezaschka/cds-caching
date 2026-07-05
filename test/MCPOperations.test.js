@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const { PATCH, expect } = cds.test().in(__dirname + '/app')
+const { describeFromCds } = require('./helpers/cds-version')
 
 /**
  * MCP Protocol Adapter integration.
@@ -23,7 +24,7 @@ const { PATCH, expect } = cds.test().in(__dirname + '/app')
  * implicit for MCP and guards against regressions. It also covers the
  * URL-less key hashing that MCP relies on (no OData query string is present).
  */
-describe('MCP Protocol Adapter - Implicit Caching', () => {
+describeFromCds(10, 'MCP Protocol Adapter - Implicit Caching', () => {
 
     let cache;
     let AppService;

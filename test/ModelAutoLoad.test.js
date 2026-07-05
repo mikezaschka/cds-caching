@@ -1,4 +1,5 @@
 const cds = require('@sap/cds')
+const { path } = cds.utils
 const { GET, expect } = cds.test().in(__dirname + '/app')
 
 describe('Model Auto-Loading', () => {
@@ -14,7 +15,7 @@ describe('Model Auto-Loading', () => {
         cache = await cds.connect.to('caching');
     })
 
-    describe('statistics entities (auto-loaded via statistics config)', () => {
+    describe('statistics entities (auto-loaded via metrics config)', () => {
 
         it('should include Caches entity in cds.model', () => {
             expect(cds.model.definitions).to.have.property('plugin.cds_caching.Caches');
@@ -92,6 +93,11 @@ describe('Model Auto-Loading', () => {
     })
 
     describe('no model property required on requires entries', () => {
+
+        it('should not inject a duplicate statistics root when API is imported in srv', () => {
+            const statisticsPath = path.join(path.dirname(require.resolve('cds-caching/package.json')), 'db', 'statistics');
+            expect(cds.env.roots, 'statistics root is loaded via index.cds import, not env.roots').to.not.include(statisticsPath);
+        })
 
         it('should not have model property on any caching requires entry', () => {
             for (const [name, config] of Object.entries(cds.env.requires)) {

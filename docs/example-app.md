@@ -2,7 +2,7 @@
 
 The cds-caching plugin includes a comprehensive example application that demonstrates various caching use cases.
 
-For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md).
+For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md) and [Feature Activation Guide](feature-activation.md).
 
 ## Example App Overview
 
@@ -78,7 +78,7 @@ DEBUG=cds-caching cds watch
 
 Open http://localhost:4004/caching-dashboard/index.html to access the dashboard.
 
-The example uses `dashboard: true` on the caching configuration, so the pre-built dashboard and `CachingApiService` are served by CAP — no separate UI project required.
+The example uses `metrics.reuse` on the caching configuration, so the pre-built dashboard and `CachingApiService` are served by CAP — no separate UI project required.
 
 ### Dashboard UI development (contributors)
 

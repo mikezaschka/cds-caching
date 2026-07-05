@@ -2,20 +2,24 @@
 
 The cds-caching plugin includes a pre-built UI5 dashboard for monitoring cache performance. You can add it to any CAP project with a single command.
 
+> **Which option should I use?** See the [Feature Activation Guide](feature-activation.md) for reuse vs own activation (`metrics.reuse`, `cds add caching-metrics`, or `using … index.cds`).
+
 ![Cache Dashboard](./dashboard.jpg)
 
 ## Quick Start
 
 ```bash
-cds add caching-dashboard
+cds add caching-metrics
 ```
+
+(`cds add caching-dashboard` is a deprecated alias — same behavior.)
 
 By default this copies a **pre-built**, self-contained UI5 app — ready for `cds watch` and for BTP/HTML5 repo deployment without extra setup.
 
 To copy **TypeScript source** instead (for customizing views, controllers, and styles), use:
 
 ```bash
-cds add caching-dashboard --source
+cds add caching-metrics --source
 ```
 
 Then install UI5 tooling dependencies and start your application:
@@ -27,40 +31,9 @@ cds watch
 
 The dashboard is available at [http://localhost:4004/caching-dashboard/index.html](http://localhost:4004/caching-dashboard/index.html).
 
-## Zero-config Alternative (reuse & compose)
+## Zero-config reuse (CAP reuse & compose)
 
-If you don't want any files copied into your project, you can have the plugin serve its bundled dashboard directly from `node_modules`, following CAP's [reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis) pattern. Just set `dashboard: true` on your caching configuration:
-
-```json
-{
-  "cds": {
-    "requires": {
-      "caching": {
-        "impl": "cds-caching",
-        "statistics": { "enabled": true, "persistenceInterval": 60000 },
-        "dashboard": true
-      }
-    }
-  }
-}
-```
-
-With this flag the plugin automatically:
-
-- serves the pre-built UI at `/caching-dashboard` from the installed package's `app/dashboard/` folder, and
-- exposes the `CachingApiService` OData API — so you don't need `srv/caching-api.cds` either.
-
-No files are copied, and the dashboard always tracks the installed plugin version. Use **either** this flag **or** `cds add caching-dashboard`, not both (they both serve `/caching-dashboard`).
-
-> **Version note:** `dashboard: true` requires a **complete** self-contained UI5 build under `app/dashboard/` (including `resources/sap/ui/core/...`). npm releases before **1.3.3** shipped an incomplete bundle, which shows up as 404s for theme CSS, CLDR JSON, and message bundles while `sap-ui-custom.js` still loads. Upgrade `cds-caching`, or install from a current git checkout after running `npm run build:dashboard` in that repo.
-
-> **Production note:** The dashboard is served as static files from the CAP Node.js server. This works out of the box locally and in deployments where the CAP backend serves the UI. In the standard SAP BTP setup (managed/standalone approuter + HTML5 Application Repository), UIs are served from the HTML5 repo — not the backend — so the `dashboard: true` route is not reachable through the approuter unless you add an explicit route to the backend. For those deployments, use `cds add caching-dashboard` and the [deployment](#deploying-the-dashboard) flow below. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
-
-## Prerequisites
-
-The dashboard requires the `CachingApiService` OData API and a `statistics` configuration block so that metrics are collected and persisted.
-
-Make sure your caching configuration includes a `statistics` section:
+To activate the API and dashboard from the installed package without copying files — following CAP's [reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis) pattern — set `metrics.reuse` on your caching configuration:
 
 ```json
 {
@@ -68,9 +41,13 @@ Make sure your caching configuration includes a `statistics` section:
     "requires": {
       "caching": {
         "impl": "cds-caching",
-        "statistics": {
+        "metrics": {
           "enabled": true,
-          "persistenceInterval": 60000
+          "persistenceInterval": 60000,
+          "reuse": {
+            "api": true,
+            "dashboard": true
+          }
         }
       }
     }
@@ -78,11 +55,35 @@ Make sure your caching configuration includes a `statistics` section:
 }
 ```
 
-See the [Metrics Guide](metrics-guide.md) for details on statistics configuration.
+With these flags the plugin automatically:
+
+- registers `CachingApiService` (no `srv/caching-api.cds` needed), and
+- serves the pre-built UI at `/caching-dashboard` from the plugin package.
+
+Use **either** `metrics.reuse.dashboard` **or** `cds add caching-metrics`, not both. See [Feature Activation](feature-activation.md).
+
+> **Deprecated:** `dashboard: true` and `statistics` still work in v2 with startup warnings — migrate to `metrics` / `metrics.reuse` (removal planned in v3.0).
+
+> **Version note:** `metrics.reuse.dashboard` requires a **complete** self-contained UI5 build under `app/dashboard/` (including `resources/sap/ui/core/...`). npm releases before **1.3.3** shipped an incomplete bundle, which shows up as 404s for theme CSS, CLDR JSON, and message bundles while `sap-ui-custom.js` still loads. Upgrade `cds-caching`, or install from a current git checkout after running `npm run build:dashboard` in that repo.
+
+> **Production note:** `metrics.reuse.dashboard` serves static files from the CAP Node.js server. On standard BTP (HTML5 repo + approuter), use `cds add caching-metrics` instead. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
+
+## Prerequisites
+
+The dashboard requires `CachingApiService` and a `metrics` configuration block so that metrics are collected and persisted.
+
+```json
+"metrics": {
+  "enabled": true,
+  "persistenceInterval": 60000
+}
+```
+
+See the [Metrics Guide](metrics-guide.md) for details on metrics configuration.
 
 ## What Gets Created
 
-Running `cds add caching-dashboard` adds the following to your project:
+Running `cds add caching-metrics` (or `cds add caching-dashboard`) adds the following to your project:
 
 | Path | Purpose |
 |------|---------|
@@ -114,11 +115,15 @@ This also transitively loads the required database entities (`Caches`, `Metrics`
 
 ## Securing the Dashboard
 
-By default the `CachingApiService` is accessible without authentication. To restrict access, annotate the service using its **fully-qualified name**. Add this single line to your existing `srv/caching-api.cds` (the file created by `cds add caching-dashboard`):
+By default the `CachingApiService` is accessible without authentication. **Always restrict access in production** — the API can list cache entries and perform destructive operations (`clear`, `deleteEntry`, …).
+
+On BTP, `cds add caching-dashboard` generates an `xs-app.json` with `authenticationType: "xsuaa"` for both the UI and `/odata/v4/caching-api/*`. Complement this with a CDS authorization on the service itself:
 
 ```cds
 annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
 ```
+
+For role-based access, use a dedicated scope (for example `'CacheAdmin'`) instead of `'authenticated-user'`. See the [Feature Activation Guide — BTP and MTX](feature-activation.md#sap-btp-single-tenant-or-shared-db) for the full production checklist.
 
 > **Important:** annotate the fully-qualified name (`plugin.cds_caching.CachingApiService`) and do **not** repeat the `using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';` import. Importing the same service name twice in the same model causes a `Duplicate definition of CachingApiService` error at startup (see [issue #24](https://github.com/mikezaschka/cds-caching/issues/24)). The fully-qualified `annotate` needs no `using` and works in any `.cds` file under `srv/`.
 
@@ -126,9 +131,9 @@ annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-use
 
 How you deploy the dashboard depends on your runtime topology:
 
-**1. CAP backend serves the UI (simplest).** If your CAP server serves static content itself (e.g. directly exposed, or an approuter route that forwards to the backend), the dashboard is served by CAP just like locally. In this case the [zero-config `dashboard: true`](#zero-config-alternative-reuse--compose) flag is enough — nothing extra to deploy.
+**1. CAP backend serves the UI (simplest).** If your CAP server serves static content itself, use `metrics.reuse.dashboard` — nothing extra to deploy.
 
-**2. SAP BTP with HTML5 App Repository + approuter (standard productive setup).** Here UIs are served from the HTML5 repo, not the backend, so the dashboard must be built and deployed as its own HTML5 app. `cds add caching-dashboard` lays down the required artifacts (`ui5.yaml`, `ui5-deploy.yaml`, `xs-app.json`, `package.json`). The generated `ui5-deploy.yaml` follows the CAP best-practice template for HTML5 repo deployment: it extends `ui5.yaml` and runs the `ui5-task-zipper` custom task to produce a deployable ZIP (including `xs-app.json`).
+**2. SAP BTP with HTML5 App Repository + approuter (standard productive setup).** Use `cds add caching-metrics` — do not set `metrics.reuse.dashboard`.
 
 Install dependencies and verify the UI5 build from the app folder:
 
@@ -158,15 +163,15 @@ The dashboard files copied into `app/caching-dashboard/webapp/` are fully owned 
 
 **Source mode (`--source`):** Copies the original TypeScript sources, `tsconfig.json`, and a `ui5.yaml` with transpile middleware. Run `npm install` in `app/caching-dashboard/` before `cds watch` or `npm start`. Local development uses the SAPUI5 CDN; run `npm run build:cf` from that folder before deploying to the HTML5 Application Repository.
 
-Re-running `cds add caching-dashboard` (with or without `--source`) refreshes `webapp/` from the installed plugin version. Back up local changes before updating, and use the same flag you chose initially if you want to keep the same variant.
+Re-running `cds add caching-metrics` (with or without `--source`) refreshes `webapp/` from the installed plugin version.
 
 ## Updating
 
 To update the dashboard to the latest version shipped with cds-caching, re-run the same command you used initially:
 
 ```bash
-cds add caching-dashboard           # pre-built
-cds add caching-dashboard --source  # TypeScript source
+cds add caching-metrics           # pre-built
+cds add caching-metrics --source  # TypeScript source
 ```
 
 This overwrites the files in `app/caching-dashboard/webapp/` with the latest build. If you have made local modifications, back them up before updating.

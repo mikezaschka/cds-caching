@@ -132,3 +132,11 @@ describe('cds add caching-dashboard', () => {
 		expect(built['app/caching-dashboard/package.json']).toContain('"start": "ui5 serve -o index.html"')
 	})
 })
+
+describe('caching-metrics facet alias', () => {
+	it('registers caching-metrics alongside caching-dashboard in cds-plugin.js', () => {
+		const pluginSource = readFileSync(join(__dirname, '../cds-plugin.js'), 'utf8')
+		expect(pluginSource).toContain("cds.add.register('caching-dashboard', addFacet)")
+		expect(pluginSource).toContain("cds.add.register('caching-metrics', addFacet)")
+	})
+})

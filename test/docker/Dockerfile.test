@@ -14,7 +14,6 @@ ENV CDS_MAJOR=${CDS_MAJOR}
 COPY package.json package-lock.json ./
 COPY test/app/package.json test/app/
 COPY examples/app/package.json examples/app/
-COPY examples/dashboard/package.json examples/dashboard/
 COPY test/docker/install-cds.sh test/docker/
 
 RUN chmod +x test/docker/install-cds.sh \

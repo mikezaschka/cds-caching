@@ -2,10 +2,6 @@ specVersion: "4.0"
 metadata:
   name: cds.plugin.caching.dashboard
 type: application
-resources:
-  configuration:
-    paths:
-      webapp: dist
 framework:
   name: SAPUI5
   version: "1.136.1"
@@ -18,6 +14,15 @@ framework:
     - name: sap.ui.layout
     - name: sap.ui.table
     - name: sap.ui.unified
-    - name: sap.ui.ux3
     - name: sap.viz
     - name: themelib_sap_horizon
+builder:
+  resources:
+    excludes:
+      - "test/e2e/**"
+  customTasks:
+    - name: ui5-tooling-transpile-task
+      afterTask: replaceVersion
+      configuration:
+        transformTypeScript: true
+        omitTSFromBuildResult: true

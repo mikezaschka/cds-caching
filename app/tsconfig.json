@@ -9,13 +9,10 @@
 		"strictNullChecks": false,
 		"strictPropertyInitialization": false,
 		"rootDir": "./webapp",
-		"types": ["@openui5/types", "@types/qunit"],
+		"types": ["@openui5/types"],
 		"paths": {
-			"cds/plugin/caching/dashboard/*": ["./webapp/*"],
-			"unit/*": ["./webapp/test/unit/*"],
-			"integration/*": ["./webapp/test/integration/*"]
+			"cds/plugin/caching/dashboard/*": ["./webapp/*"]
 		}
 	},
-	"exclude": ["./webapp/test/e2e/**/*"],
 	"include": ["./webapp/**/*"]
 }

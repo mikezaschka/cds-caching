@@ -1,5 +1,7 @@
 # Changelog
 
+## [2.0.1](https://github.com/mikezaschka/cds-caching/compare/2.0.0...2.0.1) (2026-07-10)
+
 ## [2.0.0](https://github.com/mikezaschka/cds-caching/compare/1.3.2...2.0.0) (2026-07-05)
 
 ### Features

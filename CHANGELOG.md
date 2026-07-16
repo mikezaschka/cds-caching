@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.2](https://github.com/mikezaschka/cds-caching/compare/2.0.1...2.0.2) (2026-07-16)
+
+### Bug Fixes
+
+* prevent NaN on HANA metrics hourly-stats UPDATE ([#27](https://github.com/mikezaschka/cds-caching/issues/27)) ([fd207cd](https://github.com/mikezaschka/cds-caching/commit/fd207cd178b766c70438fc9cfc589196582ab6ac))
+
 ## [2.0.1](https://github.com/mikezaschka/cds-caching/compare/2.0.0...2.0.1) (2026-07-10)
 
 ## [2.0.0](https://github.com/mikezaschka/cds-caching/compare/1.3.2...2.0.0) (2026-07-05)

@@ -33,6 +33,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
 | [Migration Guide](docs/migration-guide.md) | **Upgrading to 2.0** and earlier releases |
 | [Example Application](docs/example-app.md) | Sample app with caching patterns |
+| [Federation Integration](docs/federation.md) | Using cds-caching with [cds-data](https://github.com/mikezaschka/cds-data) |
 
 ## Getting Started
 
@@ -435,6 +436,10 @@ To add the monitoring dashboard, use `metrics.reuse.dashboard` for local reuse, 
 |-----|-------------|
 | [Programmatic API](docs/programmatic-api.md) | JavaScript methods for cache operations |
 | [OData API](docs/odata-api.md) | REST endpoints for monitoring and management |
+
+## Related Projects
+
+[cds-data](https://github.com/mikezaschka/cds-data) provides composable CAP plugins for federation, replication, and materialization. Use `cds-caching` as the optional peer for `cache.strategy: 'response'` on `@federation.delegate` / `@federation.replicate` views — see [Federation Integration](docs/federation.md).
 
 ## Contributing
 

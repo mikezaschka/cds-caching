@@ -25,6 +25,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Programmatic API](docs/programmatic-api.md) | Full API reference for cache operations |
 | [Protocol Support](docs/protocols.md) | Caching across OData, REST, GraphQL, HCQL, and MCP |
 | [Key Management](docs/key-management.md) | Key templates, context awareness, custom keys |
+| [Security](docs/security.md) | Authorization, cache key isolation, production checklist |
 | [Metrics Guide](docs/metrics-guide.md) | Statistics, monitoring, and performance tracking |
 | [OpenTelemetry Integration](docs/telemetry.md) | Distributed tracing and metrics export |
 | [OData API](docs/odata-api.md) | REST endpoints for management and monitoring |
@@ -260,11 +261,13 @@ See **[Feature Activation](docs/feature-activation.md)** for reuse vs own activa
 | BTP with HTML5 repo | `cds add caching-metrics` + `metrics.enabled` — no `metrics.reuse.dashboard` |
 | API only, no UI | `metrics.reuse.api` or `using … index.cds` + `metrics.enabled` |
 
-Restrict access with a fully-qualified annotate — do **not** repeat the `using` import:
+The API requires an authenticated user by default. Restrict it to an administrative role with a fully-qualified annotate — do **not** repeat the `using` import:
 
 ```cds
-annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
+annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
 ```
+
+See the [Security Guide](docs/security.md) for the production checklist, including cache key isolation for user-filtered data.
 
 ## Multi-Tenancy (MTX)
 

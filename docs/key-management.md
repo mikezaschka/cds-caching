@@ -69,26 +69,35 @@ return result
 
 ### Package.json Configuration
 
-The default key generation behavior can be configured globally in your `package.json`:
+The default key generation behavior is configured **per cache service**, inside its `cds.requires` block in `package.json`:
 
 ```json
 {
-  "cds-caching": {
-    "keyManagement": {
-      "isUserAware": true,
-      "isTenantAware": true,
-      "isLocaleAware": false
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "keyManagement": {
+          "isUserAware": true,
+          "isTenantAware": true,
+          "isLocaleAware": false
+        }
+      }
     }
   }
 }
 ```
 
+> **Note:** `keyManagement` must sit inside the individual cache configuration. A top-level `"cds-caching"` block — which releases up to 2.0.2 documented here by mistake — is **not** read, and cache keys silently stay context-free. Since 2.1.0 the plugin logs a warning if it finds one.
+
 **Default behavior** (if not configured):
 - `isUserAware`: `false` - Include the logged in user in cache keys
-- `isTenantAware`: `false` - Include tenant context in cache keys  
+- `isTenantAware`: follows multitenancy — `true` in MTX mode, otherwise `false`
 - `isLocaleAware`: `false` - Include locale context in cache keys
 
-**Important**: This configuration applies to **all cache operations**, not just read-through functions.
+**Important**: This configuration applies to **all cache operations** of that cache service, not just read-through functions.
+
+> **Security:** with `isUserAware: false`, a single cached entry is shared by every user. If the underlying data is filtered per user — via `@restrict`, a `where` clause on `cds.context.user`, or row-level rules — set `isUserAware: true`, otherwise one user's rows can be served to another. See [Security](security.md#cache-key-isolation).
 
 ### When to Use Context Awareness
 
@@ -346,11 +355,16 @@ await cachedOperation("1000001")
 
 ```json
 {
-  "cds-caching": {
-    "keyManagement": {
-      "isUserAware": true,      // Enable for user-specific data
-      "isTenantAware": true,    // Enable for multi-tenant apps
-      "isLocaleAware": false    // Disable if not needed
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "keyManagement": {
+          "isUserAware": true,
+          "isTenantAware": true,
+          "isLocaleAware": false
+        }
+      }
     }
   }
 }

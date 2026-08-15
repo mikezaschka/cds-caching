@@ -115,15 +115,19 @@ This also transitively loads the required database entities (`Caches`, `Metrics`
 
 ## Securing the Dashboard
 
-By default the `CachingApiService` is accessible without authentication. **Always restrict access in production** — the API can list cache entries and perform destructive operations (`clear`, `deleteEntry`, …).
+Since 2.1.0 `CachingApiService` requires an authenticated user by default, and the `/caching-dashboard` static route (when served via `metrics.reuse.dashboard`) is guarded the same way. Unauthenticated callers get `401`.
 
-On BTP, `cds add caching-dashboard` generates an `xs-app.json` with `authenticationType: "xsuaa"` for both the UI and `/odata/v4/caching-api/*`. Complement this with a CDS authorization on the service itself:
+**That default is a floor, not a production setting** — every logged-in user of your application satisfies `authenticated-user`, and this API can list cache entries and perform destructive operations (`clear`, `deleteEntry`, …). Restrict it to an administrative role:
 
 ```cds
-annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
+annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
 ```
 
-For role-based access, use a dedicated scope (for example `'CacheAdmin'`) instead of `'authenticated-user'`. See the [Feature Activation Guide — BTP and MTX](feature-activation.md#sap-btp-single-tenant-or-shared-db) for the full production checklist.
+Your annotation is a downstream layer, so it replaces the plugin default. See [Security](security.md) for the full checklist.
+
+On BTP, `cds add caching-dashboard` additionally generates an `xs-app.json` with `authenticationType: "xsuaa"` for both the UI and `/odata/v4/caching-api/*`.
+
+> **Local development:** with CAP's mocked authentication the dashboard now prompts for credentials. Define users under `cds.requires.auth` to log in during `cds watch`.
 
 > **Important:** annotate the fully-qualified name (`plugin.cds_caching.CachingApiService`) and do **not** repeat the `using {plugin.cds_caching.CachingApiService} from 'cds-caching/index.cds';` import. Importing the same service name twice in the same model causes a `Duplicate definition of CachingApiService` error at startup (see [issue #24](https://github.com/mikezaschka/cds-caching/issues/24)). The fully-qualified `annotate` needs no `using` and works in any `.cds` file under `srv/`.
 

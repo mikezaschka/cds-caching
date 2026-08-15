@@ -1,5 +1,76 @@
 # Migration Guide
 
+## Upgrading to 2.1
+
+Version 2.1 is a security-hardening release. It closes several unauthenticated access paths and changes runtime behavior, so read this before upgrading. See [Security](security.md) for the full picture.
+
+### Breaking: the management API now requires authentication
+
+`CachingApiService` ships with `@requires: 'authenticated-user'`. Previously it was reachable without credentials unless you added the annotation yourself.
+
+- **If you already annotated the service**, nothing changes — your annotation still takes precedence.
+- **If you did not**, callers now receive `401`. Any script or monitoring job hitting `/odata/v4/caching-api/*` must authenticate.
+- **In local development** with CAP's mocked authentication, `cds watch` now prompts for credentials on the API and the dashboard. Define users under `cds.requires.auth`.
+
+`authenticated-user` is a floor, not a production setting. Tighten it:
+
+```cds
+annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
+```
+
+### Breaking: `Caches` is read-only over OData
+
+`POST`, `PATCH`, and `DELETE` on `Caches` are rejected. Use the `setMetricsEnabled` and `setKeyMetricsEnabled` actions to toggle metrics. Direct writes were never the intended path and allowed tampering with stored cache configuration.
+
+### Breaking: the cache key is no longer echoed in responses
+
+`x-sap-cap-cache-key` is now opt-in. If you relied on it — for example in tests that read a key from the response — enable it explicitly for that cache:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "debugHeaders": true
+      }
+    }
+  }
+}
+```
+
+Keep it off in production: the key is enough to address a specific cached entry from outside. The `x-sap-cap-cache` hit/miss header is unchanged.
+
+### Behavior changes that need no action
+
+- Cache names in API routes are validated against your configured caches; unknown names return `404`.
+- `getEntries` is paginated: 100 entries by default, 1000 maximum. It accepts `top` and `skip`.
+- `setEntry` rejects values above 1 MB.
+- Credential-bearing headers (`Authorization`, `Cookie`, and similar) are redacted before being written to `KeyMetrics`, and long free-text fields are truncated. Tune with `metrics.maxMetricFieldLength`.
+- The `/caching-dashboard` static route (when using `metrics.reuse.dashboard`) requires an authenticated user.
+- `cds build` no longer logs the full `cds.env.requires` object, which included credentials.
+
+### Check your key management configuration
+
+Releases up to 2.0.2 documented `keyManagement` as a **top-level** `"cds-caching"` block in `package.json`. The runtime never read that, so those projects have context-free cache keys today despite looking configured. The plugin now warns at startup when it finds such a block.
+
+Move it into the cache's own `cds.requires` entry:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "keyManagement": { "isUserAware": true }
+      }
+    }
+  }
+}
+```
+
+**If your cached data is filtered per user** — `@restrict`, a `where` clause on `cds.context.user`, or any row-level rule — set `isUserAware: true`. Without it, one cached entry is shared across users. See [Cache key isolation](security.md#cache-key-isolation).
+
 ## Upgrading to 2.0
 
 Version 2.0 aligns monitoring configuration around a single `metrics` object and CAP-style **reuse** flags ([reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis)). Cache runtime behavior, store types, and programmatic APIs are unchanged.
@@ -98,7 +169,7 @@ Migrate at your convenience before v3.0.
 2. Run `cds deploy` if you use database-backed metrics or `store: cds`.
 3. Remove redundant `using … index.cds` if you enable `metrics.reuse.api`.
 4. Remove `metrics.reuse.dashboard` if you use `cds add caching-metrics` (or the deprecated `cds add caching-dashboard`).
-5. Secure production APIs: `annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';`
+5. Secure production APIs: the service now defaults to `authenticated-user`; tighten it with `annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';`
 
 ### No changes needed
 

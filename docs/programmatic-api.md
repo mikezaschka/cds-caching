@@ -623,23 +623,30 @@ The cds-caching library provides automatic key generation for all cache operatio
 
 ### Global Configuration
 
-Configure key management behavior in your `package.json`:
+Configure key management behavior per cache service, inside its `cds.requires` block:
 
 ```json
 {
-  "cds-caching": {
-    "keyManagement": {
-      "isUserAware": true,
-      "isTenantAware": true,
-      "isLocaleAware": false
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "keyManagement": {
+          "isUserAware": true,
+          "isTenantAware": true,
+          "isLocaleAware": false
+        }
+      }
     }
   }
 }
 ```
 
+> **Note:** a top-level `"cds-caching"` block is not read — see [Key Management](key-management.md#global-configuration).
+
 **Default behavior** (if not configured):
 - `isUserAware`: `false` - Include the logged in user in cache keys
-- `isTenantAware`: `false` - Include tenant context in cache keys  
+- `isTenantAware`: follows multitenancy — `true` in MTX mode, otherwise `false`
 - `isLocaleAware`: `false` - Include locale context in cache keys
 
 ### Key Template Variables

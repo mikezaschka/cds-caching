@@ -437,3 +437,45 @@ Retrieves key-level performance metrics with optional filtering.
 GET /odata/v4/caching-api/KeyMetrics?$filter=cache eq 'caching'&$orderby=hits desc
 ```
 
+## Security Considerations
+
+See [Security](security.md) for the full picture. The points specific to this API:
+
+### The API is authenticated by default
+
+Since 2.1.0 the service ships with `@requires: 'authenticated-user'`. Any caller without a valid session receives `401`. Restrict it further with a dedicated role in your own model:
+
+```cds
+annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
+```
+
+Because your model is a downstream layer, your annotation takes precedence over the plugin default. Treat this API as administrative — it can read every cached value and flush caches, so `authenticated-user` alone is usually too broad for production.
+
+### `Caches` is read-only over OData
+
+`Caches` rows carry each cache's `config`, `metricsEnabled`, and `keyMetricsEnabled`. The entity is annotated `@readonly`, so `POST`, `PATCH`, and `DELETE` are rejected — use `setMetricsEnabled` and `setKeyMetricsEnabled` instead. This prevents a caller from silently switching metrics collection on or rewriting a cache's stored configuration.
+
+### Cache names are validated against configuration
+
+The cache name in the entity key is checked against the set of services configured with `impl: 'cds-caching'` before any connection is made. Unknown names return `404` rather than being passed to `cds.connect.to()`.
+
+### `getEntries` is paginated
+
+`getEntries` accepts `top` and `skip`. It returns 100 entries by default and never more than 1000 per call, regardless of the requested `top`:
+
+```http
+GET /odata/v4/caching-api/Caches('caching')/getEntries(top=50,skip=100)
+```
+
+### `setEntry` values are size-limited
+
+Values above 1 MB are rejected with `400`.
+
+### Metrics data can be sensitive
+
+With `keyMetricsEnabled`, `KeyMetrics` rows retain per-key context: the serialized query (including filter values), the target entity, and the requesting user and tenant. Credential-bearing headers (`Authorization`, `Cookie`, `X-API-Key`, and similar) are redacted before persisting, and long fields are truncated. Even so, treat `KeyMetrics` as sensitive operational data and restrict read access accordingly. Key metrics are off by default.
+
+### Rate limiting is not provided
+
+CAP ships no rate limiter and neither does this plugin. If the API is reachable from outside your landscape, apply limits at the approuter, API gateway, or ingress layer.
+

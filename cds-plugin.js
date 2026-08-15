@@ -35,7 +35,16 @@ if (reuseDashboard) {
         );
     }
     cds.once('bootstrap', (app) => {
-        app.use('/caching-dashboard', require('express').static(dashboardPath));
+        // Run CAP's middlewares first so cds.context.user is populated, then gate
+        // the static assets on it.
+        const { requireAuthenticatedUser, capRequestMiddlewares } = require('./lib/dashboard-guard');
+
+        app.use(
+            '/caching-dashboard',
+            ...capRequestMiddlewares(),
+            requireAuthenticatedUser,
+            require('express').static(dashboardPath)
+        );
         (app._app_links ??= []).push('/caching-dashboard');
         LOG.info("Serving cds-caching dashboard at /caching-dashboard");
     });

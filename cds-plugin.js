@@ -56,7 +56,6 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     clean() { }
 
     static hasTask() {
-        cds.log('cds-caching').info('hasTask', cds.env.requires);
         const requires = cds.env.requires || {};
         const dbKind = requires.db?.kind || '';
         const isHanaDB = dbKind === 'hana' || dbKind === 'sql';

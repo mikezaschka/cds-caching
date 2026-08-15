@@ -4,6 +4,13 @@ const { isPluginModelAvailable } = require('../lib/util')
 
 const DEFAULT_TENANT = '_default';
 
+/** Upper bound for `getEntries`, regardless of the requested `top`. */
+const MAX_ENTRIES_PER_PAGE = 1000;
+const DEFAULT_ENTRIES_PER_PAGE = 100;
+
+/** Upper bound for a single `setEntry` value, in bytes. */
+const MAX_ENTRY_VALUE_BYTES = 1024 * 1024;
+
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
 
@@ -50,15 +57,26 @@ class CachingApiService extends cds.ApplicationService {
         // Handle getCacheEntries function
         this.on('getEntries', async (req) => {
             const cacheService = await this._connectToCache(req);
+            const { top, skip } = req.data;
+
+            // Bounded on purpose: an unbounded iteration would pull the whole
+            // cache into memory and can be used to exhaust the server.
+            const requested = Number.isInteger(top) && top > 0 ? top : DEFAULT_ENTRIES_PER_PAGE;
+            const limit = Math.min(requested, MAX_ENTRIES_PER_PAGE);
+            const offset = Number.isInteger(skip) && skip > 0 ? skip : 0;
+
             try {
                 const entries = [];
+                let seen = 0;
                 for await (const [key, value] of cacheService.iterator()) {
+                    if (seen++ < offset) continue;
                     entries.push({
                         entryKey: key,
                         value: JSON.stringify(value.value),
                         timestamp: value.timestamp,
                         tags: value.tags,
                     });
+                    if (entries.length >= limit) break;
                 }
                 return entries;
             } catch (error) {
@@ -81,6 +99,12 @@ class CachingApiService extends cds.ApplicationService {
         this.on('setEntry', async (req) => {
             const { key, value, ttl } = req.data;
             const cacheService = await this._connectToCache(req);
+
+            const size = Buffer.byteLength(String(value ?? ''), 'utf8');
+            if (size > MAX_ENTRY_VALUE_BYTES) {
+                return req.reject(400, `Value exceeds the maximum of ${MAX_ENTRY_VALUE_BYTES} bytes (got ${size})`);
+            }
+
             await cacheService.set(key, value, { ttl: ttl });
             req.info(`Cache entry set successfully: ${key}`);
             return true;

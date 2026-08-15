@@ -21,7 +21,7 @@ context plugin.cds_caching {
         entity Caches     as projection on plugin.cds_caching.Caches
             actions {
 
-                function getEntries()                                          returns array of {
+                function getEntries(top : Integer, skip : Integer)             returns array of {
                     entryKey  : String;
                     value     : String;
                     timestamp : DateTime;

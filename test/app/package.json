@@ -30,6 +30,21 @@
           "url": ":memory:"
         }
       },
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "cacheadmin": {
+            "password": "cacheadmin",
+            "roles": [
+              "CacheAdmin"
+            ]
+          },
+          "plainuser": {
+            "password": "plainuser",
+            "roles": []
+          }
+        }
+      },
       "caching": {
         "impl": "cds-caching",
         "namespace": "testCache",

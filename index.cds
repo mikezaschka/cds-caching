@@ -2,9 +2,22 @@ using from './db/statistics';
 
 context plugin.cds_caching {
 
-    @impl: 'cds-caching/srv/caching-api-service'
+    /**
+     * Management API for cache entries and metrics.
+     *
+     * Guarded with `authenticated-user` by default, because these operations can
+     * read and flush cache contents. Override in your own model to require a
+     * dedicated role instead:
+     *
+     *   annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
+     */
+    @impl    : 'cds-caching/srv/caching-api-service'
+    @requires: 'authenticated-user'
     service CachingApiService {
 
+        // Writes go through the bound actions below, never through CRUD, so that
+        // config rows (metricsEnabled, config) cannot be tampered with directly.
+        @readonly
         entity Caches     as projection on plugin.cds_caching.Caches
             actions {
 

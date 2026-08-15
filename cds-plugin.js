@@ -2,10 +2,24 @@ const cds = require('@sap/cds')
 const { fs, path } = cds.utils;
 const CachingService = require('./lib/CachingService')
 const { scanCachingAnnotations } = require('./lib/util')
-const { getCachingRequiresEntries } = require('./lib/config-normalizer')
+const { getCachingRequiresEntries, detectMisplacedKeyManagement } = require('./lib/config-normalizer')
 const { resolvePluginRoots } = require('./lib/plugin-roots')
 
 const LOG = cds.log("cds-caching");
+
+/**
+ * Parsed project package.json, or an empty object when unreadable.
+ * @returns {object}
+ */
+function readProjectPackage() {
+    try {
+        const pkgPath = path.join(cds.root, 'package.json')
+        if (!fs.existsSync(pkgPath)) return {}
+        return JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+    } catch {
+        return {}
+    }
+}
 
 // Auto-register plugin entity models based on service configuration.
 // See docs/feature-activation.md for reuse vs project-owned activation.
@@ -21,6 +35,9 @@ for (const root of pluginRoots) {
     if (!cds.env.roots.includes(root)) cds.env.roots.push(root)
 }
 for (const message of warnings) LOG.warn(message)
+
+const misplacedKeyManagement = detectMisplacedKeyManagement(cds.env, readProjectPackage())
+if (misplacedKeyManagement) LOG.warn(misplacedKeyManagement)
 
 cds.on('served', scanCachingAnnotations)
 

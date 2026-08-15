@@ -1,6 +1,7 @@
 const {
     normalizeCachingConfig,
     getStatisticsHandlerOptions,
+    detectMisplacedKeyManagement,
     resetDeprecationWarnings,
 } = require('../lib/config-normalizer')
 
@@ -82,5 +83,47 @@ describe('getStatisticsHandlerOptions', () => {
             maxLatencies: 500,
             keyMetricsEnabled: true,
         })
+    })
+
+    it('passes through the metric field length cap', () => {
+        const opts = getStatisticsHandlerOptions({ maxMetricFieldLength: 512 })
+        expect(opts).toEqual({ maxMetricFieldLength: 512 })
+    })
+})
+
+describe('detectMisplacedKeyManagement', () => {
+
+    beforeEach(() => resetDeprecationWarnings())
+
+    it('returns null when keyManagement is correctly nested under requires', () => {
+        const env = { requires: { caching: { impl: 'cds-caching', keyManagement: { isUserAware: true } } } }
+        expect(detectMisplacedKeyManagement(env, {})).toBeNull()
+    })
+
+    it('warns about a top-level block in package.json', () => {
+        const pkg = { 'cds-caching': { keyManagement: { isUserAware: true } } }
+        const warning = detectMisplacedKeyManagement({}, pkg)
+        expect(warning).toMatch(/ignored/)
+        expect(warning).toMatch(/keyManagement/)
+    })
+
+    it('warns about a block reaching cds.env via .cdsrc.json', () => {
+        const env = { 'cds-caching': { keyManagement: { isTenantAware: true } } }
+        expect(detectMisplacedKeyManagement(env, {})).toMatch(/ignored/)
+    })
+
+    it('warns only once', () => {
+        const pkg = { 'cds-caching': { keyManagement: { isUserAware: true } } }
+        expect(detectMisplacedKeyManagement({}, pkg)).toMatch(/ignored/)
+        expect(detectMisplacedKeyManagement({}, pkg)).toBeNull()
+    })
+
+    it('ignores an unrelated cds-caching block without keyManagement', () => {
+        const pkg = { 'cds-caching': { somethingElse: true } }
+        expect(detectMisplacedKeyManagement({}, pkg)).toBeNull()
+    })
+
+    it('tolerates missing arguments', () => {
+        expect(detectMisplacedKeyManagement()).toBeNull()
     })
 })

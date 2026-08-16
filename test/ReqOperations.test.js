@@ -64,7 +64,7 @@ describe('Read-Through Request Caching', () => {
             // covers the request including its canonicalized effective query, so a
             // change here means every cache goes cold on upgrade.
             const { headers } = await GET`/odata/v4/app/CachedFoo`
-            expect(headers['x-sap-cap-cache-key']).to.equal('5d5dbb7506d5999605fffacce2b8c83d_anonymous');
+            expect(headers['x-sap-cap-cache-key']).to.equal('1186062db1116d1ee8214be314fbe16a478b97a33dc28d9c199638df5b07f377_anonymous');
         })
 
         it("should cache a request for an annotated entity of an ApplicationService", async () => {

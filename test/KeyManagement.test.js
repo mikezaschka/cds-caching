@@ -89,7 +89,9 @@ describe('Key Management - Testing', () => {
             const args = [{ id: 1, name: "test" }, "param2"]
             const context = { args }
             const key = cache.createKey("base", context, "{hash}:{args[0]}:{args[1]}")
-            expect(key).to.equal("base:4da948eba118113aae62402c20710364:param2") // Object gets hashed
+            // Golden value: object arguments are hashed with SHA-256. A change here
+            // means key derivation changed and every cache goes cold.
+            expect(key).to.equal("base:5757d197ae2f024e247d7600bb6d8b0c84cf91a276fd53292fb0a7792405314c:param2")
         })
     })
 

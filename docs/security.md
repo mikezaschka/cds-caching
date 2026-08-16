@@ -9,6 +9,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 1. [Production checklist](#production-checklist)
 2. [Management API and dashboard](#management-api-and-dashboard)
 3. [Cache key isolation](#cache-key-isolation)
+   - [What the awareness flags do not cover](#what-the-awareness-flags-do-not-cover)
 4. [Debug response headers](#debug-response-headers)
 5. [Metrics data](#metrics-data)
 6. [Data at rest](#data-at-rest)
@@ -18,7 +19,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 ## Production checklist
 
 - Restrict `CachingApiService` to an administrative role rather than leaving it at the default `authenticated-user`.
-- Set `keyManagement.isUserAware: true` for any cache holding user-filtered data.
+- Set `keyManagement.isUserAware: true` for any cache holding user-filtered data, and `isLocaleAware: true` for translated content. Check [what the flags do not cover](#what-the-awareness-flags-do-not-cover) if your filtering is not derived from the user id.
 - Leave `debugHeaders` off.
 - Decide whether `keyMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics`.
 - Apply rate limits in front of the management API if it is externally reachable.
@@ -87,6 +88,20 @@ Enable user-aware keys per cache service:
 `keyManagement` must sit inside the individual cache configuration. A top-level `"cds-caching"` block is ignored; the plugin warns at startup if it finds one. See [Key Management](key-management.md).
 
 `isTenantAware` defaults to `true` when multitenancy is detected, so tenants are separated by default in MTX mode.
+
+### What the awareness flags do not cover
+
+These flags add context to the key; they do not make the key reflect the query that actually ran. For a request carrying an OData query string, the hash is derived from the URL and request metadata, and the CQN does not contribute — which is where a `where` clause added by `@restrict` or by a custom handler lives. All isolation therefore comes from the template dimensions you enabled, so review whether they cover every way your data varies.
+
+Two cases they do not cover:
+
+- **Filtering not derived from the user id.** When a single technical user issues the request — an integration user, a background job, or a service called with client credentials instead of principal propagation — and a handler narrows the query from a request header or another non-identity source, `isUserAware` gives you nothing: the user component is constant while the data is not. Pass a template that includes the discriminating value, or keep such reads out of the cache.
+
+```javascript
+const { result } = await cache.rt.run(query, db, { key: `${region}:{user}:{hash}` })
+```
+
+- **Locale.** `isLocaleAware` defaults to `false`, so responses in different languages share one entry. Enable it for any cache holding translated texts.
 
 You can also set the template per operation, which overrides the global setting:
 

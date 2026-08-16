@@ -99,6 +99,8 @@ The default key generation behavior is configured **per cache service**, inside 
 
 > **Security:** with `isUserAware: false`, a single cached entry is shared by every user. If the underlying data is filtered per user — via `@restrict`, a `where` clause on `cds.context.user`, or row-level rules — set `isUserAware: true`, otherwise one user's rows can be served to another. See [Security](security.md#cache-key-isolation).
 
+> **Note:** these flags add context to the key, they do not make the key reflect the query that actually ran. On requests carrying an OData query string the hash comes from the URL, so a `where` clause added by `@restrict` or a handler does not contribute to it. Filtering driven by something other than the user id — a request header under a shared technical user, for example — therefore still shares one entry. See [what the awareness flags do not cover](security.md#what-the-awareness-flags-do-not-cover).
+
 ### When to Use Context Awareness
 
 #### User Awareness (`isUserAware: true`)

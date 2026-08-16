@@ -13,6 +13,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 4. [Debug response headers](#debug-response-headers)
 5. [Metrics data](#metrics-data)
 6. [Data at rest](#data-at-rest)
+   - [Encrypting cached values](#encrypting-cached-values)
 7. [Resource limits](#resource-limits)
 8. [Content Security Policy](#content-security-policy)
 
@@ -23,7 +24,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - Leave `debugHeaders` off.
 - Decide whether `keyMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics`.
 - Apply rate limits in front of the management API if it is externally reachable.
-- Confirm your store's transport and at-rest encryption (Redis TLS, HANA, Postgres).
+- Confirm your store's transport and at-rest encryption (Redis TLS, HANA, Postgres), and consider [encrypting cached values](#encrypting-cached-values) where the store is outside your trust boundary.
 
 ## Management API and dashboard
 
@@ -145,7 +146,7 @@ Two consequences worth planning for: `KeyMetrics` may fall under your data-prote
 
 ## Data at rest
 
-Cached values are stored **unencrypted** in whichever store you configure, for every store type including `store: 'cds'`. A cached value is a copy of data your application already holds, so the cache inherits the sensitivity of its source.
+By default cached values are stored **unencrypted** in whichever store you configure, including `store: 'cds'`. A cached value is a copy of data your application already holds, so the cache inherits the sensitivity of its source.
 
 Consequences:
 
@@ -153,7 +154,46 @@ Consequences:
 - With `store: 'redis'`, values are readable by anyone with Redis access. Use TLS and credentials, and do not share the instance across trust boundaries.
 - Cached values can outlive their source rows until their TTL expires or they are invalidated. Deleting a record does not by itself remove it from the cache — use `@cache.invalidateOnWrite` or tag-based invalidation.
 
-Avoid caching highly sensitive data, use a short TTL where you must, and prefer a store whose at-rest encryption you control.
+### Encrypting cached values
+
+Since 3.0 a cache can encrypt its values with AES-256-GCM. Configure a 32-byte key, base64 or hex encoded:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "encryption": {
+          "key": "<32-byte key, base64 or hex>"
+        }
+      }
+    }
+  }
+}
+```
+
+Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Supply it the way you supply any other secret — a service binding, a platform-managed environment variable, or a secret store — not as a literal in a committed `package.json`. If the key is missing or not 32 bytes the service refuses to start, rather than starting up and writing plaintext.
+
+What this does and does not protect:
+
+- **Encrypted:** the cached value, with a fresh random IV per entry, so two equal values do not produce equal ciphertext. GCM authenticates as well as encrypts, so a tampered entry is rejected rather than returned.
+- **Not encrypted:** cache keys, tags and timestamps. Tag-based invalidation scans tags without reading values, and a scan that had to decrypt every entry would be far more expensive. Do not put sensitive values in tags or in custom key templates.
+- **Not protected:** anyone who can read the API can still read decrypted values, because the service decrypts on the way out. This protects the data where it sits — a database dump, a Redis instance, a backup — not against a caller you have authorized.
+
+Operational notes:
+
+- **Enabling it on a warm cache** does not invalidate anything: entries already stored are plaintext, are still returned, and are replaced with encrypted ones as they are refreshed. Flush the cache if you need them gone immediately.
+- **Rotating the key** makes existing entries unreadable. They are reported as misses and refetched, with a warning per entry, so rotation costs a cold cache rather than errors.
+- **Cost:** encryption runs on every write and decryption on every read, which eats into the latency the cache is there to save. Enable it per cache, for the ones holding data that warrants it.
+
+Where the data warrants stronger handling than this, the earlier advice still applies: avoid caching it, use a short TTL, and prefer a store whose at-rest encryption you control.
 
 ## Resource limits
 

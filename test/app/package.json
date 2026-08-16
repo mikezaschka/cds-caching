@@ -72,6 +72,22 @@
           "url": "https://services.odata.org/Experimental/OData/OData.svc/"
         }
       },
+      "caching-encrypted": {
+        "impl": "cds-caching",
+        "namespace": "encrypted",
+        "store": "memory",
+        "encryption": {
+          "key": "5Ov0Yy5oCUu0Ml2Q4hVvJ0/xoPy1zRb6xkYhWJ7VYYA="
+        }
+      },
+      "caching-cds-encrypted": {
+        "impl": "cds-caching",
+        "namespace": "cds-store-encrypted",
+        "store": "cds",
+        "encryption": {
+          "key": "5Ov0Yy5oCUu0Ml2Q4hVvJ0/xoPy1zRb6xkYhWJ7VYYA="
+        }
+      },
       "caching-postgres": {
         "impl": "cds-caching",
         "namespace": "postgres",

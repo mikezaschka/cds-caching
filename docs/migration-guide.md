@@ -33,6 +33,10 @@ Two things to check:
 
 Projects that ran `cds add caching-metrics` should re-run it to refresh `app/caching-dashboard/webapp/`. Nothing else changes: the route, the auth guard and the API are the same.
 
+### New: optional encryption of cached values
+
+A cache can now encrypt its values at rest with AES-256-GCM, for stores whose operators or backups sit outside your trust boundary. It is off by default and additive — nothing to do unless you want it. See [Encrypting cached values](security.md#encrypting-cached-values).
+
 ### Required: flush persistent caches on upgrade
 
 Entries written by 2.x are unreachable under the new derivation. With the default TTL of `0` they never expire, so they occupy their store forever unless removed. Flush each cache once after deploying:

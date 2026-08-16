@@ -4,6 +4,13 @@ const { isPluginModelAvailable } = require('../lib/util')
 
 const DEFAULT_TENANT = '_default';
 
+/** Upper bound for `getEntries`, regardless of the requested `top`. */
+const MAX_ENTRIES_PER_PAGE = 1000;
+const DEFAULT_ENTRIES_PER_PAGE = 100;
+
+/** Upper bound for a single `setEntry` value, in bytes. */
+const MAX_ENTRY_VALUE_BYTES = 1024 * 1024;
+
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
 
@@ -20,8 +27,8 @@ class CachingApiService extends cds.ApplicationService {
         // Handle setMetricsEnabled action
         this.on('setMetricsEnabled', async (req) => {
             const { enabled } = req.data
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
             try {
                 await cacheService.setMetricsEnabled(enabled)
                 req.info(`Metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
@@ -35,8 +42,8 @@ class CachingApiService extends cds.ApplicationService {
         // Handle setKeyMetricsEnabled action
         this.on('setKeyMetricsEnabled', async (req) => {
             const { enabled } = req.data
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
             try {
                 await cacheService.setKeyMetricsEnabled(enabled)
                 req.info(`Key metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
@@ -49,17 +56,27 @@ class CachingApiService extends cds.ApplicationService {
 
         // Handle getCacheEntries function
         this.on('getEntries', async (req) => {
-            const cache = req.params[0].name;
+            const cacheService = await this._connectToCache(req);
+            const { top, skip } = req.data;
+
+            // Bounded on purpose: an unbounded iteration would pull the whole
+            // cache into memory and can be used to exhaust the server.
+            const requested = Number.isInteger(top) && top > 0 ? top : DEFAULT_ENTRIES_PER_PAGE;
+            const limit = Math.min(requested, MAX_ENTRIES_PER_PAGE);
+            const offset = Number.isInteger(skip) && skip > 0 ? skip : 0;
+
             try {
-                const cacheService = await cds.connect.to(cache);
                 const entries = [];
+                let seen = 0;
                 for await (const [key, value] of cacheService.iterator()) {
+                    if (seen++ < offset) continue;
                     entries.push({
                         entryKey: key,
                         value: JSON.stringify(value.value),
                         timestamp: value.timestamp,
                         tags: value.tags,
                     });
+                    if (entries.length >= limit) break;
                 }
                 return entries;
             } catch (error) {
@@ -71,8 +88,7 @@ class CachingApiService extends cds.ApplicationService {
         // Handle getCacheEntry function
         this.on('getEntry', async (req) => {
             const { key } = req.data;
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
             const value = await cacheService.get(key);
             return {
                 value: value,
@@ -82,8 +98,13 @@ class CachingApiService extends cds.ApplicationService {
         // Handle setCacheEntry action
         this.on('setEntry', async (req) => {
             const { key, value, ttl } = req.data;
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+
+            const size = Buffer.byteLength(String(value ?? ''), 'utf8');
+            if (size > MAX_ENTRY_VALUE_BYTES) {
+                return req.reject(400, `Value exceeds the maximum of ${MAX_ENTRY_VALUE_BYTES} bytes (got ${size})`);
+            }
+
             await cacheService.set(key, value, { ttl: ttl });
             req.info(`Cache entry set successfully: ${key}`);
             return true;
@@ -92,8 +113,7 @@ class CachingApiService extends cds.ApplicationService {
         // Handle deleteCacheEntry action
         this.on('deleteEntry', async (req) => {
             const { key } = req.data;
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
             await cacheService.delete(key);
             req.info(`Cache entry deleted successfully: ${key}`);
             return true;
@@ -101,8 +121,8 @@ class CachingApiService extends cds.ApplicationService {
 
         // Handle clearCache action
         this.on('clear', async (req) => {
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
             await cacheService.clear();
             req.info(`Cache cleared successfully: ${cache}`);
             return true;
@@ -110,8 +130,8 @@ class CachingApiService extends cds.ApplicationService {
 
         // Handle clearKeyMetrics action
         this.on('clearKeyMetrics', async (req) => {
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
             await cacheService.clearKeyMetrics();
             req.info(`Key metrics cleared successfully: ${cache}`);
             return true;
@@ -119,14 +139,54 @@ class CachingApiService extends cds.ApplicationService {
 
         // Handle clearMetrics action
         this.on('clearMetrics', async (req) => {
-            const cache = req.params[0].name;
-            const cacheService = await cds.connect.to(cache);
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
             await cacheService.clearMetrics();
             req.info(`Metrics cleared successfully: ${cache}`);
             return true;
         });
 
         await super.init()
+    }
+
+    /**
+     * Names of all configured cds-caching services. Used as an allow-list so a
+     * caller cannot coerce `cds.connect.to()` into connecting to an unrelated
+     * business service by passing its name as the cache key.
+     * @returns {Set<string>}
+     */
+    _allowedCaches() {
+        return new Set(
+            Object.entries(cds.env.requires || {})
+                .filter(([, config]) => config?.impl === 'cds-caching')
+                .map(([name]) => name)
+        );
+    }
+
+    /**
+     * Name of the cache addressed by the request key.
+     * @param {object} req - Inbound request carrying the Caches key
+     * @returns {string|undefined}
+     */
+    _cacheName(req) {
+        const param = req.params?.[0];
+        return typeof param === 'string' ? param : param?.name;
+    }
+
+    /**
+     * Resolve the cache addressed by the request key and connect to it.
+     * Rejects with 404 for anything that is not a configured cache.
+     * @param {object} req - Inbound request carrying the Caches key
+     * @returns {Promise<object>} The connected CachingService
+     */
+    async _connectToCache(req) {
+        const name = this._cacheName(req);
+
+        if (!name || !this._allowedCaches().has(name)) {
+            return req.reject(404, `Unknown cache: ${name}`);
+        }
+
+        return cds.connect.to(name);
     }
 
     /**

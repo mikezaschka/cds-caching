@@ -113,11 +113,13 @@ The plugin deduplicates automatic loading:
 
 ### Securing the API
 
+The service ships with `@requires: 'authenticated-user'`. Tighten it to an administrative role for production:
+
 ```cds
-annotate plugin.cds_caching.CachingApiService with @requires: 'authenticated-user';
+annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
 ```
 
-Use the fully-qualified name — do not repeat the `using` import.
+Use the fully-qualified name — do not repeat the `using` import. See [Security](security.md).
 
 ## Recommended setups
 

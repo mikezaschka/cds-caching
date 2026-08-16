@@ -2,10 +2,24 @@ const cds = require('@sap/cds')
 const { fs, path } = cds.utils;
 const CachingService = require('./lib/CachingService')
 const { scanCachingAnnotations } = require('./lib/util')
-const { getCachingRequiresEntries } = require('./lib/config-normalizer')
+const { getCachingRequiresEntries, detectMisplacedKeyManagement } = require('./lib/config-normalizer')
 const { resolvePluginRoots } = require('./lib/plugin-roots')
 
 const LOG = cds.log("cds-caching");
+
+/**
+ * Parsed project package.json, or an empty object when unreadable.
+ * @returns {object}
+ */
+function readProjectPackage() {
+    try {
+        const pkgPath = path.join(cds.root, 'package.json')
+        if (!fs.existsSync(pkgPath)) return {}
+        return JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+    } catch {
+        return {}
+    }
+}
 
 // Auto-register plugin entity models based on service configuration.
 // See docs/feature-activation.md for reuse vs project-owned activation.
@@ -22,6 +36,9 @@ for (const root of pluginRoots) {
 }
 for (const message of warnings) LOG.warn(message)
 
+const misplacedKeyManagement = detectMisplacedKeyManagement(cds.env, readProjectPackage())
+if (misplacedKeyManagement) LOG.warn(misplacedKeyManagement)
+
 cds.on('served', scanCachingAnnotations)
 
 if (reuseDashboard) {
@@ -35,7 +52,16 @@ if (reuseDashboard) {
         );
     }
     cds.once('bootstrap', (app) => {
-        app.use('/caching-dashboard', require('express').static(dashboardPath));
+        // Run CAP's middlewares first so cds.context.user is populated, then gate
+        // the static assets on it.
+        const { requireAuthenticatedUser, capRequestMiddlewares } = require('./lib/dashboard-guard');
+
+        app.use(
+            '/caching-dashboard',
+            ...capRequestMiddlewares(),
+            requireAuthenticatedUser,
+            require('express').static(dashboardPath)
+        );
         (app._app_links ??= []).push('/caching-dashboard');
         LOG.info("Serving cds-caching dashboard at /caching-dashboard");
     });
@@ -56,7 +82,6 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     clean() { }
 
     static hasTask() {
-        cds.log('cds-caching').info('hasTask', cds.env.requires);
         const requires = cds.env.requires || {};
         const dbKind = requires.db?.kind || '';
         const isHanaDB = dbKind === 'hana' || dbKind === 'sql';

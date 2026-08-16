@@ -1,11 +1,20 @@
 const cds = require('@sap/cds');
-const { GET, POST, expect } = cds.test().in(__dirname + '/app/')
+const test = cds.test().in(__dirname + '/app/')
+const { GET, POST, expect, axios } = test
 const { describeFromCds } = require('./helpers/cds-version')
+
+// CachingApiService requires an authenticated user, so every call in this suite
+// needs credentials. See the `auth` block in test/app/package.json.
+const ADMIN = { username: 'cacheadmin', password: 'cacheadmin' }
 
 describeFromCds(9, 'Caching API Service', () => {
 
     let cache;
     let appService;
+
+    before(() => {
+        axios.defaults.auth = ADMIN
+    })
 
     beforeEach(async () => {
         cache = await cds.connect.to("caching");

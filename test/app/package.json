@@ -30,10 +30,26 @@
           "url": ":memory:"
         }
       },
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "cacheadmin": {
+            "password": "cacheadmin",
+            "roles": [
+              "CacheAdmin"
+            ]
+          },
+          "plainuser": {
+            "password": "plainuser",
+            "roles": []
+          }
+        }
+      },
       "caching": {
         "impl": "cds-caching",
         "namespace": "testCache",
         "store": "memory",
+        "debugHeaders": true,
         "metrics": {
           "enabled": true,
           "persistenceInterval": 10000,
@@ -44,6 +60,7 @@
         "impl": "cds-caching",
         "namespace": "northwind",
         "store": "sqlite",
+        "debugHeaders": true,
         "credentials": {
           "url": "file::memory:"
         }

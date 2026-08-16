@@ -188,7 +188,9 @@ Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-hand
 | `metrics.enabled` | `false` | Enable metrics collection |
 | `metrics.persistenceInterval` | `60000` | Interval (ms) for persisting hourly stats to the database |
 | `metrics.reuse.api` | `false` | Register `CachingApiService` from the plugin package (alternative: `using … index.cds`) |
-| `metrics.reuse.dashboard` | `false` | Serve bundled UI from the plugin (alternative: `cds add caching-metrics`) |
+| `metrics.reuse.dashboard` | `false` | Serve the UI from the plugin (alternative: `cds add caching-metrics`) |
+| `metrics.ui5Url` | SAPUI5 CDN, pinned | UI5 runtime for the served dashboard; set this to serve UI5 yourself ([docs](docs/dashboard.md#where-the-ui5-runtime-comes-from)) |
+| `encryption.key` | none | 32-byte key (base64 or hex) enabling AES-256-GCM encryption of cached values ([docs](docs/security.md#encrypting-cached-values)) |
 | `statistics` | — | **Deprecated** — use `metrics` (removed in v3.0) |
 | `dashboard` | — | **Deprecated** — use `metrics.reuse.dashboard` (removed in v3.0) |
 | `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |

@@ -118,7 +118,7 @@ Creates a key from a string or an object. This method is used internally when pa
 
 #### Parameters
 
-- `key: any` - The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using MD5. cds.Requests are handled explicitly as the dynamically generated key includes the user, tenant and locale and query hash.
+- `key: any` - The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using SHA-256. cds.Requests are handled explicitly as the dynamically generated key includes the user, tenant and locale and query hash.
 
 #### Returns
 
@@ -356,11 +356,11 @@ Runs a query against the provided service and caches the result for all further 
 #### Key Generation
 
 **For CQN queries:**
-- Key components hashed as md5: Query structure (SELECT, FROM, WHERE, ORDER BY, LIMIT, etc.) and query parameters
+- Key components hashed with SHA-256: the canonicalized query structure (FROM, COLUMNS, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT) and query parameters
 - Global context (user, tenant, locale based on configuration) is prepended
 
 **For CAP requests:**
-- Key components hashed as md5: Request params and data, target entity, query parameters ($filter, $select, $expand, $orderby, etc.)
+- Key components hashed with SHA-256: request params and data, target entity, query parameters ($filter, $select, $expand, $orderby, etc.) and the effective query
 - Global context (user, tenant, locale based on configuration) is available
 
 #### Returns
@@ -425,7 +425,7 @@ Sends a request to a cds.Service and caches the result. This method is useful fo
 - HTTP method
 - Request path with query parameters
 - Global context (user, tenant, locale based on configuration)
-- Hash: MD5 hash of the request structure
+- Hash: SHA-256 hash of the request structure
 
 #### Returns
 
@@ -655,7 +655,7 @@ The following variables are available in key templates:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `{hash}` | MD5 hash of the content being cached | `"a1b2c3d4..."` |
+| `{hash}` | SHA-256 hash of the content being cached | `"a1b2c3d4..."` |
 | `{user}` | Current user ID | `"john.doe"` |
 | `{tenant}` | Current tenant | `"acme"` |
 | `{locale}` | Current locale | `"en-US"` |

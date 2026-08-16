@@ -1,5 +1,38 @@
 # Migration Guide
 
+## Upgrading to 3.0
+
+Version 3.0 changes how cache keys are derived. Every key differs from 2.x, so **read the flush step below before deploying** — otherwise old entries linger in persistent stores indefinitely.
+
+### Breaking: keys are derived from the effective query
+
+Read-through keys previously came from the HTTP URL plus request metadata, and the CQN was excluded whenever the URL carried a query string. A `where` clause contributed by `@restrict` or by a custom handler lives only in the CQN, so two users reading the same URL derived the same key and the second was served the first one's rows. The query now always contributes, canonicalized so that clauses on the prototype chain are seen and property ordering cannot change a key.
+
+What this means for you:
+
+- **Correctness improves without configuration.** Reads filtered per user, per header, or by any rule that reaches the query now derive distinct keys even with `isUserAware` off.
+- **`isUserAware` is no longer the safety net.** It remains useful where a response varies per user without the query varying — a handler that filters the result in JavaScript — and for deliberate partitioning. It stays off by default, because turning it on multiplies entry count by user count and is wrong for shared reference data.
+- **Cache entries start cold.** Expect a burst of misses on first deployment.
+
+### Breaking: keys and tags are hashed with SHA-256
+
+MD5 has been replaced. Nothing exploitable followed from MD5 once the management API required authentication, but it is flagged by security scanners and unavailable on FIPS-enforcing Node builds. Keys and tag hashes moved together, so tag-based invalidation stays consistent.
+
+Keys grow from 32 to 64 hex characters plus any template prefix. The `CacheStore` key column holds 900 characters, so no schema change is needed. If you configured a HANA `KEYV` table with a custom `keySize`, confirm it leaves room for your templates.
+
+If you assert on cache keys in your own tests, or store keys outside the cache, those values change.
+
+### Required: flush persistent caches on upgrade
+
+Entries written by 2.x are unreachable under the new derivation. With the default TTL of `0` they never expire, so they occupy their store forever unless removed. Flush each cache once after deploying:
+
+```javascript
+const cache = await cds.connect.to('caching')
+await cache.clear()
+```
+
+Memory stores need nothing, since they start empty. For `store: 'cds'`, Redis or HANA, do this as part of the release. `KeyMetrics` rows recorded against old keys remain readable as history; new traffic records new keys.
+
 ## Upgrading to 2.1
 
 Version 2.1 is a security-hardening release. It closes several unauthenticated access paths and changes runtime behavior, so read this before upgrading. See [Security](security.md) for the full picture.

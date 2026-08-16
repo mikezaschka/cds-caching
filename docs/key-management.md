@@ -97,9 +97,9 @@ The default key generation behavior is configured **per cache service**, inside 
 
 **Important**: This configuration applies to **all cache operations** of that cache service, not just read-through functions.
 
-> **Security:** with `isUserAware: false`, a single cached entry is shared by every user. If the underlying data is filtered per user — via `@restrict`, a `where` clause on `cds.context.user`, or row-level rules — set `isUserAware: true`, otherwise one user's rows can be served to another. See [Security](security.md#cache-key-isolation).
+> **Note:** since 3.0 the `{hash}` component covers the effective query, so filtering contributed by `@restrict`, row-level rules or a custom handler is already part of the key and two differently-filtered reads cannot share an entry. These flags control how entries are *partitioned* on top of that. Set `isUserAware: true` where a response varies per user without the query varying — a handler that filters the result in JavaScript, for example — and `isLocaleAware: true` for translated content. See [what the awareness flags do not cover](security.md#what-the-awareness-flags-do-not-cover).
 
-> **Note:** these flags add context to the key, they do not make the key reflect the query that actually ran. On requests carrying an OData query string the hash comes from the URL, so a `where` clause added by `@restrict` or a handler does not contribute to it. Filtering driven by something other than the user id — a request header under a shared technical user, for example — therefore still shares one entry. See [what the awareness flags do not cover](security.md#what-the-awareness-flags-do-not-cover).
+> **Upgrading from 2.x:** in earlier releases the hash was derived from the request URL and dropped the CQN whenever the URL carried a query string, so per-user filtering did not reach the key. On 2.x, set `isUserAware: true` for any cache holding user-filtered data.
 
 ### When to Use Context Awareness
 
@@ -183,9 +183,11 @@ const { result } = await cache.rt.run(query, db)
 // Cache key includes: query structure
 ```
 
-**Key components hashed as md5:**
-- **Query structure**: SELECT, FROM, WHERE, ORDER BY, LIMIT, etc.
+**Key components hashed with SHA-256:**
+- **Query structure**: FROM, COLUMNS, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, DISTINCT, SEARCH
 - **Query parameters**: Filter values, limit, offset, expand parameters
+
+The query is canonicalized before hashing: clauses are read explicitly (so clauses the runtime keeps on the prototype chain still count), object keys are ordered so that two identical queries always hash alike, and runtime bookkeeping is excluded so its churn cannot change a key.
 
 #### Request-Based Caching
 
@@ -199,10 +201,13 @@ this.on('READ', Users, async (req, next) => {
 })
 ```
 
-**Key components hased as md5:**
+**Key components hashed with SHA-256:**
 - **Request params and data**: GET, POST, PUT, DELETE
 - **Target entity**: The entity being accessed
 - **Query parameters**: $filter, $select, $expand, $orderby, etc.
+- **Effective query**: the canonicalized CQN, including a `where` clause contributed by `@restrict` or by a custom handler
+
+Both the URL and the effective query contribute. The URL alone would miss filtering that only exists in the query; the query alone would miss protocols such as HCQL and MCP, where the query travels in the request body and every request shares one URL.
 
 ### rt.send() - Remote Service Requests
 
@@ -218,7 +223,7 @@ const { result } = await cache.rt.send(request, service)
 - HTTP method
 - Request path with query parameters
 - Global context (user, tenant, locale based on configuration)
-- Hash: MD5 hash of the request structure
+- Hash: SHA-256 hash of the request structure
 
 ### rt.wrap() - Function Wrapping
 
@@ -275,7 +280,7 @@ The following variables are available in key templates:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `{hash}` | MD5 hash of the content being cached | `"a1b2c3d4..."` |
+| `{hash}` | SHA-256 hash of the content being cached | `"a1b2c3d4..."` |
 | `{user}` | Current user ID | `"john.doe"` |
 | `{tenant}` | Current tenant | `"acme"` |
 | `{locale}` | Current locale | `"en-US"` |

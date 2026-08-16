@@ -19,7 +19,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 ## Production checklist
 
 - Restrict `CachingApiService` to an administrative role rather than leaving it at the default `authenticated-user`.
-- Set `keyManagement.isUserAware: true` for any cache holding user-filtered data, and `isLocaleAware: true` for translated content. Check [what the flags do not cover](#what-the-awareness-flags-do-not-cover) if your filtering is not derived from the user id.
+- Set `isLocaleAware: true` for translated content, and `isUserAware: true` where a response varies per user without the query varying. See [what the awareness flags do not cover](#what-the-awareness-flags-do-not-cover).
 - Leave `debugHeaders` off.
 - Decide whether `keyMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics`.
 - Apply rate limits in front of the management API if it is externally reachable.
@@ -61,13 +61,11 @@ When `metrics.reuse.dashboard` is enabled, the dashboard is served from `/cachin
 
 ## Cache key isolation
 
-**This is the most important setting to review.**
+Cache keys are built from a template. By default the template is `{hash}`, where the hash covers the request and its **effective query** — including a `where` clause contributed by `@restrict`, by row-level rules, or by a custom handler. Two reads that resolve to different queries therefore derive different keys without further configuration.
 
-Cache keys are built from a template. By default the template is `{hash}` — derived from the request or query alone, with no user context. Every user shares one cached entry per distinct request.
+Before 3.0 the hash was derived from the request URL and the CQN was dropped whenever the URL carried a query string, so per-user filtering did not reach the key and one user could be served another's rows. If you are on 2.x, set `isUserAware: true` for any cache holding user-filtered data and see [GHSA-9hrx-jq4r-33g9](https://github.com/mikezaschka/cds-caching/security/advisories/GHSA-9hrx-jq4r-33g9).
 
-That is correct for public, unfiltered data. It is **wrong**, and a cross-user data leak, when the cached data is filtered per user, whether through `@restrict`, a `where` clause referencing `cds.context.user`, or any row-level rule. Two users issuing the same request would then receive the same cached rows.
-
-Enable user-aware keys per cache service:
+The template still governs how entries are partitioned. Enable user-aware keys per cache service:
 
 ```json
 {
@@ -91,17 +89,19 @@ Enable user-aware keys per cache service:
 
 ### What the awareness flags do not cover
 
-These flags add context to the key; they do not make the key reflect the query that actually ran. For a request carrying an OData query string, the hash is derived from the URL and request metadata, and the CQN does not contribute — which is where a `where` clause added by `@restrict` or by a custom handler lives. All isolation therefore comes from the template dimensions you enabled, so review whether they cover every way your data varies.
+Since 3.0 the key hash covers the **effective query**, not just the request URL. A `where` clause contributed by `@restrict` or by a custom handler is part of the key, so two users whose reads are filtered differently derive different keys even with `isUserAware` off. That holds however the filter arises — from the user id, from a request header, or from anything else that reaches the query.
 
-Two cases they do not cover:
+What the flags are still for:
 
-- **Filtering not derived from the user id.** When a single technical user issues the request — an integration user, a background job, or a service called with client credentials instead of principal propagation — and a handler narrows the query from a request header or another non-identity source, `isUserAware` gives you nothing: the user component is constant while the data is not. Pass a template that includes the discriminating value, or keep such reads out of the cache.
+- **Responses that vary by user without the query varying.** If a handler filters or enriches the *result* in JavaScript after the query has run, or returns data derived from `cds.context.user` directly, the query is identical for every caller and so is the key. Set `isUserAware: true` for those caches, or key the operation explicitly.
 
 ```javascript
-const { result } = await cache.rt.run(query, db, { key: `${region}:{user}:{hash}` })
+const { result } = await cache.rt.run(query, db, { key: '{user}:{hash}' })
 ```
 
-- **Locale.** `isLocaleAware` defaults to `false`, so responses in different languages share one entry. Enable it for any cache holding translated texts.
+- **Locale.** `isLocaleAware` defaults to `false`, so responses in different languages share one entry. Locale is a context dimension rather than part of the query, so enable it for any cache holding translated texts.
+
+- **Deliberate isolation.** Even where the key is already correct, `isUserAware` and `isTenantAware` keep one caller's entries from being reachable by another, which some deployments want independently of correctness. The cost is entry count: a per-user key multiplies entries by your user count and lowers hit rates, so it is the wrong default for shared reference data.
 
 You can also set the template per operation, which overrides the global setting:
 

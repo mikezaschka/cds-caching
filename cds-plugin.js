@@ -43,27 +43,40 @@ cds.on('served', scanCachingAnnotations)
 
 if (reuseDashboard) {
     const dashboardPath = path.join(__dirname, 'app', 'dashboard');
-    const dashboardProbe = path.join(dashboardPath, 'resources', 'sap', 'ui', 'core', 'cldr', 'en.json');
-    if (!fs.existsSync(dashboardProbe)) {
+    const { resolveUi5Url, createIndexHandler } = require('./lib/dashboard-bootstrap');
+
+    // The dashboard is a UI5 build without the framework itself, so what has to
+    // be present is the built application, not a bundled runtime.
+    if (!fs.existsSync(path.join(dashboardPath, 'Component.js'))) {
         LOG.warn(
-            'cds-caching dashboard static resources are incomplete (missing UI5 runtime files). ' +
-            'Upgrade cds-caching to a release that includes the full pre-built dashboard, ' +
-            'or run "npm run build:dashboard" in the cds-caching package before using metrics.reuse.dashboard.'
+            'cds-caching dashboard is not built (missing app/dashboard/Component.js). ' +
+            'Reinstall cds-caching, or run "npm run build:dashboard" in the cds-caching package ' +
+            'before using metrics.reuse.dashboard.'
         );
     }
+
+    const { url: ui5Url, warnings: ui5Warnings } = resolveUi5Url(cachingEntries);
+    for (const message of ui5Warnings) LOG.warn(message);
+
     cds.once('bootstrap', (app) => {
         // Run CAP's middlewares first so cds.context.user is populated, then gate
         // the static assets on it.
         const { requireAuthenticatedUser, capRequestMiddlewares } = require('./lib/dashboard-guard');
+        const serveIndex = createIndexHandler(dashboardPath, ui5Url);
 
         app.use(
             '/caching-dashboard',
             ...capRequestMiddlewares(),
             requireAuthenticatedUser,
+            // Ahead of the static handler, so the entry page is served with the
+            // configured UI5 runtime rather than whatever the build wrote.
+            (req, res, next) => (
+                req.path === '/' || req.path === '/index.html' ? serveIndex(req, res, next) : next()
+            ),
             require('express').static(dashboardPath)
         );
         (app._app_links ??= []).push('/caching-dashboard');
-        LOG.info("Serving cds-caching dashboard at /caching-dashboard");
+        LOG.info(`Serving cds-caching dashboard at /caching-dashboard (UI5 from ${ui5Url})`);
     });
 }
 

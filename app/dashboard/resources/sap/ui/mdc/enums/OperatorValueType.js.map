@@ -1,1 +1,0 @@
-{"version":3,"file":"OperatorValueType.js","names":["sap","ui","define","DataType","OperatorValueType","Self","Static","SelfNoParse","registerEnum"],"sources":["OperatorValueType-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAUA,MAAMC,EAAoB,CAMzBC,KAAM,OAONC,OAAQ,SAQRC,YAAa,eAGdJ,EAASK,aAAa,qCAAsCJ,GAE5D,OAAOA,GAEU","ignoreList":[]}

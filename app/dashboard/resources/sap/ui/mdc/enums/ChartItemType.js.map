@@ -1,1 +1,0 @@
-{"version":3,"file":"ChartItemType.js","names":["sap","ui","define","DataType","ChartItemType","Dimension","Measure","registerEnum"],"sources":["ChartItemType-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAQA,MAAMC,EAAgB,CAKrBC,UAAW,YAKXC,QAAS,WAGVH,EAASI,aAAa,iCAAkCH,GAExD,OAAOA,GAEU","ignoreList":[]}

@@ -1,6 +1,0 @@
-/*
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/base/i18n/date/CalendarType","sap/ui/model/SimpleType","sap/ui/core/format/DateFormat","sap/ui/model/ValidateException"],function(t,e,a,r){"use strict";var i=e.extend("sap.ui.comp.odata.type.StringDate",{constructor:function(r){e.apply(this,[r]);this.sName="sap.ui.comp.odata.type.StringDate";r=Object.assign({},r,{UTC:false});this.displayFormatter=a.getDateInstance(r);this.parseFormatter=a.getDateInstance({UTC:false,pattern:"yyyyMMdd",calendarType:t.Gregorian,strictParsing:true})}});i.prototype.parseValue=function(t,e){if(t===""){t=null}if(t!=null&&t!=""){var a=e==="string"?this.parseFormatter.parse(t,true):t;t=this.parseFormatter.format(a)}return t};i.prototype.formatValue=function(t,e){if(t===null||t===undefined||t==""){return null}if(!(t instanceof Date)){t=this.parseFormatter.parse(t)}if(e==="string"){return this.displayFormatter.format(t)}return t};i.prototype.validateValue=function(t){if(t!=null){var e=this.parseFormatter.parse(t);if(!e){throw new r(t+" is not a valid date")}}};return i});
-//# sourceMappingURL=StringDate.js.map

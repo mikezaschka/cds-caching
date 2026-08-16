@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/mdc/AggregationBaseDelegate","sap/ui/mdc/enums/FilterBarValidationStatus"],(e,t)=>{"use strict";const r=Object.assign({},e);r.addItem=function(t,r,s){return e.addItem(t,r,s)};r.removeItem=function(t,r,s){return e.removeItem(t,r,s)};r.addCondition=function(e,t,r){return Promise.resolve()};r.removeCondition=function(e,t,r){return Promise.resolve()};r.fetchProperties=function(t){return e.fetchProperties(t)};r.clearFilters=function(e){return Promise.resolve()};r.determineValidationState=function(e){return e.checkFilters()};r.visualizeValidationState=function(e,r){let s;if(r.status===t.NoError){return}if(r.status===t.RequiredHasNoValue){s=e.getResourceFileText("filterbar.REQUIRED_CONDITION_MISSING")}else if(r.status===t.FieldInErrorState){s=e.getResourceFileText("filterbar.VALIDATION_ERROR")}if(e.getShowMessages()&&!e._hasOpenMessageBox){sap.ui.require(["sap/m/MessageBox","sap/base/Log"],(t,r)=>{try{if(e._bIsBeingDestroyed){return}e._hasOpenMessageBox=true;t.error(s,{styleClass:e.getDomRef()?.closest(".sapUiSizeCompact")?"sapUiSizeCompact":"",onClose:function(){delete e._hasOpenMessageBox;e.setFocusOnFirstErroneousField()}})}catch(e){r.error(e.message)}})}};return r});
-//# sourceMappingURL=FilterBarDelegate.js.map

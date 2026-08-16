@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/mdc/filterbar/IFilterContainer","sap/ui/mdc/p13n/panels/AdaptFiltersPanel"],(t,e)=>{"use strict";const i=t.extend("sap.ui.mdc.filterbar.p13n.GroupContainer",{metadata:{library:"sap.ui.mdc"}});i.prototype.init=function(){t.prototype.init.apply(this,arguments);this.mFilterItems={};this.oLayout=new e;this.oLayout.setItemFactory(t=>{const e=t.getProperty(t.sPath).name;const i=this.mFilterItems[e];return i})};i.prototype.setMessageStrip=function(t){this.oLayout.getCurrentViewContent().setMessageStrip(t)};i.prototype.insertFilterField=function(t,e){this.mFilterItems[t._getFieldPath()]=t};i.prototype.removeFilterField=function(t){this.oLayout.removeItem(t)};i.prototype.getFilterFields=function(){const t=[];Object.keys(this.mFilterItems).forEach(e=>{t.push(this.mFilterItems[e])});return t};i.prototype.update=function(t){this.oLayout.restoreDefaults()};i.prototype.setP13nData=function(t){this.oLayout.setP13nData(t)};i.prototype.exit=function(){this.mFilterItems=null;this.mFilterFields=null;t.prototype.exit.apply(this,arguments)};i.prototype.getInitialFocusedControl=function(){return this.oLayout.getInitialFocusedControl&&this.oLayout.getInitialFocusedControl()};return i});
-//# sourceMappingURL=GroupContainer.js.map

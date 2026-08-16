@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/ui/comp/odata/PeriodDateFormat"],function(e){"use strict";var a=e.extend("sap.ui.comp.odata.FiscalFormat",{metadata:{library:"sap.ui.comp"},constructor:function(a,r){e.apply(this,arguments)}});a.getDateInstance=function(e){return new a(null,e)};a.prototype.getName=function(){return"sap.ui.comp.odata.FiscalFormat"};a.oRegexFormatPatterns={year:/[1-9][0-9]{3}/,period:/[0-9]{3}/,quarter:/[1-4]/,week:/0[1-9]|[1-4][0-9]|5[0-3]/,day:/371|370|3[0-6][0-9]|[1-2][0-9][0-9]|[1-9][0-9]|[1-9]/};a.oRegexParsePatterns={year:/[0-9]{1,4}/,period:/[0-9]{1,3}/,quarter:/[1-4]/,week:/[0-9]{1,2}/,day:/[1-9]/};a.prototype.oSymbols={"":"",y:{format:a.oRegexFormatPatterns.year,parse:a.oRegexParsePatterns.year},Y:{format:a.oRegexFormatPatterns.year,parse:a.oRegexParsePatterns.year},P:{format:a.oRegexFormatPatterns.period,parse:a.oRegexParsePatterns.period},W:{format:a.oRegexFormatPatterns.week,parse:a.oRegexParsePatterns.week},d:{format:a.oRegexFormatPatterns.day,parse:a.oRegexParsePatterns.day},Q:{format:a.oRegexFormatPatterns.quarter,parse:a.oRegexParsePatterns.quarter},q:{format:a.oRegexFormatPatterns.quarter,parse:a.oRegexParsePatterns.quarter}};return a});
-//# sourceMappingURL=FiscalFormat.js.map

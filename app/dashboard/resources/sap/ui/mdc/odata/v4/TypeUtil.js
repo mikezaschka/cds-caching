@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/mdc/odata/TypeUtil","sap/ui/mdc/enums/BaseType","sap/base/util/merge"],(e,t,a)=>{"use strict";const s=Object.assign({},e);s.getBaseType=function(a,s,i){switch(a){case"sap.ui.model.odata.type.Date":return t.Date;case"sap.ui.model.odata.type.TimeOfDay":return t.Time;case"sap.ui.model.odata.type.Unit":case"sap.ui.model.odata.type.Currency":if(!s||(!s.hasOwnProperty("showMeasure")||s.showMeasure)&&(!s.hasOwnProperty("showNumber")||s.showNumber)){return t.Unit}else if(!s.hasOwnProperty("showNumber")||s.showNumber){return t.Numeric}else{return t.String}default:return e.getBaseType.call(this,a,s,i)}};s.getDataTypeClassName=function(t){const a={"Edm.Date":"sap.ui.model.odata.type.Date","Edm.TimeOfDay":"sap.ui.model.odata.type.TimeOfDay"};if(a[t]){t=a[t]}else{t=e.getDataTypeClassName.call(this,t)}return t};s.getDataTypeInstance=function(e,t,s){switch(e){case"sap.ui.model.odata.type.DateTimeOffset":case"Edm.DateTimeOffset":s=a({},s);s.V4=true;break;default:}const i=this.getDataTypeClass(e);return new i(t,s)};s._adjustUnitFormatOptions=function(t,a,s){e._adjustUnitFormatOptions.call(this,t,a,s);if(t.hasOwnProperty("unitOptional")){delete t.unitOptional}};return s});
-//# sourceMappingURL=TypeUtil.js.map

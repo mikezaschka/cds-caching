@@ -1,4 +1,0 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m">
-	<SplitApp id="splitApp"/>
-</mvc:View>

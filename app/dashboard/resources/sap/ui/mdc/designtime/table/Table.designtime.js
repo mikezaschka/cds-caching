@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/m/p13n/Engine","sap/ui/mdc/Table","../Util"],(e,t,n)=>{"use strict";const i={name:"{name}",description:"{description}",actions:{settings:{"sap.ui.mdc":function(t){return e.getInstance()._runWithPersistence(t,t=>({name:"p13nDialog.VIEW_SETTINGS",handler:function(t,n){return t.finalizePropertyHelper().then(()=>e.getInstance().getRTASettingsActionHandler(t,n,t.getActiveP13nModes()))},CAUTION_variantIndependent:t}))}}},properties:{},aggregations:{_content:{domRef:":sap-domref",propagateMetadata:function(e){if(e.isA("sap.ui.fl.variants.VariantManagement")||e.isA("sap.ui.mdc.ActionToolbar")||e.isA("sap.ui.mdc.actiontoolbar.ActionToolbarAction")||e.isA("sap.ui.mdc.Field")||e.getParent()&&(e.getParent().isA("sap.ui.mdc.actiontoolbar.ActionToolbarAction")||e.getParent().isA("sap.ui.mdc.Field"))){return null}return{actions:"not-adaptable"}}}}};const a=["width","headerLevel","header","headerVisible","showRowCount","threshold","enableExport","busyIndicatorDelay","enableColumnResize","showPasteButton","multiSelectMode"],o=["_content"];return n.getDesignTime(t,a,o,i)});
-//# sourceMappingURL=Table.designtime.js.map

@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/ui/core/Renderer","sap/m/LinkRenderer","sap/base/strings/whitespaceReplacer","sap/m/library"],function(e,t,r,n){"use strict";var i=n.EmptyIndicatorMode;var a=e.extend(t);a.apiVersion=2;a.render=function(e,r){var n=true;if(r.getIgnoreLinkRendering()){var i=r._getInnerControl();if(i){e.openStart("div",r);e.openEnd();e.renderControl(i);e.close("div");n=false}}if(n){if(!r.getAriaLabelledBy()||Array.isArray(r.getAriaLabelledBy())&&r.getAriaLabelledBy().length==0){r.addAriaLabelledBy(r)}t.render.apply(this,arguments)}};a.writeText=function(e,t){var r=t.getUom();var n=t.getEmptyIndicatorMode()!==i.Off&&!t.getText();if(!r){this._writeText(e,t,n);return}this._writeTextWithUom(e,r,t,n)};a._writeTextWithUom=function(e,t,r,n){t=t.padStart(6," ");e.openStart("span");e.openEnd();this._writeText(e,r,n);e.close("span");e.openStart("span");if(n){e.class("sapMEmptyIndicator");e.class("sapMLnkDsbl")}e.style("display","inline-flex");e.style("min-width","2.5em");e.style("width","3.0em");e.style("justify-content","end");e.openEnd();e.text(t);e.close("span")};a._writeText=function(e,n,i){var a=r(n.getText());if(i){t.renderEmptyIndicator(e,n)}else{e.text(a)}};return a},true);
-//# sourceMappingURL=SmartLinkRenderer.js.map

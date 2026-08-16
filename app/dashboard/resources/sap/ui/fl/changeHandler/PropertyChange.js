@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/fl/Utils","sap/ui/fl/changeHandler/condenser/Classification","sap/base/Log","sap/base/util/isPlainObject"],function(e,t,n,r){"use strict";var i={};function a(t){return e.isBinding(t)||r(t)}function o(e,t,n,r){try{if(a(n)){r.setPropertyBinding(e,t,n)}else{r.setProperty(e,t,n)}}catch(e){throw new Error(`Applying property changes failed: ${e}`)}}i.applyChange=function(e,t,n){var r=e.getContent();var i=r.property;var a=r.newValue;var s=n.modifier;return Promise.resolve().then(s.getPropertyBindingOrProperty.bind(s,t,i)).then(function(n){e.setRevertData({originalValue:n});o(t,i,a,s)})};i.revertChange=function(e,t,r){var i=e.getRevertData();if(i){var a=e.getContent();var s=a.property;var c=i.originalValue;var p=r.modifier;o(t,s,c,p);e.resetRevertData()}else{n.error("Attempt to revert an unapplied change.")}};i.completeChangeContent=function(e,t){if(!t.content){throw new Error("oSpecificChangeInfo attribute required")}e.setContent(t.content)};i.getCondenserInfo=function(e){return{affectedControl:e.getSelector(),classification:t.LastOneWins,uniqueKey:e.getContent().property}};return i},true);
-//# sourceMappingURL=PropertyChange.js.map

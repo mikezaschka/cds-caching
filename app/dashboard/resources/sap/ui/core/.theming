@@ -1,8 +1,0 @@
-{
-  "sEntity": "Library",
-  "sId": "sap/ui/core",
-  "aFiles": [
-    "library",
-    "global"
-  ]
-}

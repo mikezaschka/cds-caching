@@ -1,1 +1,0 @@
-{"version":3,"file":"SetDescription.js","names":["sap","ui","define","SetDescription","applyChange","oManifest","description","id"],"sources":["SetDescription-dbg.js"],"mappings":";;;;;AAOAA,IAAIC,GAAGC,OAAO,GAEX,WAGF,aAaA,MAAMC,EAAiB,CAUtB,WAAAC,CAAYC,GACXA,EAAU,WAAWC,YAAc,KAAKD,EAAU,WAAWE,2BAC7D,OAAOF,CACR,GAID,OAAOF,CACR","ignoreList":[]}

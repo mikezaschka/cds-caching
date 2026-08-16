@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/fl/apply/_internal/changes/descriptor/ApplyUtil","sap/base/util/ObjectPath"],function(e,t){"use strict";function n(e){const t="A schema violation has been identified. Either bundleName or bundleUrl property must be used.";if(e.bundleUrl){if(e.bundleName){throw Error(t)}return true}return false}function s(t,s){const i=Object.keys(t.terminologies||{});if(i.length>0){i.forEach(i=>{const l=t.terminologies[i];if(n(l)){l.bundleName=e.formatBundleName(s,l.bundleUrl);delete l.bundleUrl}})}}const i={applyChange(i,l){const r=l.getContent();const o=r.modelId;const u=i["sap.ui5"].models[o];if(u){if(u.type&&u.type==="sap.ui.model.resource.ResourceModel"){if(!(u.settings&&u.settings.enhanceWith)){t.set("settings.enhanceWith",[],u)}const o=i["sap.app"].id;const a=l.getTexts()?.i18n;const d=u.settings.enhanceWith;if(a){d.push({bundleName:e.formatBundleName(o,a)});return i}if(n(r)){r.bundleName=e.formatBundleName(o,r.bundleUrl);delete r.bundleUrl}s(r,o);delete r.modelId;if(Object.keys(r).length>0){d.push(r)}}}return i},skipPostprocessing:true};return i});
-//# sourceMappingURL=AddNewModelEnhanceWith.js.map

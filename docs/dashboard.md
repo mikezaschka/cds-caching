@@ -14,7 +14,7 @@ cds add caching-metrics
 
 (`cds add caching-dashboard` is a deprecated alias — same behavior.)
 
-By default this copies a **pre-built**, self-contained UI5 app — ready for `cds watch` and for BTP/HTML5 repo deployment without extra setup.
+By default this copies a **pre-built** UI5 app — ready for `cds watch` and for BTP/HTML5 repo deployment without extra setup. The app loads the UI5 runtime from the SAPUI5 CDN rather than bundling it.
 
 To copy **TypeScript source** instead (for customizing views, controllers, and styles), use:
 
@@ -64,7 +64,31 @@ Use **either** `metrics.reuse.dashboard` **or** `cds add caching-metrics`, not b
 
 > **Deprecated:** `dashboard: true` and `statistics` still work in v2 with startup warnings — migrate to `metrics` / `metrics.reuse` (removal planned in v3.0).
 
-> **Version note:** `metrics.reuse.dashboard` requires a **complete** self-contained UI5 build under `app/dashboard/` (including `resources/sap/ui/core/...`). npm releases before **1.3.3** shipped an incomplete bundle, which shows up as 404s for theme CSS, CLDR JSON, and message bundles while `sap-ui-custom.js` still loads. Upgrade `cds-caching`, or install from a current git checkout after running `npm run build:dashboard` in that repo.
+### Where the UI5 runtime comes from
+
+Since 3.0 the dashboard loads UI5 from the public SAPUI5 CDN at a pinned version, instead of bundling the runtime. That took the published package from roughly 196 MB to under 1 MB, and stopped `cds add` from copying a second copy of the runtime into your project.
+
+The browser therefore needs to reach `https://ui5.sap.com`. If it cannot — an air-gapped landscape, or a Content Security Policy that permits only same-origin scripts — point the dashboard at a UI5 runtime you serve yourself:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "metrics": {
+          "reuse": { "dashboard": true },
+          "ui5Url": "/ui5/resources/sap-ui-core.js"
+        }
+      }
+    }
+  }
+}
+```
+
+`ui5Url` accepts an absolute `https://` URL or a same-origin absolute path. Anything else is ignored with a startup warning, and the pinned CDN URL is used. Pin a version in your own URL too: an unpinned runtime upgrades itself underneath a released dashboard.
+
+If you would rather not depend on a CDN at all, use `cds add caching-metrics --source` and build the app yourself, which is also the recommended route for productive BTP deployments.
 
 > **Production note:** `metrics.reuse.dashboard` serves static files from the CAP Node.js server. On standard BTP (HTML5 repo + approuter), use `cds add caching-metrics` instead. See [issue #24](https://github.com/mikezaschka/cds-caching/issues/24).
 
@@ -87,7 +111,7 @@ Running `cds add caching-metrics` (or `cds add caching-dashboard`) adds the foll
 
 | Path | Purpose |
 |------|---------|
-| `app/caching-dashboard/webapp/` | UI5 dashboard application (pre-built by default, TypeScript source with `--source`) |
+| `app/caching-dashboard/webapp/` | UI5 dashboard application (pre-built by default, TypeScript source with `--source`; loads UI5 from the CDN either way) |
 | `app/caching-dashboard/ui5.yaml` | UI5 build configuration |
 | `app/caching-dashboard/ui5-deploy.yaml` | BTP/HTML5 Application Repository build config (`ui5-task-zipper`) |
 | `app/caching-dashboard/xs-app.json` | Approuter routing for HTML5 App Repo deployments |
@@ -157,13 +181,13 @@ The generated `xs-app.json` forwards `/odata/v4/caching-api/*` to the CAP backen
 
 **3. ABAP front-end server.** Generate an ABAP deploy configuration with `npx -p @sap/ux-ui5-tooling fiori add deploy-config abap` from `app/caching-dashboard/` (this creates a separate ABAP-specific deploy config alongside the HTML5 repo template).
 
-> The shipped dashboard is a **self-contained UI5 build** (the SAPUI5 runtime is bundled), so it does not depend on the public SAPUI5 CDN at runtime.
+> The shipped dashboard loads the SAPUI5 runtime from the public CDN at a pinned version. See [Where the UI5 runtime comes from](#where-the-ui5-runtime-comes-from) to serve it yourself instead.
 
 ## Customization
 
 The dashboard files copied into `app/caching-dashboard/webapp/` are fully owned by your project.
 
-**Default (pre-built):** Works immediately with `cds watch`, but controllers are transpiled/minified JavaScript bundled with the SAPUI5 runtime — fine for deployment, awkward for deep UI changes.
+**Default (pre-built):** Works immediately with `cds watch`, but controllers are transpiled and minified JavaScript — fine for deployment, awkward for deep UI changes.
 
 **Source mode (`--source`):** Copies the original TypeScript sources, `tsconfig.json`, and a `ui5.yaml` with transpile middleware. Run `npm install` in `app/caching-dashboard/` before `cds watch` or `npm start`. Local development uses the SAPUI5 CDN; run `npm run build:cf` from that folder before deploying to the HTML5 Application Repository.
 
@@ -184,7 +208,7 @@ This overwrites the files in `app/caching-dashboard/webapp/` with the latest bui
 
 If you prefer not to use `cds add`, you can integrate the dashboard manually:
 
-1. Copy the pre-built dashboard from `node_modules/cds-caching/app/dashboard/` into your project's `app/caching-dashboard/webapp/` directory.
+1. Copy the pre-built dashboard from `node_modules/cds-caching/app/dashboard/` into your project's `app/caching-dashboard/webapp/` directory. It bootstraps UI5 from the CDN; edit the `sap-ui-bootstrap` script tag in `index.html` to point elsewhere.
 
 2. Create `srv/caching-api.cds` with:
 

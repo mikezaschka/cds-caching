@@ -22,6 +22,17 @@ Keys grow from 32 to 64 hex characters plus any template prefix. The `CacheStore
 
 If you assert on cache keys in your own tests, or store keys outside the cache, those values change.
 
+### Behavior change: the dashboard loads UI5 from a CDN
+
+The plugin shipped a self-contained UI5 build, which was over 99% of a 196 MB package and was copied a second time into every project that ran `cds add caching-metrics`. The dashboard now bootstraps UI5 from `https://ui5.sap.com` at a pinned version, and the package is under 1 MB.
+
+Two things to check:
+
+- **Network and CSP.** Browsers must reach `https://ui5.sap.com`. If a Content Security Policy restricts script sources, allow that host — see [Content Security Policy](security.md#content-security-policy).
+- **Air-gapped landscapes.** Set `metrics.ui5Url` to a UI5 runtime you serve yourself, as an absolute `https://` URL or a same-origin path. See [Where the UI5 runtime comes from](dashboard.md#where-the-ui5-runtime-comes-from).
+
+Projects that ran `cds add caching-metrics` should re-run it to refresh `app/caching-dashboard/webapp/`. Nothing else changes: the route, the auth guard and the API are the same.
+
 ### Required: flush persistent caches on upgrade
 
 Entries written by 2.x are unreachable under the new derivation. With the default TTL of `0` they never expire, so they occupy their store forever unless removed. Flush each cache once after deploying:

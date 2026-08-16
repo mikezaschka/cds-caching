@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/ui/base/Object","sap/ui/core/Lib","sap/ui/rta/plugin/annotations/AnnotationTypes","sap/ui/comp/delegates/Label","sap/ui/comp/delegates/TextArrangement"],function(e,t,n,a,i){"use strict";var o=e.extend("sap.ui.comp.delegates.FlexibilityDelegate",{constructor:function(){e.apply(this,arguments)}});o.getTextArrangementDelegate=function(){return{isEnabled:true,changeType:"textArrangement",title:t.getResourceBundleFor("sap.ui.comp").getText("TEXTARRANGEMENT_RTA_DIALOG_TITLE"),type:n.ValueListType,annotation:"textArrangement",delegate:i,additionalInfoKey:"TEXTARRANGEMENT_RTA_CONTEXT_MENU_INFO"}};o.getLabelDelegate=function(e){const i=new a(e);return Object.assign({isEnabled:true,changeType:"annotationRename",title:e?.singleRename?t.getResourceBundleFor("sap.ui.comp").getText("RENAME_RTA_LABEL_ACTION"):t.getResourceBundleFor("sap.ui.comp").getText("LABEL_RTA_DIALOG_TITLE"),type:n.StringType,annotation:"label",delegate:i,objectTemplateInfo:{templateAsString:'{"String": "%%placeholder%%"}',placeholder:"%%placeholder%%"},additionalInfoKey:"LABEL_RTA_CONTEXT_MENU_INFO"},e)};return o});
-//# sourceMappingURL=FlexibilityDelegate.js.map

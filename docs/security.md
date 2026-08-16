@@ -165,4 +165,11 @@ No rate limiting is applied to the management API — CAP does not provide one. 
 
 ## Content Security Policy
 
-The dashboard loads the UI5 runtime. If you serve it through `metrics.reuse.dashboard` or the generated `cds add caching-dashboard` app and your CSP restricts script sources, allow the UI5 host you are using — for example `script-src https://ui5.sap.com` when bootstrapping from the SAP CDN.
+Since 3.0 the dashboard bootstraps the UI5 runtime from `https://ui5.sap.com` at a pinned version rather than bundling it, so a CSP that allows only same-origin scripts will block it. Either allow that host:
+
+```
+script-src 'self' https://ui5.sap.com;
+connect-src 'self' https://ui5.sap.com;
+```
+
+or serve UI5 yourself and set `metrics.ui5Url` to a same-origin path, which keeps the policy at `'self'`. See [the dashboard guide](dashboard.md#where-the-ui5-runtime-comes-from).

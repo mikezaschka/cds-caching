@@ -1,1 +1,0 @@
-sap.viz.extapi.env.Language.register({id:'en_US_sappsd',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"[[[Ƒąįĺēƌ ţŏ ĺŏąƌ ţĥē ċŏŋţŗŏĺ ŏƃĵēċţ {0}.]]]",VIZ_FRAME_INVALID:"[[[Ĭŋʋąĺįƌ ƲįžƑŗąɱē įŋşţąŋċē.∙∙∙∙∙∙∙]]]",VIZ_FRAME_DESTORYED:"[[[ƲįžƑŗąɱē įŋşţąŋċē ŵąş ƌēşţŗŏŷēƌ.∙∙∙∙∙∙∙∙∙∙]]]",}});

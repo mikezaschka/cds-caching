@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/mdc/util/FilterUtil","sap/ui/mdc/condition/ConditionConverter","sap/base/Log","sap/base/util/merge","sap/ui/model/FilterOperator","sap/ui/model/odata/v4/ODataUtils"],(e,t,a,r,n,o)=>{"use strict";const i={_getParameters:function(e){let t=null;if(e&&e.getDelegate()&&e.getDelegate().payload&&e.getDelegate().payload.collectionName){const a=e.getDelegate().payload.collectionName;if(window[e.getId()+"->"+a+"-Parameters"]){t=window[e.getId()+"->"+a+"-Parameters"]}}return t},getParametersInfo:function(e){const t=i._getParameters(e);return i._getParameterPath(e,t)},_getParametersListUrl:function(t,a){const r=[];const i=e.getConditionsMap(t,a);const s=t.getPropertyInfoSet();a.forEach(t=>{const a=e.getPropertyByKey(s,t);if(a&&a.maxConditions===1){i[t].forEach(e=>{if(e.operator===n.EQ){r.push(t+"="+encodeURIComponent(o.formatLiteral(e.values[0],a.typeConfig.className)))}})}});return r},_getParameterPath:function(e,t){if(!e||!e.isA("sap.ui.mdc.FilterBar")){return null}if(!t||t.parameters.length<=0){return null}const a=e.getDelegate().payload.collectionName;const r=i._getParametersListUrl(e,t.parameters);return"/"+a+"("+r.toString()+")/"+t.parameterNavigationName},getParameterNames:function(e){let t=null;const a=i._getParameters(e);if(a){t=a.parameters}return t}};return i});
-//# sourceMappingURL=DelegateUtil.js.map

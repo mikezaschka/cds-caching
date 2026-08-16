@@ -1274,7 +1274,10 @@ describeFromCds(9, 'Cache Metrics - Testing', () => {
 
             const stats = await cache.getCurrentMetrics();
             expect(stats.avgMissLatency).to.be.a('number');
-            expect(stats.avgMissLatency).to.be.greaterThan(100); // Should reflect the delay
+            // Tolerance below the injected 100ms: setTimeout has millisecond
+            // resolution and may fire marginally early against the hrtime clock
+            // used for the measurement. An undelayed miss measures ~1ms.
+            expect(stats.avgMissLatency).to.be.greaterThan(90);
 
             // Reset the delay
             appService.run = originalRun;

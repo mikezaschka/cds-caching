@@ -1,8 +1,22 @@
 
 ## Install
 
+```
+cd examples/app
+npm install
+```
 
+The `cds-caching` dependency resolves to this repository (`node_modules/cds-caching` is a symlink to the repo root), so the example always runs the working tree rather than a published release.
 
+## Prerequisites
+
+The `caching` service in `examples/app/package.json` uses `store: "redis"`, so Redis has to be reachable on `localhost:6379`:
+
+```
+docker run --rm -p 6379:6379 redis
+```
+
+Without it, requests against cached entities hang while the Redis client retries. To try the example without Redis, change that service to `"store": "memory"`.
 
 ## Deploy
 ```
@@ -20,6 +34,28 @@ DEBUG=cds-caching cds watch
 ## Open the dashboard
 
 http://localhost:4004/caching-dashboard/index.html
+
+The dashboard and the caching API require an authenticated user, so the browser asks for credentials. With CAP's mocked authentication any of its default users works — log in as `alice` with an empty password. Define your own under `cds.requires.auth.users` to try role-based restrictions.
+
+The dashboard loads UI5 from `https://ui5.sap.com`, so the browser needs internet access. Point `metrics.ui5Url` at a UI5 runtime you serve yourself if it does not have any.
+
+## Try encrypted values at rest
+
+Generate a key and add it to the `caching-northwind` service in `package.json` (it is backed by SQLite, so you can inspect the stored rows):
+
+```
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+```json
+"caching-northwind": {
+  "impl": "cds-caching",
+  "store": "sqlite",
+  "encryption": { "key": "<the generated key>" }
+}
+```
+
+Cached values are then stored as `enc:v1:…` envelopes while tags and timestamps stay readable. Keep real keys out of committed files — see [Encrypting cached values](../docs/security.md#encrypting-cached-values).
 
 ## Activate key tracking 
 

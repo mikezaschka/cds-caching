@@ -131,6 +131,17 @@ export declare class CachingService extends Service {
      */
     operationTimeout?: number | false;
     /**
+     * Encryption of cached values at rest (AES-256-GCM), off unless configured.
+     * The key may be given directly, read from the environment variable named by
+     * `keyEnv`, or supplied by a service binding as `credentials.encryptionKey`.
+     * Startup fails when encryption is enabled but no usable key is found.
+     */
+    encryption?: {
+        enabled?: boolean;
+        key?: string;
+        keyEnv?: string;
+    };
+    /**
      * When enabled, basic operations (`get`, `set`, `delete`, ...) run in a dedicated cache transaction.
      * This isolates cache access from the caller's request transaction (useful for concurrent BEFORE handlers).
      */

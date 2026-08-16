@@ -1,6 +1,14 @@
 const crypto = require('crypto')
 const { expect } = require('chai')
-const { ValueCipher, parseKey, createValueCipher, KEY_BYTES, PREFIX } = require('../lib/support/valueEncryption')
+const {
+	ValueCipher,
+	parseKey,
+	createValueCipher,
+	resolveKeyMaterial,
+	storeCredentials,
+	KEY_BYTES,
+	PREFIX,
+} = require('../lib/support/valueEncryption')
 
 const KEY_B64 = crypto.randomBytes(KEY_BYTES).toString('base64')
 
@@ -21,10 +29,11 @@ describe('value encryption', () => {
 			expect(() => parseKey(short)).to.throw(/randomBytes/)
 		})
 
-		it('refuses missing key material', () => {
+		it('refuses missing key material, naming every way to supply it', () => {
 			for (const bad of [undefined, null, '', '   ', 42]) {
-				expect(() => parseKey(bad), String(bad)).to.throw(/encryption.key is required/)
+				expect(() => parseKey(bad), String(bad)).to.throw(/no key was supplied/)
 			}
+			expect(() => parseKey(undefined)).to.throw(/encryption\.key.*keyEnv.*encryptionKey/s)
 		})
 	})
 
@@ -40,8 +49,77 @@ describe('value encryption', () => {
 		})
 
 		it('throws rather than silently storing plaintext', () => {
-			expect(() => createValueCipher({ encryption: {} })).to.throw(/encryption.key is required/)
+			expect(() => createValueCipher({ encryption: {} })).to.throw(/no key was supplied/)
 			expect(() => createValueCipher({ encryption: { key: 'too-short' } })).to.throw(/must decode to 32 bytes/)
+		})
+	})
+
+	// The key is a secret, so on a platform it arrives from the environment or a
+	// binding rather than from the configuration file it is named in.
+	describe('where the key comes from', () => {
+
+		const ENV_NAME = 'CDS_CACHING_TEST_ENCRYPTION_KEY'
+		afterEach(() => { delete process.env[ENV_NAME] })
+
+		it('reads the key from the environment variable named by keyEnv', () => {
+			process.env[ENV_NAME] = KEY_B64
+			const cipher = createValueCipher({ encryption: { enabled: true, keyEnv: ENV_NAME } })
+
+			expect(cipher).to.be.instanceOf(ValueCipher)
+			expect(resolveKeyMaterial({ encryption: { keyEnv: ENV_NAME } })).to.equal(KEY_B64)
+		})
+
+		// Otherwise a deployment that forgot the secret would write plaintext under a
+		// configuration that says it is encrypting.
+		it('refuses to start when keyEnv names an unset or empty variable', () => {
+			expect(() => createValueCipher({ encryption: { enabled: true, keyEnv: ENV_NAME } }))
+				.to.throw(new RegExp(`keyEnv names "${ENV_NAME}".*unset or empty`))
+
+			process.env[ENV_NAME] = '   '
+			expect(() => createValueCipher({ encryption: { enabled: true, keyEnv: ENV_NAME } }))
+				.to.throw(/unset or empty/)
+		})
+
+		it('reads the key from a service binding', () => {
+			const options = { encryption: { enabled: true }, credentials: { url: 'redis://x', encryptionKey: KEY_B64 } }
+			expect(createValueCipher(options)).to.be.instanceOf(ValueCipher)
+		})
+
+		it('prefers an explicit key, then keyEnv, then the binding', () => {
+			const other = crypto.randomBytes(KEY_BYTES).toString('base64')
+			process.env[ENV_NAME] = other
+
+			expect(resolveKeyMaterial({
+				encryption: { key: KEY_B64, keyEnv: ENV_NAME },
+				credentials: { encryptionKey: other },
+			})).to.equal(KEY_B64)
+
+			expect(resolveKeyMaterial({
+				encryption: { keyEnv: ENV_NAME },
+				credentials: { encryptionKey: KEY_B64 },
+			})).to.equal(other)
+		})
+
+		// A bound key that nothing switched on is the plaintext trap this feature exists
+		// to prevent, and it is indistinguishable from a typo in the cache name.
+		it('refuses to start when a key is bound but encryption is not enabled', () => {
+			expect(() => createValueCipher({ credentials: { encryptionKey: KEY_B64 } }))
+				.to.throw(/would be stored as plaintext/)
+		})
+
+		it('still honours an explicit opt-out', () => {
+			const options = { encryption: { enabled: false }, credentials: { encryptionKey: KEY_B64 } }
+			expect(createValueCipher(options)).to.be.null
+		})
+
+		// A store that received the key could print it in a connection error.
+		it('keeps the key out of the credentials handed to a store', () => {
+			const credentials = { url: 'redis://x', encryptionKey: KEY_B64 }
+			const forStore = storeCredentials({ credentials })
+
+			expect(forStore).to.eql({ url: 'redis://x' })
+			expect(credentials.encryptionKey, 'the original is left alone').to.equal(KEY_B64)
+			expect(storeCredentials({})).to.eql({})
 		})
 	})
 

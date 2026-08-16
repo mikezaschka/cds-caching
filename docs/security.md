@@ -156,7 +156,13 @@ Consequences:
 
 ### Encrypting cached values
 
-Since 3.0 a cache can encrypt its values with AES-256-GCM. Configure a 32-byte key, base64 or hex encoded:
+Since 3.0 a cache can encrypt its values with AES-256-GCM, using a 32-byte key, base64 or hex encoded. Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+For a local trial, `encryption.key` takes the key directly:
 
 ```json
 {
@@ -173,13 +179,59 @@ Since 3.0 a cache can encrypt its values with AES-256-GCM. Configure a 32-byte k
 }
 ```
 
-Generate one with:
+#### Supplying the key on a platform
 
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+A key in `package.json` is a key in your Git history, so on a deployed landscape the configuration should carry only the intent and the platform should supply the value. Commit `enabled: true` and let the key arrive from the environment:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "encryption": {
+          "enabled": true,
+          "keyEnv": "CACHE_ENCRYPTION_KEY"
+        }
+      }
+    }
+  }
+}
 ```
 
-Supply it the way you supply any other secret — a service binding, a platform-managed environment variable, or a secret store — not as a literal in a committed `package.json`. If the key is missing or not 32 bytes the service refuses to start, rather than starting up and writing plaintext.
+This is what makes the failure mode safe. Because `enabled: true` is committed, a deployment that forgets the secret fails at startup naming the variable, instead of starting up and writing plaintext under a configuration that claims to encrypt. Three sources are supported, in this order:
+
+| Source | Use it when |
+|--------|-------------|
+| `encryption.key` | Local development and tests |
+| `encryption.keyEnv` | The platform injects secrets as environment variables — Cloud Foundry, Kyma secrets, or a Vault-style sidecar |
+| `credentials.encryptionKey` | The key arrives through a service binding |
+
+**On SAP BTP, Cloud Foundry.** Set the variable the app already reads, keeping it out of `manifest.yml`, which is usually committed:
+
+```bash
+cf set-env my-app CACHE_ENCRYPTION_KEY "$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")"
+cf restage my-app
+```
+
+Note that Cloud Foundry environment variables are readable with `cf env` by anyone holding Space Developer, and appear in `VCAP_APPLICATION`-adjacent tooling — they are configuration, not a vault. Where that is too exposed, bind a user-provided service instance or SAP Credential Store and supply the key as `encryptionKey` in its credentials:
+
+```bash
+cf create-user-provided-service cache-encryption -p '{"encryptionKey":"<32-byte key>"}'
+cf bind-service my-app cache-encryption
+```
+
+CAP merges a binding's credentials into the required service's `credentials`, so the instance must be bound under the cache's service name (or mapped to it with `vcap.name`). The key is stripped before the store sees those credentials, so it is never passed into a Redis or HANA client where a connection error could print it. A key bound this way with no `encryption` block to switch it on is refused at startup rather than ignored, since an ignored key means plaintext.
+
+The catch is that a cache has only one `credentials`, and for `store: 'redis'` or `store: 'hana'` it is already carrying the store binding. Only one instance can be mapped to a required service, so a separate instance for the key does not fit alongside one — either add `encryptionKey` to the credentials of the instance you already bind, or use `keyEnv`, which stays independent of the store. With `store: 'cds'`, where the store needs no credentials of its own, a dedicated instance works cleanly.
+
+Alternatively, CAP's own environment overrides reach the same setting without a `keyEnv` indirection, using the config path with underscores:
+
+```bash
+cf set-env my-app cds_requires_caching_encryption_key "<32-byte key>"
+```
+
+A key that is present but not 32 bytes is rejected at startup in every case, naming the command that generates a valid one.
 
 What this does and does not protect:
 

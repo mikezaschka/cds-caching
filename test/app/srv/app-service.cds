@@ -26,6 +26,26 @@ service AppService {
 
     entity ManualCachedFoo as projection on Foo;
 
+    entity Owned {
+        key ID    : Integer;
+            name  : String;
+            owner : String;
+    };
+
+    // Row-level restriction against the requesting user. Used to verify that
+    // per-user filtering reaches the cache key, so two users reading the same
+    // URL cannot share an entry.
+    @cache   : {
+        service: 'caching',
+        ttl    : 5000
+    }
+    @restrict: [{
+        grant: 'READ',
+        to   : 'authenticated-user',
+        where: 'owner = $user'
+    }]
+    entity RestrictedOwned as projection on Owned;
+
     @cache                 : {
         service: 'caching',
         ttl    : 5000,

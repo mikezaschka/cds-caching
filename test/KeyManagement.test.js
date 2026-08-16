@@ -264,12 +264,14 @@ describe('Key Management - Testing', () => {
         })
     })
 
-    describe("cds.ql prototype-based where (root cause)", () => {
+    describe("cds.ql prototype-based where", () => {
 
         // NoaRequest ("New OData Adapter Request", @sap/cds/libx/odata/ODataAdapter.js)
         // carries cds.ql queries where SELECT.where lives on the prototype, not as an
-        // own property. JSON.stringify only serializes own enumerable properties, so the
-        // where clause is silently dropped. These tests reproduce this exact behavior.
+        // own property, so JSON.stringify cannot see it. Key derivation therefore
+        // reads the clauses explicitly (see lib/support/queryCanonicalizer.js).
+        // These tests pin both the underlying serialization behavior and the fact
+        // that derivation is no longer subject to it.
 
         class Request {
             constructor(props) { Object.assign(this, props); }
@@ -291,17 +293,34 @@ describe('Key Management - Testing', () => {
             expect(JSON.stringify(cqn.SELECT)).to.not.include('where');
         })
 
-        it("should produce the SAME hash for queries with and without prototype-where (the bug)", () => {
+        it("should produce the same hash when the raw query object is stringified", () => {
             const cqnWithWhere = createCqnWithPrototypeWhere([{ ref: ['ID'] }, '=', { val: 1 }]);
             const cqnWithoutWhere = { SELECT: { from: { ref: ['CachedFoo'] }, columns: [{ ref: ['*'] }] } };
 
             const hash1 = cache.keyManager.createHash({ query: cqnWithWhere });
             const hash2 = cache.keyManager.createHash({ query: cqnWithoutWhere });
 
-            // This IS the bug: both produce the same hash because JSON.stringify
-            // drops prototype-based `where`, making filtered and unfiltered
-            // queries indistinguishable.
+            // Hashing the object directly still loses the prototype-borne where.
+            // This is why derivation must not do that.
             expect(hash1).to.equal(hash2);
+        })
+
+        it("should distinguish prototype-where queries in the content hash", () => {
+            const cqnWithWhere = createCqnWithPrototypeWhere([{ ref: ['ID'] }, '=', { val: 1 }]);
+            const cqnWithoutWhere = { SELECT: { from: { ref: ['CachedFoo'] }, columns: [{ ref: ['*'] }] } };
+
+            const hash1 = cache.keyManager.createContentHash(cqnWithWhere);
+            const hash2 = cache.keyManager.createContentHash(cqnWithoutWhere);
+
+            expect(hash1).to.not.equal(hash2);
+        })
+
+        it("should distinguish two prototype-where queries that differ only by filter value", () => {
+            const forAlice = createCqnWithPrototypeWhere([{ ref: ['owner'] }, '=', { val: 'alice' }]);
+            const forBob = createCqnWithPrototypeWhere([{ ref: ['owner'] }, '=', { val: 'bob' }]);
+
+            expect(cache.keyManager.createContentHash(forAlice))
+                .to.not.equal(cache.keyManager.createContentHash(forBob));
         })
 
         it("should produce different hashes when URL captures the filter (the fix)", () => {

@@ -37,6 +37,12 @@ Projects that ran `cds add caching-metrics` should re-run it to refresh `app/cac
 
 A cache can now encrypt its values at rest with AES-256-GCM, for stores whose operators or backups sit outside your trust boundary. It is off by default and additive — nothing to do unless you want it. See [Encrypting cached values](security.md#encrypting-cached-values).
 
+### Behavior change: cache operations have a time bound
+
+Cache operations now fail after `operationTimeout` (2000 ms by default) instead of waiting indefinitely. Before, an unreachable store could stall the request path: commands were queued until the connection returned, so requests hung rather than falling back to the origin. Two seconds is generous enough that only a genuinely stuck store hits it, and an exceeded bound is an ordinary cache failure — read-through goes to the origin, and basic operations stay silent unless `throwOnErrors: true`.
+
+Reconnection is unaffected, so a cache recovers on its own once its store is back. If you set `throwOnErrors: true` expecting reconnection to be disabled, note that it was never actually switched off. Raise `operationTimeout` for a store that is slow but healthy under peak load, lower it if two seconds exceeds your latency budget, or set it to `0` to restore the old unbounded behavior. See [Slow and unreachable stores](programmatic-api.md#slow-and-unreachable-stores).
+
 ### Not removed: the deprecated `statistics` and `dashboard` keys
 
 Earlier releases announced that these v1 config keys would be removed in 3.0. They are not. They still normalize to `metrics` and `metrics.reuse.*` with a one-time startup warning, so no configuration change is required to move to 3.0.

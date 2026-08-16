@@ -95,6 +95,28 @@ try {
 }
 ```
 
+#### Slow and Unreachable Stores
+
+A store that answers slowly, or not at all, is treated as a failing store. Each operation runs under `operationTimeout` (2000 ms by default); when it is exceeded, the operation is abandoned and raises a `CacheTimeoutError` with `code: 'CACHE_TIMEOUT'`, which then follows the rules above — read-through falls back to the origin, and basic operations throw only under `throwOnErrors: true`.
+
+The bound exists because an unreachable store would otherwise stall the request path: a connection that is still being retried leaves operations waiting rather than failing. Lower it if your latency budget is tighter than two seconds, raise it for a store that is legitimately slow under load, and set `operationTimeout: 0` to remove it entirely:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "redis",
+        "operationTimeout": 500
+      }
+    }
+  }
+}
+```
+
+An exceeded bound abandons the operation but does not cancel it — the store may still complete the work. For `set` that means a value can land in the cache after the write was reported as failed, which is harmless. Recovery is left to the store's own reconnection, so the cache starts serving again on its own once the store is back.
+
 #### Read-Through Operations Error Handling
 
 Read-through operations (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`) never throw errors, regardless of the `throwOnErrors` setting:

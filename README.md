@@ -183,6 +183,7 @@ Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-hand
 | `namespace` | service name | Key prefix for store isolation |
 | `compression` | none | `"lz4"` or `"gzip"` |
 | `throwOnErrors` | `false` | Whether basic operations throw on cache errors |
+| `operationTimeout` | `2000` | Milliseconds a single cache operation may take before it counts as a failure; `0` removes the bound ([docs](docs/programmatic-api.md#error-handling)) |
 | `transactionalOperations` | `false` | Isolate basic ops in dedicated cache transactions |
 | `metrics` | none | Metrics collection and persistence (see [Feature Activation](docs/feature-activation.md)) |
 | `metrics.enabled` | `false` | Enable metrics collection |
@@ -245,7 +246,9 @@ Use a `redis://` or `rediss://` URL, or connect via `socket.host` / `socket.port
 
 If you see `SocketClosedUnexpectedlyError` in the logs every few minutes — common with TLS Redis, load balancers, or firewalls that drop idle connections — add **`pingInterval`** (milliseconds). The client sends periodic `PING` commands to keep the connection alive. Place it at the **top level** of `credentials`, not inside `socket`. TCP `keepAlive` under `socket` is enabled by default in `@redis/client`; `pingInterval` helps when the network path does not honor it.
 
-With the default **`throwOnErrors: false`**, disconnects are logged but the application continues: cache operations fall back to misses and `@keyv/redis` reconnects automatically. If you set **`throwOnErrors: true`**, reconnection is disabled intentionally — connection errors surface as thrown errors instead.
+With the default **`throwOnErrors: false`**, disconnects are logged but the application continues: cache operations fall back to misses and `@keyv/redis` reconnects automatically. If you set **`throwOnErrors: true`**, connection errors surface as thrown errors instead; reconnection still happens in the background either way.
+
+An outage cannot stall requests. Commands are never queued while the connection is down, and every cache operation runs under `operationTimeout` (2s by default), so an unreachable store degrades to cache misses instead of leaving requests waiting.
 
 For detailed key configuration and deployment instructions, see [Key Management](docs/key-management.md) and [Deployment Guide](docs/deployment-guide.md).
 

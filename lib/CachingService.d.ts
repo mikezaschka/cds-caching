@@ -126,6 +126,11 @@ export declare class CachingService extends Service {
     namespace?: string;
     throwOnErrors?: boolean;
     /**
+     * Milliseconds a single cache operation may take before it is abandoned and
+     * treated as a cache failure. Defaults to 2000; `0` or `false` removes the bound.
+     */
+    operationTimeout?: number | false;
+    /**
      * When enabled, basic operations (`get`, `set`, `delete`, ...) run in a dedicated cache transaction.
      * This isolates cache access from the caller's request transaction (useful for concurrent BEFORE handlers).
      */

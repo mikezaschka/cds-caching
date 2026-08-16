@@ -37,6 +37,12 @@ Projects that ran `cds add caching-metrics` should re-run it to refresh `app/cac
 
 A cache can now encrypt its values at rest with AES-256-GCM, for stores whose operators or backups sit outside your trust boundary. It is off by default and additive — nothing to do unless you want it. See [Encrypting cached values](security.md#encrypting-cached-values).
 
+### Not removed: the deprecated `statistics` and `dashboard` keys
+
+Earlier releases announced that these v1 config keys would be removed in 3.0. They are not. They still normalize to `metrics` and `metrics.reuse.*` with a one-time startup warning, so no configuration change is required to move to 3.0.
+
+Keeping them costs almost nothing, and removing them would have meant a silent failure mode: a leftover `statistics` block would simply stop enabling metrics, and `dashboard: true` would stop serving the UI, with nothing to indicate why. Migrating remains recommended — see [Deprecation shims](#deprecation-shims-v1-config-keys).
+
 ### Required: flush persistent caches on upgrade
 
 Entries written by 2.x are unreachable under the new derivation. With the default TTL of `0` they never expire, so they occupy their store forever unless removed. Flush each cache once after deploying:
@@ -202,14 +208,14 @@ Do **not** set `metrics.reuse.dashboard` when deploying to the HTML5 Application
 
 Do not combine reuse flags with their manual equivalent for the same concern (e.g. `metrics.reuse.api` + `using … index.cds` causes duplicate `CachingApiService`). See [Feature Activation](feature-activation.md).
 
-### Deprecation shims (v2.x → removed in v3.0)
+### Deprecation shims (v1 config keys)
 
 v1 config still works with **one-time startup warnings**:
 
 - `statistics` → normalized to `metrics`
 - `dashboard: true` → normalized to `metrics.reuse.dashboard` + `metrics.reuse.api`
 
-Migrate at your convenience before v3.0.
+These shims are still in place in 3.0, so migrating is a tidiness exercise rather than an upgrade blocker. The new shape is worth adopting because it separates concerns the old keys could not: `dashboard: true` always enabled the OData API together with the UI, while `metrics.reuse.api` lets you serve the API from the package and host the UI yourself.
 
 ### Upgrade checklist
 

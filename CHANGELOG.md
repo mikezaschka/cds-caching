@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0](https://github.com/mikezaschka/cds-caching/compare/2.0.2...2.1.0) (2026-08-16)
+
+### Features
+
+* **api:** bound getEntries and setEntry ([4dd6ee3](https://github.com/mikezaschka/cds-caching/commit/4dd6ee379838f308b42df247fbaad1822bb59af0))
+* **api:** require an authenticated user for CachingApiService ([0e399be](https://github.com/mikezaschka/cds-caching/commit/0e399be392e4bd1d083af74318b55acaaa87990b))
+* **api:** resolve cache names against an allow-list ([2b26179](https://github.com/mikezaschka/cds-caching/commit/2b26179ddf4b1444cdd16469e985522e7bb0d65f))
+* **cache:** make the x-sap-cap-cache-key header opt-in ([4f8d7b6](https://github.com/mikezaschka/cds-caching/commit/4f8d7b6e72f737dbab191c9d38f0f30f3723c862))
+* **config:** warn when keyManagement sits outside cds.requires ([dac9084](https://github.com/mikezaschka/cds-caching/commit/dac90841b747428f69ec8d9e1d4f166fb3d7cdd2))
+
+### Bug Fixes
+
+* **build:** stop logging cds.env.requires during cds build ([1536143](https://github.com/mikezaschka/cds-caching/commit/15361438b58e816c60a5574836a881b7c9d89284))
+* **dashboard:** serve the reuse dashboard behind CAP's auth ([7f5feec](https://github.com/mikezaschka/cds-caching/commit/7f5feecd968d5d37eb37b87ebee5da33c4cde89a))
+* **metrics:** redact credentials and bound fields in KeyMetrics ([9cb22ba](https://github.com/mikezaschka/cds-caching/commit/9cb22ba252312e0e86f43f5c308d48c26350ad3e))
+
 ## [2.0.2](https://github.com/mikezaschka/cds-caching/compare/2.0.1...2.0.2) (2026-07-16)
 
 ### Bug Fixes

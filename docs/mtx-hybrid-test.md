@@ -101,7 +101,12 @@ cds subscribe t1 --to http://localhost:4005 -u t1:
 cds subscribe t2 --to http://localhost:4005 -u t2:
 ```
 
-First subscribe provisions the HDI container (can take a few minutes). Tenant HDI should contain `plugin_cds_caching_Caches` (and Metrics tables when metrics are enabled). If the schema is stale after a plugin rebuild: `cds upgrade t1 --at http://localhost:4005 -u t1:`.
+First subscribe provisions the HDI container (can take a few minutes). Tenant HDI must contain:
+
+- Tables: `plugin_cds_caching_Caches` / `Metrics` / `KeyMetrics` (and `CacheStore` when `store: cds`)
+- Views: `plugin_cds_caching_CachingApiService_Caches` (and Metrics / KeyMetrics) — OData reads these
+
+After changing the plugin, rebuild (`cds build --production`) and `cds upgrade t1` so those views land in the tenant. If subscribe fails or the schema is stale: `cds upgrade t1 --at http://localhost:4005 -u t1:`.
 
 ## 8. Hit the app as a tenant
 

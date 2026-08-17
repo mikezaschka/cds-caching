@@ -6,7 +6,7 @@
 
 * **mtx:** partition in-memory metrics per tenant and persist via `cds.spawn` ([#18](https://github.com/mikezaschka/cds-caching/issues/18))
 * **mtx:** lazily seed `Caches` on any CachingApi access and on Metrics/KeyMetrics READ
-* **build:** emit Caches/Metrics/KeyMetrics `.hdbtable` artifacts when metrics or the Caching API are enabled on HANA
+* **build:** emit Caches/Metrics/KeyMetrics `.hdbtable` plus CachingApiService `.hdbview` artifacts when metrics or the Caching API are enabled on HANA
 
 ### Documentation
 

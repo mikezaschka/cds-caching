@@ -2,8 +2,8 @@ const cds = require('@sap/cds');
 const { path } = cds.utils;
 
 describe('HANA statistics build artifacts', () => {
-    it('compiles db/statistics.cds to hdbtable artifacts for Caches/Metrics/KeyMetrics', async () => {
-        const modelPath = path.join(__dirname, '..', 'db', 'statistics');
+    it('compiles index.cds to hdbtable + CachingApiService hdbview artifacts', async () => {
+        const modelPath = path.join(__dirname, '..', 'index');
         const model = await cds.load(modelPath);
         const artifacts = cds.compile.to.hdbtable(model);
 
@@ -15,9 +15,13 @@ describe('HANA statistics build artifacts', () => {
         }
 
         const joined = files.join(' ');
-        expect(files.some(f => /Caches/i.test(f))).toBe(true);
+        expect(files.some(f => /Caches\.hdbtable$/i.test(f) || f.endsWith('Caches.hdbtable'))).toBe(true);
         expect(/Metrics/i.test(joined)).toBe(true);
         expect(/KeyMetrics/i.test(joined)).toBe(true);
+        // Service projections → views CAP queries as PLUGIN_CDS_CACHING_CACHINGAPISERVICE_*
+        expect(files.some(f => /CachingApiService\.Caches\.hdbview$/i.test(f))).toBe(true);
+        expect(files.some(f => /CachingApiService\.Metrics\.hdbview$/i.test(f))).toBe(true);
+        expect(files.some(f => /CachingApiService\.KeyMetrics\.hdbview$/i.test(f))).toBe(true);
     });
 
     it('hasTask predicate is true for redis store + metrics on HANA db', () => {

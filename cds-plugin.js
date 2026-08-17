@@ -43,27 +43,40 @@ cds.on('served', scanCachingAnnotations)
 
 if (reuseDashboard) {
     const dashboardPath = path.join(__dirname, 'app', 'dashboard');
-    const dashboardProbe = path.join(dashboardPath, 'resources', 'sap', 'ui', 'core', 'cldr', 'en.json');
-    if (!fs.existsSync(dashboardProbe)) {
+    const { resolveUi5Url, createIndexHandler } = require('./lib/dashboard-bootstrap');
+
+    // The dashboard is a UI5 build without the framework itself, so what has to
+    // be present is the built application, not a bundled runtime.
+    if (!fs.existsSync(path.join(dashboardPath, 'Component.js'))) {
         LOG.warn(
-            'cds-caching dashboard static resources are incomplete (missing UI5 runtime files). ' +
-            'Upgrade cds-caching to a release that includes the full pre-built dashboard, ' +
-            'or run "npm run build:dashboard" in the cds-caching package before using metrics.reuse.dashboard.'
+            'cds-caching dashboard is not built (missing app/dashboard/Component.js). ' +
+            'Reinstall cds-caching, or run "npm run build:dashboard" in the cds-caching package ' +
+            'before using metrics.reuse.dashboard.'
         );
     }
+
+    const { url: ui5Url, warnings: ui5Warnings } = resolveUi5Url(cachingEntries);
+    for (const message of ui5Warnings) LOG.warn(message);
+
     cds.once('bootstrap', (app) => {
         // Run CAP's middlewares first so cds.context.user is populated, then gate
         // the static assets on it.
         const { requireAuthenticatedUser, capRequestMiddlewares } = require('./lib/dashboard-guard');
+        const serveIndex = createIndexHandler(dashboardPath, ui5Url);
 
         app.use(
             '/caching-dashboard',
             ...capRequestMiddlewares(),
             requireAuthenticatedUser,
+            // Ahead of the static handler, so the entry page is served with the
+            // configured UI5 runtime rather than whatever the build wrote.
+            (req, res, next) => (
+                req.path === '/' || req.path === '/index.html' ? serveIndex(req, res, next) : next()
+            ),
             require('express').static(dashboardPath)
         );
         (app._app_links ??= []).push('/caching-dashboard');
-        LOG.info("Serving cds-caching dashboard at /caching-dashboard");
+        LOG.info(`Serving cds-caching dashboard at /caching-dashboard (UI5 from ${ui5Url})`);
     });
 }
 
@@ -74,26 +87,59 @@ if (cds.add?.register) {
     cds.add.register('caching-metrics', addFacet);
 }
 
-// Register HANA build plugin to generate .hdbtable artifacts during `cds build`
+// Register HANA build plugin. Plugin CDS models live in env.roots and are not part of the
+// default HANA task model (db/srv/app only), so without help the official hana build would
+// omit CacheStore / Caches / CachingApiService views. We inject those roots into the hana
+// task so it emits the same .hdbtable / .hdbview artifacts as for app services. We still
+// emit KEYV ourselves for store:'hana', and fall back to writing artifacts if no hana task runs.
 cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.Plugin {
     static taskDefaults = { src: cds.env.folders.db }
 
-    init() { }
+    init() {
+        const { ensureHanaTasksIncludePluginRoots } = require('./lib/plugin-roots');
+        if (ensureHanaTasksIncludePluginRoots(this.context?.tasks, pluginRoots)) {
+            LOG.info('Added cds-caching model roots to hana build task', { roots: pluginRoots });
+        }
+    }
+
     clean() { }
 
     static hasTask() {
         const requires = cds.env.requires || {};
         const dbKind = requires.db?.kind || '';
-        const isHanaDB = dbKind === 'hana' || dbKind === 'sql';
-        return Object.values(requires).some(
-            r => r.impl === 'cds-caching' && (r.store === 'hana' || (r.store === 'cds' && isHanaDB))
-        );
+        // hana-mt is used in MTX hybrid / production profiles
+        const isHanaDB = dbKind === 'hana' || dbKind === 'sql' || dbKind === 'hana-mt';
+        if (!isHanaDB) return false;
+
+        const cachingConfigs = Object.values(requires).filter(r => r?.impl === 'cds-caching');
+        if (cachingConfigs.length === 0) return false;
+
+        const { getCachingRequiresEntries, isMetricsConfigured } = require('./lib/config-normalizer');
+        const { projectImportsCachingApi } = require('./lib/plugin-roots');
+        const entries = getCachingRequiresEntries(requires);
+
+        const needsStoreArtifacts = cachingConfigs.some(r => r.store === 'hana' || r.store === 'cds');
+        const needsStatistics = entries.some(e => isMetricsConfigured(e.normalized) || e.normalized.reuse?.api || e.normalized.reuse?.dashboard)
+            || projectImportsCachingApi(cds.root, cds.env.folders?.srv || 'srv');
+
+        return needsStoreArtifacts || needsStatistics;
     }
 
     async build() {
         const requires = cds.env.requires || {};
         const compileOpts = { ...this.options(), sql_mapping: cds.env.sql.names };
         let wroteCacheStore = false;
+        let wroteStatistics = false;
+
+        const { getCachingRequiresEntries, isMetricsConfigured } = require('./lib/config-normalizer');
+        const { projectImportsCachingApi } = require('./lib/plugin-roots');
+        const entries = getCachingRequiresEntries(requires);
+        const needsStatistics = entries.some(e => isMetricsConfigured(e.normalized) || e.normalized.reuse?.api || e.normalized.reuse?.dashboard)
+            || projectImportsCachingApi(cds.root, cds.env.folders?.srv || 'srv');
+
+        // Prefer the official hana task (roots injected in init). Only fall back to
+        // writing artifacts ourselves when that task is not part of this build.
+        const hanaTaskPresent = (this.context?.tasks || []).some(t => t.for === 'hana');
 
         for (const [, config] of Object.entries(requires)) {
             if (config.impl === 'cds-caching' && config.store === 'hana') {
@@ -109,17 +155,20 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 LOG.info('Building cds-caching hana table', { table, keySize });
             }
 
-            if (config.store === 'cds' && !wroteCacheStore) {
+            if (!hanaTaskPresent && config.store === 'cds' && !wroteCacheStore) {
                 await this._buildCacheStoreHdbtables(compileOpts);
                 wroteCacheStore = true;
             }
         }
+
+        if (!hanaTaskPresent && needsStatistics && !wroteStatistics) {
+            await this._buildStatisticsHdbtables(compileOpts);
+            wroteStatistics = true;
+        }
     }
 
     /**
-     * The HANA build task compiles only the app `db/` folder, so `plugin.cds_caching.CacheStore`
-     * from env.roots is not part of that CSN. Emit matching .hdbtable files here.
-     * Non-HANA DBs still get the table via normal CDS deploy / DDL.
+     * Fallback when no hana build task runs: emit CacheStore .hdbtable from cache-store.cds.
      */
     async _buildCacheStoreHdbtables(compileOpts) {
         const modelPath = path.join(__dirname, 'db', 'cache-store');
@@ -130,6 +179,21 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
             await this.write(content).to(path.join('src/gen', file));
         }
         LOG.info('Built cds-caching CacheStore HANA artifacts from cache-store model');
+    }
+
+    /**
+     * Fallback when no hana build task runs: compile index.cds so base tables and
+     * CachingApiService projection views are both emitted.
+     */
+    async _buildStatisticsHdbtables(compileOpts) {
+        const modelPath = path.join(__dirname, 'index');
+        const model = await cds.load(modelPath, { ...compileOpts, cwd: cds.root });
+        const artifacts = cds.compile.to.hdbtable(model, compileOpts);
+        for (const [content, key] of artifacts) {
+            const file = key.file || `${key.name}${key.suffix || ''}`;
+            await this.write(content).to(path.join('src/gen', file));
+        }
+        LOG.info('Built cds-caching Caches/Metrics HANA tables and CachingApiService views from index model');
     }
 });
 

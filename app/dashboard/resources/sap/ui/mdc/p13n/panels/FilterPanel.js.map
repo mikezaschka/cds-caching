@@ -1,1 +1,0 @@
-{"version":3,"file":"FilterPanel.js","names":["sap","ui","define","FilterPanel","extend","metadata","library","renderer","apiVersion"],"sources":["FilterPanel-dbg.js"],"mappings":";;;;;AAKAA,IAAIC,GAAGC,OAAO,CACb,0BACGC,IACH,aAEA,OAAOA,EAAYC,OAAO,qCAAsC,CAC/DC,SAAU,CACTC,QAAS,cAEVC,SAAU,CACTC,WAAY","ignoreList":[]}

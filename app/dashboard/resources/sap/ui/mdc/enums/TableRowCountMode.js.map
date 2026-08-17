@@ -1,1 +1,0 @@
-{"version":3,"file":"TableRowCountMode.js","names":["sap","ui","define","DataType","TableRowCountMode","Auto","Fixed","Interactive","registerEnum"],"sources":["TableRowCountMode-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,CAAC,wBAA0BC,IACxC,aAUA,MAAMC,EAAoB,CAMzBC,KAAM,OAMNC,MAAO,QAOPC,YAAa,eAGdJ,EAASK,aAAa,qCAAsCJ,GAE5D,OAAOA,GAEU","ignoreList":[]}

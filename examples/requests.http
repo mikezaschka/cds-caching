@@ -14,3 +14,36 @@ GET http://localhost:4004/odata/v4/app/CachedFoo?$expand=products,bar
 
 ### Get all products with caching and key tracking
 GET http://localhost:4004/odata/v4/app/Foo?$expand=products,bar
+
+
+# The caching API requires an authenticated user. These use CAP's mocked
+# authentication: alice with an empty password, sent as Basic YWxpY2U6.
+#
+# Operations that touch the store use `caching-northwind`, which is backed by
+# SQLite and so works without Redis running. Swap in `caching` once Redis is up.
+
+### List the configured caches
+GET http://localhost:4004/odata/v4/caching-api/Caches
+Authorization: Basic YWxpY2U6
+
+### Rejected without credentials (401)
+GET http://localhost:4004/odata/v4/caching-api/Caches
+
+### List cache entries (paginated: at most 1000 per call, 100 by default)
+GET http://localhost:4004/odata/v4/caching-api/Caches('caching-northwind')/getEntries(top=10,skip=0)
+Authorization: Basic YWxpY2U6
+
+### Read the collected metrics
+GET http://localhost:4004/odata/v4/caching-api/Metrics?$top=10
+Authorization: Basic YWxpY2U6
+
+### Turn on key-level metrics
+POST http://localhost:4004/odata/v4/caching-api/Caches('caching')/setKeyMetricsEnabled
+Authorization: Basic YWxpY2U6
+Content-Type: application/json
+
+{ "enabled": true }
+
+### Flush the cache — needed once after upgrading to 3.0, since keys changed
+POST http://localhost:4004/odata/v4/caching-api/Caches('caching-northwind')/clear
+Authorization: Basic YWxpY2U6

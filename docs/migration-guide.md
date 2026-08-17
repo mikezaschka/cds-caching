@@ -1,5 +1,39 @@
 # Migration Guide
 
+## Upgrading to 3.0
+
+Cache keys and tags change shape in 3.0. **Flush persistent stores after deploy** or 2.x entries linger forever under the default TTL of `0`.
+
+### Required: flush persistent caches
+
+```javascript
+const cache = await cds.connect.to('caching')
+await cache.clear()
+```
+
+Do this once per cache for `store: 'cds'`, Redis, or HANA. Memory stores start empty. Existing `KeyMetrics` rows for old keys remain as history; new traffic records new keys.
+
+### What else changes
+
+| Change | What to do |
+|--------|------------|
+| Keys include the effective query and use **SHA-256** (was MD5) | Expect cold caches after the flush. Update tests that assert on key strings. Default `CacheStore` length is fine; if you set a custom HANA `KEYV` `keySize`, confirm it still fits your templates. |
+| Dashboard UI5 loads from `https://ui5.sap.com` | Allow that host in CSP, or set `metrics.ui5Url` to a runtime you serve. Re-run `cds add caching-metrics` if you own `app/caching-dashboard/`. See [Dashboard](dashboard.md#where-the-ui5-runtime-comes-from). |
+| `operationTimeout` defaults to **2000 ms** | Raise it for a slow-but-healthy store, lower it for a tighter latency budget, or set `0` for the old unbounded wait. See [Slow and unreachable stores](programmatic-api.md#slow-and-unreachable-stores). |
+
+### Required: replace v1 `statistics` / `dashboard` keys
+
+These keys no longer work. Startup throws if they are present:
+
+| Removed | Use instead |
+|---------|-------------|
+| `"statistics": { … }` | `"metrics": { … }` |
+| `"dashboard": true` | `"metrics": { "reuse": { "api": true, "dashboard": true } }` |
+
+### Optional
+
+- **Value encryption** is off by default — enable only if you want it ([Encrypting cached values](security.md#encrypting-cached-values)).
+
 ## Upgrading to 2.1
 
 Version 2.1 is a security-hardening release. It closes several unauthenticated access paths and changes runtime behavior, so read this before upgrading. See [Security](security.md) for the full picture.
@@ -154,18 +188,15 @@ Do **not** set `metrics.reuse.dashboard` when deploying to the HTML5 Application
 
 Do not combine reuse flags with their manual equivalent for the same concern (e.g. `metrics.reuse.api` + `using … index.cds` causes duplicate `CachingApiService`). See [Feature Activation](feature-activation.md).
 
-### Deprecation shims (v2.x → removed in v3.0)
+### Deprecation shims (removed in 3.0)
 
-v1 config still works with **one-time startup warnings**:
+Through 2.x, `statistics` and `dashboard: true` still worked with a startup warning. **3.0 removes those shims** and rejects the keys at startup — see [Upgrading to 3.0](#upgrading-to-30).
 
-- `statistics` → normalized to `metrics`
-- `dashboard: true` → normalized to `metrics.reuse.dashboard` + `metrics.reuse.api`
-
-Migrate at your convenience before v3.0.
+The `metrics` / `metrics.reuse.*` shape is required because `dashboard: true` could not express serving the API from the package while hosting the UI yourself.
 
 ### Upgrade checklist
 
-1. Update `package.json`: replace `statistics` with `metrics`; replace `dashboard: true` with `metrics.reuse.*`.
+1. Update `package.json`: replace `statistics` with `metrics`; replace `dashboard: true` with `metrics.reuse.*` (required before 3.0).
 2. Run `cds deploy` if you use database-backed metrics or `store: cds`.
 3. Remove redundant `using … index.cds` if you enable `metrics.reuse.api`.
 4. Remove `metrics.reuse.dashboard` if you use `cds add caching-metrics` (or the deprecated `cds add caching-dashboard`).
@@ -269,7 +300,9 @@ In 1.2.x, `isTenantAware` always defaulted to `false`. In 1.3.0, it defaults to 
 
 #### If you use the CachingApiService dashboard in an MTX app
 
-Cache configuration entries (`Caches` table) are no longer written at startup in MTX mode — they're created lazily on first dashboard access within a tenant context. This means the dashboard will show cache entries only after a tenant has accessed the API at least once. This is expected behavior; no action needed.
+Cache configuration entries (`Caches` table) are no longer written at startup in MTX mode — they're created lazily on first API / dashboard access within a tenant context (any `CachingApi` operation that connects to a cache, or `READ` of `Caches` / `Metrics` / `KeyMetrics`). In-memory metrics are partitioned per tenant and flushed with `cds.spawn({ tenant })` so rows land in that tenant’s HDI. On HANA, enable metrics (or import the Caching API) so `cds build` includes the plugin model and emits the statistics tables and CachingApiService views into the tenant deploy.
+
+See also [MTX Hybrid Test](mtx-hybrid-test.md) for a BTP trial checklist.
 
 ### New Store Comparison
 

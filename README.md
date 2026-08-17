@@ -32,7 +32,8 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Dashboard](docs/dashboard.md) | Setup and usage of the monitoring dashboard |
 | [Feature Activation](docs/feature-activation.md) | Reuse vs own: metrics, API, and dashboard activation |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
-| [Migration Guide](docs/migration-guide.md) | **Upgrading to 2.0** and earlier releases |
+| [MTX Hybrid Test](docs/mtx-hybrid-test.md) | Manual BTP trial checklist for issue #18 / MTX |
+| [Migration Guide](docs/migration-guide.md) | **Upgrading to 3.0** and earlier releases |
 | [Example Application](docs/example-app.md) | Sample app with caching patterns |
 | [Federation Integration](docs/federation.md) | Using cds-caching with [cds-data](https://github.com/mikezaschka/cds-data) |
 
@@ -70,7 +71,7 @@ npm install cds-caching
 
 This uses the in-memory store — no additional setup needed for development.
 
-> **Upgrading from 1.x?** See [Upgrading to 2.0](docs/migration-guide.md#upgrading-to-20) — monitoring config now uses `metrics` with optional `metrics.reuse` instead of `statistics` / `dashboard: true`.
+> **Upgrading to 3.0?** See [Upgrading to 3.0](docs/migration-guide.md#upgrading-to-30) — flush persistent caches after deploy; keys and tags change shape. From 1.x, also see [Upgrading to 2.0](docs/migration-guide.md#upgrading-to-20) for the `metrics` / `metrics.reuse` config shape.
 
 ### Data Model
 
@@ -183,14 +184,18 @@ Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-hand
 | `namespace` | service name | Key prefix for store isolation |
 | `compression` | none | `"lz4"` or `"gzip"` |
 | `throwOnErrors` | `false` | Whether basic operations throw on cache errors |
+| `operationTimeout` | `2000` | Milliseconds a single cache operation may take before it counts as a failure; `0` removes the bound ([docs](docs/programmatic-api.md#error-handling)) |
 | `transactionalOperations` | `false` | Isolate basic ops in dedicated cache transactions |
 | `metrics` | none | Metrics collection and persistence (see [Feature Activation](docs/feature-activation.md)) |
 | `metrics.enabled` | `false` | Enable metrics collection |
 | `metrics.persistenceInterval` | `60000` | Interval (ms) for persisting hourly stats to the database |
 | `metrics.reuse.api` | `false` | Register `CachingApiService` from the plugin package (alternative: `using … index.cds`) |
-| `metrics.reuse.dashboard` | `false` | Serve bundled UI from the plugin (alternative: `cds add caching-metrics`) |
-| `statistics` | — | **Deprecated** — use `metrics` (removed in v3.0) |
-| `dashboard` | — | **Deprecated** — use `metrics.reuse.dashboard` (removed in v3.0) |
+| `metrics.reuse.dashboard` | `false` | Serve the UI from the plugin (alternative: `cds add caching-metrics`) |
+| `metrics.ui5Url` | SAPUI5 CDN, pinned | UI5 runtime for the served dashboard; set this to serve UI5 yourself ([docs](docs/dashboard.md#where-the-ui5-runtime-comes-from)) |
+| `encryption.key` | none | 32-byte key (base64 or hex) enabling AES-256-GCM encryption of cached values ([docs](docs/security.md#encrypting-cached-values)) |
+| `encryption.enabled` | `false` | Require encryption without committing the key; startup fails if no key is supplied |
+| `encryption.keyEnv` | none | Name of the environment variable holding the key, for platform-supplied secrets ([docs](docs/security.md#supplying-the-key-on-a-platform)) |
+| `statistics` / `dashboard` | — | **Removed in 3.0** — use `metrics` / `metrics.reuse` ([migration](docs/migration-guide.md#upgrading-to-30)) |
 | `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |
 | `keyManagement.isUserAware` | `false` | Include user in cache keys |
 | `keyManagement.isLocaleAware` | `false` | Include locale in cache keys |
@@ -243,7 +248,9 @@ Use a `redis://` or `rediss://` URL, or connect via `socket.host` / `socket.port
 
 If you see `SocketClosedUnexpectedlyError` in the logs every few minutes — common with TLS Redis, load balancers, or firewalls that drop idle connections — add **`pingInterval`** (milliseconds). The client sends periodic `PING` commands to keep the connection alive. Place it at the **top level** of `credentials`, not inside `socket`. TCP `keepAlive` under `socket` is enabled by default in `@redis/client`; `pingInterval` helps when the network path does not honor it.
 
-With the default **`throwOnErrors: false`**, disconnects are logged but the application continues: cache operations fall back to misses and `@keyv/redis` reconnects automatically. If you set **`throwOnErrors: true`**, reconnection is disabled intentionally — connection errors surface as thrown errors instead.
+With the default **`throwOnErrors: false`**, disconnects are logged but the application continues: cache operations fall back to misses and `@keyv/redis` reconnects automatically. If you set **`throwOnErrors: true`**, connection errors surface as thrown errors instead; reconnection still happens in the background either way.
+
+An outage cannot stall requests. Commands are never queued while the connection is down, and every cache operation runs under `operationTimeout` (2s by default), so an unreachable store degrades to cache misses instead of leaving requests waiting.
 
 For detailed key configuration and deployment instructions, see [Key Management](docs/key-management.md) and [Deployment Guide](docs/deployment-guide.md).
 
@@ -275,7 +282,8 @@ cds-caching supports SAP BTP multi-tenant applications using `@sap/cds-mtxs`. Wh
 
 - Enables **tenant-aware cache keys** (`{tenant}:{hash}`)
 - **Defers database operations** to request-time (avoids startup crashes without tenant context)
-- **Guards statistics persistence** to only run within a tenant request context
+- Partitions **in-memory metrics per tenant** and persists them via `cds.spawn({ tenant })` into that tenant’s HDI
+- Lazily seeds `Caches` rows on dashboard / CachingApi access (not only `READ Caches`)
 
 ### Recommended Setup
 
@@ -286,14 +294,18 @@ cds-caching supports SAP BTP multi-tenant applications using `@sap/cds-mtxs`. Wh
       "multitenancy": true,
       "caching": {
         "impl": "cds-caching",
-        "store": "cds"
+        "store": "cds",
+        "metrics": {
+          "enabled": true,
+          "persistenceInterval": 60000
+        }
       }
     }
   }
 }
 ```
 
-With `store: 'cds'`, each tenant's cache data lives in its own HDI container — fully isolated by CAP's Service Manager.
+With `store: 'cds'`, each tenant's cache data lives in its own HDI container — fully isolated by CAP's Service Manager. On HANA, `cds build` emits `CacheStore` **and** `Caches` / `Metrics` / `KeyMetrics` `.hdbtable` artifacts when metrics or the Caching API are enabled.
 
 Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefixed keys:
 
@@ -314,7 +326,7 @@ Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefi
 
 > `isTenantAware` is automatically set to `true` in MTX mode. Set `"isTenantAware": false` in `keyManagement` to explicitly opt out.
 
-For MTX production setup (dashboard, API authorization, `store: 'cds'`), see the [Feature Activation Guide — Multi-tenancy (MTX)](docs/feature-activation.md#multi-tenancy-mtx).
+For MTX production setup (dashboard, API authorization, `store: 'cds'`), see the [Feature Activation Guide — Multi-tenancy (MTX)](docs/feature-activation.md#multi-tenancy-mtx). To verify against a BTP trial in hybrid mode, see [MTX Hybrid Test](docs/mtx-hybrid-test.md).
 
 ## Usage Patterns
 

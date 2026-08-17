@@ -125,8 +125,9 @@ describe('TagResolver', () => {
             const data = { id: 123, name: 'Test' };
             const tags = [{ template: 'data-{hash}' }];
             const result = tagResolver.resolveTags(tags, data);
-            // We can't predict the exact hash, but we can check the format
-            expect(result[0]).to.match(/^data-[0-9a-f]{32}$/);
+            // We can't predict the exact hash, but we can check the format:
+            // SHA-256 hex, matching the algorithm KeyManager uses for keys.
+            expect(result[0]).to.match(/^data-[0-9a-f]{64}$/);
         });
 
         it('should handle template with prefix and suffix', () => {

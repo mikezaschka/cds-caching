@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/ui/core/Lib","sap/ui/model/odata/v2/ODataModel","sap/ui/fl/apply/api/FlexRuntimeInfoAPI"],function(e,t,a){"use strict";var n={handleModelInit:function(e,a,n){var i=false,o;if(e&&!e._bMetaModelLoadAttached&&a){o=e.getModel();if(o){if(o.getMetadata()&&o instanceof t){i=true}else if(o.bLoadMetadataAsync||o.getServiceMetadata&&!o.getServiceMetadata()){i=true}e._bMetaModelLoadAttached=true;if(i&&o.getMetaModel()&&o.getMetaModel().loaded){var l=!!n;if(!l){return o.getMetaModel().loaded().then(a.bind(e))}else{return this._waitForFlexChanges(o,e,a,n)}}else{a.apply(e)}}}return Promise.resolve()},_waitForFlexChanges:function(e,t,n,i){return this._flexRuntimeInfoAPIHandler(a,e,t,n,i)},_getFlexRuntimeInfoAPI:function(){return e.load("sap.ui.fl").then(function(){return new Promise(function(e){sap.ui.require(["sap/ui/fl/apply/api/FlexRuntimeInfoAPI"],function(t){e(t)})})})},_flexRuntimeInfoAPIHandler:function(e,t,a,n,i){var o;if(!e.isFlexSupported({element:a})){o=Promise.resolve()}else if(typeof i==="boolean"){o=e.waitForChanges({element:a})}else{o=e.waitForChanges({complexSelectors:i})}return Promise.all([t.getMetaModel().loaded(),o]).then(n.bind(a))}};return n},true);
-//# sourceMappingURL=ODataModelUtilSync.js.map

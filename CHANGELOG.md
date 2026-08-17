@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+
+* **config:** reject removed v1 keys `statistics` and `dashboard` at startup (use `metrics` / `metrics.reuse.*`)
+
+### Features
+
+* **mtx:** partition in-memory metrics per tenant and persist via `cds.spawn` ([#18](https://github.com/mikezaschka/cds-caching/issues/18))
+* **mtx:** lazily seed `Caches` on any CachingApi access and on Metrics/KeyMetrics READ
+* **build:** include cds-caching `env.roots` in the official HANA build model so `Caches` / `Metrics` / `KeyMetrics` tables and CachingApiService `.hdbview` projections are emitted like app services ([#18](https://github.com/mikezaschka/cds-caching/issues/18))
+
+### Documentation
+
+* add [MTX hybrid test checklist](docs/mtx-hybrid-test.md) for BTP trial verification
+
 ## [2.1.0](https://github.com/mikezaschka/cds-caching/compare/2.0.2...2.1.0) (2026-08-16)
 
 ### Features

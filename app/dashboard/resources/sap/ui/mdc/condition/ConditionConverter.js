@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/mdc/condition/Condition","sap/ui/mdc/enums/ConditionValidated","sap/ui/mdc/enums/OperatorValueType","sap/ui/mdc/condition/FilterOperatorUtil","sap/base/util/merge"],(e,t,a,n,r)=>{"use strict";const o={toString:function(t,a,o){const u=n.getOperator(t.operator);const c=a.typeInstance?a.typeInstance:a;const l=s(t.values,i(c,u),u,o);let p;let d;let f;if(t.inParameters){p=r({},t.inParameters)}if(t.outParameters){d=r({},t.outParameters)}if(t.payload){f=r({},t.payload)}const y=e.createCondition(t.operator,l,p,d,t.validated,f);return y},toType:function(a,o,s){const c=n.getOperator(a.operator);const l=o.typeInstance?o.typeInstance:o;const p=u(a.values,i(l,c),s);let d;let f;let y;if(a.inParameters){d=r({},a.inParameters)}if(a.outParameters){f=r({},a.outParameters)}if(a.payload){y=r({},a.payload)}const m=e.createCondition(a.operator,p,d,f,a.validated,y);if(m.validated!==t.Validated&&c.validateInput){c.checkValidated(m)}return m}};function i(e,t){if(t&&t.valueTypes[0]&&(t.valueTypes[0]!==a.Self&&t.valueTypes[0]!==a.Static)){return t._createLocalType(t.valueTypes[0],e)}return e}function s(e,t,n,r){const o=[];for(let i=0;i<e.length;i++){if(!n||n.valueTypes[i]&&n.valueTypes[i]!==a.Static){const a=e[i];o.push(r.externalizeValue(a,t))}}return o}function u(e,t,a){const n=[];for(const r of e){n.push(a.internalizeValue(r,t))}return n}return o},true);
-//# sourceMappingURL=ConditionConverter.js.map

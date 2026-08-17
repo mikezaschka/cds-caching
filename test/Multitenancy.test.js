@@ -1,6 +1,6 @@
 const cds = require('@sap/cds');
 const { GET, POST, expect } = cds.test().in(__dirname + '/app/')
-const { isMultitenantMode, hasTenantContext } = require('../lib/support/MultitenancyDetector')
+const { isMultitenantMode, hasTenantContext, currentTenant, DEFAULT_TENANT } = require('../lib/support/MultitenancyDetector')
 
 describe('Multi-Tenancy Support', () => {
 
@@ -14,6 +14,9 @@ describe('Multi-Tenancy Support', () => {
         // Save original state
         originalMultitenancy = cds.env.requires?.multitenancy;
         await cache.clear();
+        // Clear tenant metric buckets between tests
+        cache.statistics?._buckets?.clear();
+        cache.statistics?._overlays?.clear();
     })
 
     afterEach(() => {
@@ -51,6 +54,16 @@ describe('Multi-Tenancy Support', () => {
         it('should return true when cds.context.tenant is set', () => {
             cds.context = { tenant: 't1' };
             expect(hasTenantContext()).to.be.true
+        })
+
+        it('should return DEFAULT_TENANT from currentTenant when no context', () => {
+            cds.context = {};
+            expect(currentTenant()).to.equal(DEFAULT_TENANT);
+        })
+
+        it('should return context tenant from currentTenant', () => {
+            cds.context = { tenant: 'tenant-xyz' };
+            expect(currentTenant()).to.equal('tenant-xyz');
         })
     })
 
@@ -274,6 +287,142 @@ describe('Multi-Tenancy Support', () => {
 
             const metrics = await cache.getCurrentMetrics();
             expect(metrics).to.exist
+        })
+
+        it('should isolate in-memory metrics per tenant', async () => {
+            cds.env.requires.multitenancy = true;
+            await cache.setMetricsEnabled(true);
+            cache.statistics._buckets.clear();
+
+            cds.context = { tenant: 't1' };
+            cache.statistics.recordHit(5, 'k1');
+
+            cds.context = { tenant: 't2' };
+            cache.statistics.recordHit(5, 'k2');
+            cache.statistics.recordHit(5, 'k2');
+
+            cds.context = { tenant: 't1' };
+            const m1 = await cache.getCurrentMetrics();
+            expect(m1.hits).to.equal(1);
+
+            cds.context = { tenant: 't2' };
+            const m2 = await cache.getCurrentMetrics();
+            expect(m2.hits).to.equal(2);
+        })
+
+        it('should not let t1 disabling metrics silence t2', async () => {
+            cds.env.requires.multitenancy = true;
+            // Process-level default on (no tenant → no DB write)
+            cds.context = {};
+            await cache.setMetricsEnabled(true);
+            cache.statistics._buckets.clear();
+            cache.statistics._overlays.clear();
+
+            // Per-tenant overlay only — avoid RuntimeConfigurationManager DB update
+            // (tenant context would route to a separate MTX sqlite that has no schema here)
+            cds.context = { tenant: 't1' };
+            cache.statistics.enableMetrics(false);
+
+            cds.context = { tenant: 't2' };
+            cache.statistics.recordHit(3, 't2-key');
+
+            cds.context = { tenant: 't1' };
+            cache.statistics.recordHit(3, 't1-key');
+
+            cds.context = { tenant: 't2' };
+            const m2 = await cache.getCurrentMetrics();
+            expect(m2).to.exist;
+            expect(m2.hits).to.equal(1);
+
+            cds.context = { tenant: 't1' };
+            const m1 = await cache.getCurrentMetrics();
+            expect(m1).to.be.null;
+        })
+
+        it('should skip recording without tenant context in MTX mode', async () => {
+            cds.env.requires.multitenancy = true;
+            cds.context = {};
+            await cache.setMetricsEnabled(true);
+            cache.statistics._buckets.clear();
+
+            cache.statistics.recordHit(1, 'orphan');
+            expect(cache.statistics._buckets.size).to.equal(0);
+        })
+
+        it('should persist dirty tenant buckets via cds.spawn', async () => {
+            cds.env.requires.multitenancy = true;
+            cds.context = {};
+            await cache.setMetricsEnabled(true);
+            cache.statistics._buckets.clear();
+
+            const spawned = [];
+            const originalSpawn = cds.spawn;
+            cds.spawn = (opts, fn) => {
+                spawned.push(opts.tenant);
+                const listeners = {};
+                const job = {
+                    on(ev, cb) {
+                        listeners[ev] = cb;
+                        return job;
+                    },
+                };
+                Promise.resolve().then(async () => {
+                    const prev = cds.context;
+                    cds.context = { tenant: opts.tenant };
+                    try {
+                        await fn();
+                        listeners.succeeded?.();
+                    } catch (err) {
+                        listeners.failed?.(err);
+                    } finally {
+                        cds.context = prev;
+                    }
+                });
+                return job;
+            };
+
+            try {
+                cds.context = { tenant: 't1' };
+                cache.statistics.recordHit(2, 'spawn-key');
+                expect(cache.statistics._buckets.has('t1')).to.be.true;
+
+                await cache.statistics.persistAllTenantMetrics();
+
+                expect(spawned).to.include('t1');
+                // Bucket dropped after successful persist
+                expect(cache.statistics._buckets.has('t1')).to.be.false;
+            } finally {
+                cds.spawn = originalSpawn;
+            }
+        })
+
+        it('should skip persistMetrics when MTX has no tenant context', async () => {
+            cds.env.requires.multitenancy = true;
+            cds.context = {};
+            await cache.setMetricsEnabled(true);
+            // Should not throw
+            await cache.statistics.persistMetrics();
+        })
+    })
+
+    describe('Lazy Caches seed in MTX', () => {
+        it('should invoke _ensureCacheEntries from _connectToCache', async () => {
+            cds.env.requires.multitenancy = true;
+            const api = await cds.connect.to('plugin.cds_caching.CachingApiService');
+            let called = false;
+            const original = api._ensureCacheEntries.bind(api);
+            api._ensureCacheEntries = async () => { called = true; };
+
+            try {
+                const req = {
+                    params: ['caching'],
+                    reject(code, message) { throw Object.assign(new Error(message), { code }); },
+                };
+                await api._connectToCache(req);
+                expect(called).to.be.true;
+            } finally {
+                api._ensureCacheEntries = original;
+            }
         })
     })
 

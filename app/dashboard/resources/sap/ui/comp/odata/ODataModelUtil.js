@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/ui/core/Lib","sap/ui/model/odata/v2/ODataModel"],function(e,t){"use strict";var a={handleModelInit:function(e,a,i){var o=false,n;if(e&&!e._bMetaModelLoadAttached&&a){n=e.getModel();if(n){if(n.getMetadata()&&n instanceof t){o=true}else if(n.bLoadMetadataAsync||n.getServiceMetadata&&!n.getServiceMetadata()){o=true}e._bMetaModelLoadAttached=true;if(o&&n.getMetaModel()&&n.getMetaModel().loaded){var l=!!i;if(!l){n.getMetaModel().loaded().then(a.bind(e))}else{this._getFlexRuntimeInfoAPI().then(function(t){var o;if(!t.isFlexSupported({element:e})){o=Promise.resolve()}else if(typeof i==="boolean"){o=t.waitForChanges({element:e})}else{o=t.waitForChanges({complexSelectors:i})}Promise.all([n.getMetaModel().loaded(),o]).then(a.bind(e))})}}else{a.apply(e)}}}},_getFlexRuntimeInfoAPI:function(){return e.load("sap.ui.fl").then(function(){return new Promise(function(e){sap.ui.require(["sap/ui/fl/apply/api/FlexRuntimeInfoAPI"],function(t){e(t)})})})}};return a},true);
-//# sourceMappingURL=ODataModelUtil.js.map

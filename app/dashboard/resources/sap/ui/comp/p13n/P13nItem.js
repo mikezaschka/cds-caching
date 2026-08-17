@@ -1,6 +1,0 @@
-/*!
- * SAPUI5
- * (c) Copyright 2025 SAP SE. All rights reserved.
- */
-sap.ui.define(["sap/m/library","sap/ui/core/Element"],function(e,l){"use strict";var t=l.extend("sap.ui.comp.p13n.P13nItem",{metadata:{library:"sap.ui.comp",properties:{columnKey:{type:"string",group:"Data",defaultValue:null},text:{type:"string",group:"Misc",defaultValue:""},visible:{type:"boolean",group:"Misc",defaultValue:null},type:{type:"string",group:"Misc",defaultValue:"text"},typeInstance:{type:"object",group:"Misc",defaultValue:null},precision:{type:"string",group:"Misc",defaultValue:null},formatSettings:{type:"object",group:"Misc",defaultValue:null},scale:{type:"string",group:"Misc",defaultValue:null},maxLength:{type:"string",group:"Misc",defaultValue:null},width:{type:"string",group:"Misc",defaultValue:null},isDefault:{type:"boolean",group:"Misc",defaultValue:false},values:{type:"string[]",group:"Misc",defaultValue:null},role:{type:"string",defaultValue:null},aggregationRole:{type:"string",defaultValue:null},href:{type:"string",defaultValue:null},target:{type:"string",defaultValue:null},press:{type:"object",defaultValue:null},description:{type:"string",defaultValue:null},nullable:{type:"boolean",group:"Misc",defaultValue:false}}}});return t});
-//# sourceMappingURL=P13nItem.js.map

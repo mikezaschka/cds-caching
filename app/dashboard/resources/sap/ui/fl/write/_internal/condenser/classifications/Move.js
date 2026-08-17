@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/fl/write/_internal/condenser/Utils"],function(e){"use strict";return{async addToReconstructionMap(t,n){const[r,o]=await Promise.all([e.getContainerElementIds(n.sourceContainer,n.sourceAggregation,n.customAggregation,n.affectedControlIdProperty),e.getContainerElementIds(n.targetContainer,n.targetAggregation,n.customAggregation,n.affectedControlIdProperty)]);let a;let i;if(n.targetContainer===n.sourceContainer&&n.targetAggregation===n.sourceAggregation){a=e.getInitialUIContainerElementIds(t,n.targetContainer,n.targetAggregation,o);i=a.indexOf(n.affectedControl);e.shiftElement(a,i,n.sourceIndex)}else{a=e.getInitialUIContainerElementIds(t,n.targetContainer,n.targetAggregation,o);i=a.indexOf(n.affectedControl);a.splice(i,1);a=e.getInitialUIContainerElementIds(t,n.sourceContainer,n.sourceAggregation,r);a.splice(n.sourceIndex,0,n.affectedControl)}},simulate(t,n,r){const o=n.affectedControl;const a=r.indexOf(o);e.extendElementsArray(t,a,undefined,o);const i=t.indexOf(o);const g=n.getTargetIndex(n.change);if(a===-1){t.splice(g,0,o)}else{t.splice(g,0,t.splice(i,1)[0])}n.sameIndex=i===g;n.revertIndex=i}}});
-//# sourceMappingURL=Move.js.map

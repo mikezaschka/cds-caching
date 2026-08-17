@@ -1,1 +1,0 @@
-sap.viz.extapi.env.Language.register({id:'ro',value: {VIZ_FRAME_CONTROL_LOAD_ERROR:"Încărcare nereuşită obiect de control {0}.",VIZ_FRAME_INVALID:"Instanţă VizFrame nevalabilă.",VIZ_FRAME_DESTORYED:"Instanţă VizFrame a fost distrusă.",}});

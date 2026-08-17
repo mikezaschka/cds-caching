@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/base/util/merge","sap/base/util/ObjectPath"],function(n,a){"use strict";var e={};function t(n,e){var t=n.reduce(function(n,t){if(a.get(e,t)){return n.concat(a.get(e,t))}return n},[]);var r=[];return t.filter(function(n){var a=n.fileName;var e=r.indexOf(a)!==-1;if(e){return false}r.push(a);return true})}function r(a){return a.reduce(function(a,e){return n({},a,e.ui2personalization)},{})}function i(n){return n.reduce(function(n,a){return a.cacheKey?n+=a.cacheKey:n},"")||null}e.merge=function(n){var a={appDescriptorChanges:t(n,"appDescriptorChanges"),annotationChanges:t(n,"annotationChanges"),changes:t(n,"changes"),ui2personalization:r(n),comp:{variants:t(n,"comp.variants"),changes:t(n,"comp.changes"),defaultVariants:t(n,"comp.defaultVariants"),standardVariants:t(n,"comp.standardVariants")},variants:t(n,"variants"),variantChanges:t(n,"variantChanges"),variantDependentControlChanges:t(n,"variantDependentControlChanges"),variantManagementChanges:t(n,"variantManagementChanges"),cacheKey:i(n)};var e=t(n,"info");if(e.length>0){[a.info]=e}return a};return e});
-//# sourceMappingURL=StorageResultMerger.js.map

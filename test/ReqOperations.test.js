@@ -60,11 +60,11 @@ describe('Read-Through Request Caching', () => {
         })
 
         it("should respect the cache key template", async () => {
-            // Note: the hash covers the CQN query for requests whose URL carries
-            // no query string (so HCQL/MCP/programmatic reads hash correctly),
-            // hence this literal reflects that content hash.
+            // Golden value for the '{hash}_{user}' template on CachedFoo. The hash
+            // covers the request including its canonicalized effective query, so a
+            // change here means every cache goes cold on upgrade.
             const { headers } = await GET`/odata/v4/app/CachedFoo`
-            expect(headers['x-sap-cap-cache-key']).to.equal('9a5b65f6adea80c25c0a8133fbd44b31_anonymous');
+            expect(headers['x-sap-cap-cache-key']).to.equal('1186062db1116d1ee8214be314fbe16a478b97a33dc28d9c199638df5b07f377_anonymous');
         })
 
         it("should cache a request for an annotated entity of an ApplicationService", async () => {

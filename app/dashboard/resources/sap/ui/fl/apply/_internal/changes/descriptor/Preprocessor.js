@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/fl/apply/_internal/changes/descriptor/Applier","sap/ui/fl/apply/_internal/changes/descriptor/ApplyStrategyFactory","sap/ui/fl/apply/_internal/flexState/FlexState","sap/ui/fl/apply/_internal/flexState/ManifestUtils","sap/ui/performance/Measurement","sap/ui/fl/Utils"],function(e,t,n,i,a,r){"use strict";var s={preprocessManifest(s,p){if(!r.isApplication(s,true)||!p.id){return Promise.resolve(s)}a.start("flexStateInitialize","Initialization of flex state",["sap.ui.fl"]);const l=p.componentData||{};const o=i.getFlexReference({manifest:s,componentData:l});if(!i.getChangeManifestFromAsyncHints(p.asyncHints,o)){n.initialize({componentData:l,asyncHints:p.asyncHints,rawManifest:s,componentId:p.id,reference:o,partialFlexState:true}).then(a.end.bind(undefined,"flexStateInitialize"));return Promise.resolve(s)}return n.initialize({componentData:l,asyncHints:p.asyncHints,rawManifest:s,componentId:p.id,reference:o,partialFlexState:true}).then(function(){a.end("flexStateInitialize");a.start("flexAppDescriptorMerger","Client side app descriptor merger",["sap.ui.fl"]);const i={...s};const r=n.getAppDescriptorChanges(o);return e.applyChanges(i,r,t.getRuntimeStrategy())}).then(function(e){a.end("flexAppDescriptorMerger");return e})}};return s});
-//# sourceMappingURL=Preprocessor.js.map

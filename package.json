@@ -44,7 +44,7 @@
     "lint": "eslint .",
     "release": "release-it",
     "sync:dashboard-webapp": "rm -rf app/webapp && cp -R app/dashboard-src app/webapp",
-    "build:dashboard": "npm run sync:dashboard-webapp && cd app && ui5 build self-contained --clean-dest --all --config dashboard.build.ui5.yaml --dest dashboard",
+    "build:dashboard": "npm run sync:dashboard-webapp && cd app && ui5 build --clean-dest --config dashboard.build.ui5.yaml --dest dashboard",
     "start:dashboard": "npm run sync:dashboard-webapp && cd app && ui5 serve --config dashboard.ui5.yaml -o index.html",
     "lint:dashboard": "npm run sync:dashboard-webapp && eslint -c app/dashboard.eslint.config.mjs app/webapp",
     "typecheck:dashboard": "npm run sync:dashboard-webapp && tsc -p app/tsconfig.json --noEmit",

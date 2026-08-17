@@ -4,6 +4,8 @@ const {
     statisticsRoot,
     indexRoot,
     cacheStoreRoot,
+    injectPluginRootsIntoHanaTasks,
+    ensureHanaTasksIncludePluginRoots,
 } = require('../lib/plugin-roots')
 const { normalizeCachingConfig } = require('../lib/config-normalizer')
 
@@ -64,8 +66,10 @@ describe('resolvePluginRoots', () => {
         expect(warnings.some(w => w.includes('metrics.reuse'))).toBe(true)
     })
 
-    it('maps v1 dashboard:true via normalizer to reuse dashboard', () => {
-        const normalized = normalizeCachingConfig({ dashboard: true })
+    it('maps metrics.reuse.dashboard to reuse dashboard via normalizer', () => {
+        const normalized = normalizeCachingConfig({
+            metrics: { reuse: { dashboard: true } },
+        })
         const { roots, reuseDashboard } = resolvePluginRoots({
             pluginDir,
             projectRoot: '/tmp/no-srv',
@@ -96,5 +100,38 @@ describe('resolvePluginRoots', () => {
             normalizedConfigs: [normalized],
         })
         expect(roots).toEqual([cacheStoreRoot(pluginDir), indexRoot(pluginDir)])
+    })
+})
+
+describe('injectPluginRootsIntoHanaTasks', () => {
+    const roots = [cacheStoreRoot(pluginDir), indexRoot(pluginDir)]
+
+    it('appends roots to a hana task model without duplicating', () => {
+        const hana = { for: 'hana', options: { model: ['db', 'srv'] } }
+        expect(injectPluginRootsIntoHanaTasks([hana], roots)).toBe(true)
+        expect(hana.options.model).toEqual(['db', 'srv', ...roots])
+        expect(injectPluginRootsIntoHanaTasks([hana], roots)).toBe(false)
+        expect(hana.options.model).toEqual(['db', 'srv', ...roots])
+    })
+
+    it('ignores non-hana tasks and empty roots', () => {
+        const nodejs = { for: 'nodejs', options: { model: ['srv'] } }
+        expect(injectPluginRootsIntoHanaTasks([nodejs], roots)).toBe(false)
+        expect(nodejs.options.model).toEqual(['srv'])
+        expect(injectPluginRootsIntoHanaTasks([{ for: 'hana', options: { model: ['db'] } }], [])).toBe(false)
+    })
+
+    it('normalizes a string model option to an array', () => {
+        const hana = { for: 'hana', options: { model: 'db' } }
+        injectPluginRootsIntoHanaTasks([hana], [indexRoot(pluginDir)])
+        expect(hana.options.model).toEqual(['db', indexRoot(pluginDir)])
+    })
+
+    it('hooks push so a later hana task also receives roots', () => {
+        const tasks = [{ for: 'cds-caching', options: { model: ['db'] } }]
+        ensureHanaTasksIncludePluginRoots(tasks, roots)
+        const hana = { for: 'hana', options: { model: ['db', 'srv', 'app'] } }
+        tasks.push(hana)
+        expect(hana.options.model).toEqual(['db', 'srv', 'app', ...roots])
     })
 })

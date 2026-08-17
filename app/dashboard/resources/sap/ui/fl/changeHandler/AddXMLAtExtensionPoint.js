@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/ui/fl/apply/api/ExtensionPointRegistryAPI","sap/ui/fl/changeHandler/BaseAddXml"],function(e,n){"use strict";const t={};function i(e){let n=e.index;if(e.referencedExtensionPoint){n+=i(e.referencedExtensionPoint)}return n}t.applyChange=async function(t,o,a){const r=a.view;const s=a.modifier;const d=a.viewId||s.getId(r);const f=t.getSelector();const c=t.getExtensionPointInfo&&t.getExtensionPointInfo()||await s.getExtensionPointInfo(f.name,r);if(!c){throw new Error(`AddXMLAtExtensionPoint-Error: Either no Extension-Point found by name '${f&&f.name}' or multiple Extension-Points available with the given name in the view (view.id='${d}'). Multiple Extension-points with the same name in one view are not supported!`)}(c.defaultContent||[]).forEach(function(e){if(e){s.destroy(e)}});c.defaultContent=[];c.index=i(c);if(s.targets==="xmlTree"){c.skipAdjustIndex=true}const l=await n.applyChange(t,o,a,c);if(c.ready){c.ready(l)}e.addCreatedControlsToExtensionPointInfo({name:f.name,viewId:d,createdControlsIds:l.map(e=>s.getId(e))})};t.revertChange=n.revertChange;t.completeChangeContent=function(e,t){n.completeChangeContent(e,t)};return t});
-//# sourceMappingURL=AddXMLAtExtensionPoint.js.map

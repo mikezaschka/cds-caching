@@ -95,6 +95,28 @@ try {
 }
 ```
 
+#### Slow and Unreachable Stores
+
+A store that answers slowly, or not at all, is treated as a failing store. Each operation runs under `operationTimeout` (2000 ms by default); when it is exceeded, the operation is abandoned and raises a `CacheTimeoutError` with `code: 'CACHE_TIMEOUT'`, which then follows the rules above — read-through falls back to the origin, and basic operations throw only under `throwOnErrors: true`.
+
+The bound exists because an unreachable store would otherwise stall the request path: a connection that is still being retried leaves operations waiting rather than failing. Lower it if your latency budget is tighter than two seconds, raise it for a store that is legitimately slow under load, and set `operationTimeout: 0` to remove it entirely:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "store": "redis",
+        "operationTimeout": 500
+      }
+    }
+  }
+}
+```
+
+An exceeded bound abandons the operation but does not cancel it — the store may still complete the work. For `set` that means a value can land in the cache after the write was reported as failed, which is harmless. Recovery is left to the store's own reconnection, so the cache starts serving again on its own once the store is back.
+
 #### Read-Through Operations Error Handling
 
 Read-through operations (`rt.run`, `rt.send`, `rt.wrap`, `rt.exec`) never throw errors, regardless of the `throwOnErrors` setting:
@@ -118,7 +140,7 @@ Creates a key from a string or an object. This method is used internally when pa
 
 #### Parameters
 
-- `key: any` - The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using MD5. cds.Requests are handled explicitly as the dynamically generated key includes the user, tenant and locale and query hash.
+- `key: any` - The key to create the key from. The key can be a string or an object. If an object is used, it will be hashed to a string key using SHA-256. cds.Requests are handled explicitly as the dynamically generated key includes the user, tenant and locale and query hash.
 
 #### Returns
 
@@ -356,11 +378,11 @@ Runs a query against the provided service and caches the result for all further 
 #### Key Generation
 
 **For CQN queries:**
-- Key components hashed as md5: Query structure (SELECT, FROM, WHERE, ORDER BY, LIMIT, etc.) and query parameters
+- Key components hashed with SHA-256: the canonicalized query structure (FROM, COLUMNS, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT) and query parameters
 - Global context (user, tenant, locale based on configuration) is prepended
 
 **For CAP requests:**
-- Key components hashed as md5: Request params and data, target entity, query parameters ($filter, $select, $expand, $orderby, etc.)
+- Key components hashed with SHA-256: request params and data, target entity, query parameters ($filter, $select, $expand, $orderby, etc.) and the effective query
 - Global context (user, tenant, locale based on configuration) is available
 
 #### Returns
@@ -425,7 +447,7 @@ Sends a request to a cds.Service and caches the result. This method is useful fo
 - HTTP method
 - Request path with query parameters
 - Global context (user, tenant, locale based on configuration)
-- Hash: MD5 hash of the request structure
+- Hash: SHA-256 hash of the request structure
 
 #### Returns
 
@@ -655,7 +677,7 @@ The following variables are available in key templates:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `{hash}` | MD5 hash of the content being cached | `"a1b2c3d4..."` |
+| `{hash}` | SHA-256 hash of the content being cached | `"a1b2c3d4..."` |
 | `{user}` | Current user ID | `"john.doe"` |
 | `{tenant}` | Current tenant | `"acme"` |
 | `{locale}` | Current locale | `"en-US"` |

@@ -16,10 +16,10 @@ class CachingApiService extends cds.ApplicationService {
 
     async init() {
 
-        // In MTX mode, lazily create cache entries on first dashboard access
+        // In MTX mode, lazily create cache entries on first dashboard / API access
         // (skipped at startup because there's no tenant context)
         if (isMultitenantMode()) {
-            this.before('READ', 'Caches', async () => {
+            this.before('READ', ['Caches', 'Metrics', 'KeyMetrics'], async () => {
                 await this._ensureCacheEntries();
             });
         }
@@ -184,6 +184,10 @@ class CachingApiService extends cds.ApplicationService {
 
         if (!name || !this._allowedCaches().has(name)) {
             return req.reject(404, `Unknown cache: ${name}`);
+        }
+
+        if (isMultitenantMode()) {
+            await this._ensureCacheEntries();
         }
 
         return cds.connect.to(name);

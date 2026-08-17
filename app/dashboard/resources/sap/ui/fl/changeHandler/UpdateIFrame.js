@@ -1,7 +1,0 @@
-/*!
- * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-sap.ui.define(["sap/base/util/extend","sap/ui/fl/changeHandler/condenser/Classification"],function(t,e){"use strict";const n={};const i=["width","height","url","_settings","advancedSettings"];async function r(t,e){const n={};for(const r of i){const i=await t.getProperty(e,r);n[r]=i}return n}function o(e,n,i){const r=t({_settings:i},i);return e.applySettings(n,r)}n.applyChange=async function(t,e,n){const i=n.modifier;const a=await i.getControlMetadata(e);if(a.getName()!=="sap.ui.fl.util.IFrame"){throw Error("UpdateIFrame only for sap.ui.fl.util.IFrame")}const s=await r(i,e);t.setRevertData({originalSettings:s});return o(i,e,t.getContent())};n.revertChange=async function(t,e,n){const i=t.getRevertData();if(i){if(i.originalSettings._settings&&i.originalSettings._settings.url){i.originalSettings.url=i.originalSettings._settings.url}await o(n.modifier,e,i.originalSettings);t.resetRevertData()}else{throw Error("Attempt to revert an unapplied change.")}};n.completeChangeContent=function(t,e){if(!e.content||!Object.keys(e.content).some(function(t){return i.indexOf(t)!==-1})){throw new Error("oSpecificChangeInfo attribute required")}t.setContent(e.content)};n.getCondenserInfo=function(t){return{classification:e.Update,affectedControl:t.getSelector(),uniqueKey:"iFrame",updateContent:t.getContent()}};return n});
-//# sourceMappingURL=UpdateIFrame.js.map

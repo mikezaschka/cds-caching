@@ -13,17 +13,18 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 4. [Debug response headers](#debug-response-headers)
 5. [Metrics data](#metrics-data)
 6. [Data at rest](#data-at-rest)
+   - [Encrypting cached values](#encrypting-cached-values)
 7. [Resource limits](#resource-limits)
 8. [Content Security Policy](#content-security-policy)
 
 ## Production checklist
 
 - Restrict `CachingApiService` to an administrative role rather than leaving it at the default `authenticated-user`.
-- Set `keyManagement.isUserAware: true` for any cache holding user-filtered data, and `isLocaleAware: true` for translated content. Check [what the flags do not cover](#what-the-awareness-flags-do-not-cover) if your filtering is not derived from the user id.
+- Set `isLocaleAware: true` for translated content, and `isUserAware: true` where a response varies per user without the query varying. See [what the awareness flags do not cover](#what-the-awareness-flags-do-not-cover).
 - Leave `debugHeaders` off.
 - Decide whether `keyMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics`.
 - Apply rate limits in front of the management API if it is externally reachable.
-- Confirm your store's transport and at-rest encryption (Redis TLS, HANA, Postgres).
+- Confirm your store's transport and at-rest encryption (Redis TLS, HANA, Postgres), and consider [encrypting cached values](#encrypting-cached-values) where the store is outside your trust boundary.
 
 ## Management API and dashboard
 
@@ -61,13 +62,11 @@ When `metrics.reuse.dashboard` is enabled, the dashboard is served from `/cachin
 
 ## Cache key isolation
 
-**This is the most important setting to review.**
+Cache keys are built from a template. By default the template is `{hash}`, where the hash covers the request and its **effective query** — including a `where` clause contributed by `@restrict`, by row-level rules, or by a custom handler. Two reads that resolve to different queries therefore derive different keys without further configuration.
 
-Cache keys are built from a template. By default the template is `{hash}` — derived from the request or query alone, with no user context. Every user shares one cached entry per distinct request.
+Before 3.0 the hash was derived from the request URL and the CQN was dropped whenever the URL carried a query string, so per-user filtering did not reach the key and one user could be served another's rows. If you are on 2.x, set `isUserAware: true` for any cache holding user-filtered data and see [GHSA-9hrx-jq4r-33g9](https://github.com/mikezaschka/cds-caching/security/advisories/GHSA-9hrx-jq4r-33g9).
 
-That is correct for public, unfiltered data. It is **wrong**, and a cross-user data leak, when the cached data is filtered per user, whether through `@restrict`, a `where` clause referencing `cds.context.user`, or any row-level rule. Two users issuing the same request would then receive the same cached rows.
-
-Enable user-aware keys per cache service:
+The template still governs how entries are partitioned. Enable user-aware keys per cache service:
 
 ```json
 {
@@ -91,17 +90,19 @@ Enable user-aware keys per cache service:
 
 ### What the awareness flags do not cover
 
-These flags add context to the key; they do not make the key reflect the query that actually ran. For a request carrying an OData query string, the hash is derived from the URL and request metadata, and the CQN does not contribute — which is where a `where` clause added by `@restrict` or by a custom handler lives. All isolation therefore comes from the template dimensions you enabled, so review whether they cover every way your data varies.
+Since 3.0 the key hash covers the **effective query**, not just the request URL. A `where` clause contributed by `@restrict` or by a custom handler is part of the key, so two users whose reads are filtered differently derive different keys even with `isUserAware` off. That holds however the filter arises — from the user id, from a request header, or from anything else that reaches the query.
 
-Two cases they do not cover:
+What the flags are still for:
 
-- **Filtering not derived from the user id.** When a single technical user issues the request — an integration user, a background job, or a service called with client credentials instead of principal propagation — and a handler narrows the query from a request header or another non-identity source, `isUserAware` gives you nothing: the user component is constant while the data is not. Pass a template that includes the discriminating value, or keep such reads out of the cache.
+- **Responses that vary by user without the query varying.** If a handler filters or enriches the *result* in JavaScript after the query has run, or returns data derived from `cds.context.user` directly, the query is identical for every caller and so is the key. Set `isUserAware: true` for those caches, or key the operation explicitly.
 
 ```javascript
-const { result } = await cache.rt.run(query, db, { key: `${region}:{user}:{hash}` })
+const { result } = await cache.rt.run(query, db, { key: '{user}:{hash}' })
 ```
 
-- **Locale.** `isLocaleAware` defaults to `false`, so responses in different languages share one entry. Enable it for any cache holding translated texts.
+- **Locale.** `isLocaleAware` defaults to `false`, so responses in different languages share one entry. Locale is a context dimension rather than part of the query, so enable it for any cache holding translated texts.
+
+- **Deliberate isolation.** Even where the key is already correct, `isUserAware` and `isTenantAware` keep one caller's entries from being reachable by another, which some deployments want independently of correctness. The cost is entry count: a per-user key multiplies entries by your user count and lowers hit rates, so it is the wrong default for shared reference data.
 
 You can also set the template per operation, which overrides the global setting:
 
@@ -145,7 +146,7 @@ Two consequences worth planning for: `KeyMetrics` may fall under your data-prote
 
 ## Data at rest
 
-Cached values are stored **unencrypted** in whichever store you configure, for every store type including `store: 'cds'`. A cached value is a copy of data your application already holds, so the cache inherits the sensitivity of its source.
+By default cached values are stored **unencrypted** in whichever store you configure, including `store: 'cds'`. A cached value is a copy of data your application already holds, so the cache inherits the sensitivity of its source.
 
 Consequences:
 
@@ -153,7 +154,98 @@ Consequences:
 - With `store: 'redis'`, values are readable by anyone with Redis access. Use TLS and credentials, and do not share the instance across trust boundaries.
 - Cached values can outlive their source rows until their TTL expires or they are invalidated. Deleting a record does not by itself remove it from the cache — use `@cache.invalidateOnWrite` or tag-based invalidation.
 
-Avoid caching highly sensitive data, use a short TTL where you must, and prefer a store whose at-rest encryption you control.
+### Encrypting cached values
+
+Since 3.0 a cache can encrypt its values with AES-256-GCM, using a 32-byte key, base64 or hex encoded. Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+For a local trial, `encryption.key` takes the key directly:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "encryption": {
+          "key": "<32-byte key, base64 or hex>"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Supplying the key on a platform
+
+A key in `package.json` is a key in your Git history, so on a deployed landscape the configuration should carry only the intent and the platform should supply the value. Commit `enabled: true` and let the key arrive from the environment:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "caching": {
+        "impl": "cds-caching",
+        "encryption": {
+          "enabled": true,
+          "keyEnv": "CACHE_ENCRYPTION_KEY"
+        }
+      }
+    }
+  }
+}
+```
+
+This is what makes the failure mode safe. Because `enabled: true` is committed, a deployment that forgets the secret fails at startup naming the variable, instead of starting up and writing plaintext under a configuration that claims to encrypt. Three sources are supported, in this order:
+
+| Source | Use it when |
+|--------|-------------|
+| `encryption.key` | Local development and tests |
+| `encryption.keyEnv` | The platform injects secrets as environment variables — Cloud Foundry, Kyma secrets, or a Vault-style sidecar |
+| `credentials.encryptionKey` | The key arrives through a service binding |
+
+**On SAP BTP, Cloud Foundry.** Set the variable the app already reads, keeping it out of `manifest.yml`, which is usually committed:
+
+```bash
+cf set-env my-app CACHE_ENCRYPTION_KEY "$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")"
+cf restage my-app
+```
+
+Note that Cloud Foundry environment variables are readable with `cf env` by anyone holding Space Developer, and appear in `VCAP_APPLICATION`-adjacent tooling — they are configuration, not a vault. Where that is too exposed, bind a user-provided service instance or SAP Credential Store and supply the key as `encryptionKey` in its credentials:
+
+```bash
+cf create-user-provided-service cache-encryption -p '{"encryptionKey":"<32-byte key>"}'
+cf bind-service my-app cache-encryption
+```
+
+CAP merges a binding's credentials into the required service's `credentials`, so the instance must be bound under the cache's service name (or mapped to it with `vcap.name`). The key is stripped before the store sees those credentials, so it is never passed into a Redis or HANA client where a connection error could print it. A key bound this way with no `encryption` block to switch it on is refused at startup rather than ignored, since an ignored key means plaintext.
+
+The catch is that a cache has only one `credentials`, and for `store: 'redis'` or `store: 'hana'` it is already carrying the store binding. Only one instance can be mapped to a required service, so a separate instance for the key does not fit alongside one — either add `encryptionKey` to the credentials of the instance you already bind, or use `keyEnv`, which stays independent of the store. With `store: 'cds'`, where the store needs no credentials of its own, a dedicated instance works cleanly.
+
+Alternatively, CAP's own environment overrides reach the same setting without a `keyEnv` indirection, using the config path with underscores:
+
+```bash
+cf set-env my-app cds_requires_caching_encryption_key "<32-byte key>"
+```
+
+A key that is present but not 32 bytes is rejected at startup in every case, naming the command that generates a valid one.
+
+What this does and does not protect:
+
+- **Encrypted:** the cached value, with a fresh random IV per entry, so two equal values do not produce equal ciphertext. GCM authenticates as well as encrypts, so a tampered entry is rejected rather than returned.
+- **Not encrypted:** cache keys, tags and timestamps. Tag-based invalidation scans tags without reading values, and a scan that had to decrypt every entry would be far more expensive. Do not put sensitive values in tags or in custom key templates.
+- **Not protected:** anyone who can read the API can still read decrypted values, because the service decrypts on the way out. This protects the data where it sits — a database dump, a Redis instance, a backup — not against a caller you have authorized.
+
+Operational notes:
+
+- **Enabling it on a warm cache** does not invalidate anything: entries already stored are plaintext, are still returned, and are replaced with encrypted ones as they are refreshed. Flush the cache if you need them gone immediately.
+- **Rotating the key** makes existing entries unreadable. They are reported as misses and refetched, with a warning per entry, so rotation costs a cold cache rather than errors.
+- **Cost:** encryption runs on every write and decryption on every read, which eats into the latency the cache is there to save. Enable it per cache, for the ones holding data that warrants it.
+
+Where the data warrants stronger handling than this, the earlier advice still applies: avoid caching it, use a short TTL, and prefer a store whose at-rest encryption you control.
 
 ## Resource limits
 
@@ -165,4 +257,11 @@ No rate limiting is applied to the management API — CAP does not provide one. 
 
 ## Content Security Policy
 
-The dashboard loads the UI5 runtime. If you serve it through `metrics.reuse.dashboard` or the generated `cds add caching-dashboard` app and your CSP restricts script sources, allow the UI5 host you are using — for example `script-src https://ui5.sap.com` when bootstrapping from the SAP CDN.
+Since 3.0 the dashboard bootstraps the UI5 runtime from `https://ui5.sap.com` at a pinned version rather than bundling it, so a CSP that allows only same-origin scripts will block it. Either allow that host:
+
+```
+script-src 'self' https://ui5.sap.com;
+connect-src 'self' https://ui5.sap.com;
+```
+
+or serve UI5 yourself and set `metrics.ui5Url` to a same-origin path, which keeps the policy at `'self'`. See [the dashboard guide](dashboard.md#where-the-ui5-runtime-comes-from).

@@ -63,4 +63,21 @@ describe('HANA statistics build artifacts', () => {
             cds.env.requires = prevRequires;
         }
     });
+
+    it('injected index root makes the hana CSN include CachingApiService views', async () => {
+        const { indexRoot } = require('../lib/plugin-roots');
+        const pluginDir = path.join(__dirname, '..');
+        const modelPaths = ['db', indexRoot(pluginDir)];
+        // Resolve against the plugin package itself (statistics + service projections)
+        const files = cds.resolve([indexRoot(pluginDir)], { root: pluginDir });
+        expect(files && files.length).toBeGreaterThan(0);
+        const model = await cds.load(files);
+        const artifacts = cds.compile.to.hdbtable(model);
+        const names = [];
+        for (const [, key] of artifacts) {
+            names.push(key.file || `${key.name}${key.suffix || ''}`);
+        }
+        expect(names.some(f => /CachingApiService\.Caches\.hdbview$/i.test(f))).toBe(true);
+        expect(modelPaths[1]).toBe(indexRoot(pluginDir));
+    });
 });

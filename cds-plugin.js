@@ -96,47 +96,13 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     static taskDefaults = { src: cds.env.folders.db }
 
     init() {
-        this._injectPluginRootsIntoHanaTasks(this.context?.tasks || []);
-        // cds-caching is often created before the hana task; catch it when it is pushed.
-        const tasks = this.context?.tasks;
-        if (!tasks || tasks._cdsCachingRootsHooked) return;
-        const origPush = tasks.push.bind(tasks);
-        const inject = (task) => this._injectPluginRootsIntoHanaTasks([task]);
-        tasks.push = (...args) => {
-            const n = origPush(...args);
-            for (const task of args) inject(task);
-            return n;
-        };
-        tasks._cdsCachingRootsHooked = true;
+        const { ensureHanaTasksIncludePluginRoots } = require('./lib/plugin-roots');
+        if (ensureHanaTasksIncludePluginRoots(this.context?.tasks, pluginRoots)) {
+            LOG.info('Added cds-caching model roots to hana build task', { roots: pluginRoots });
+        }
     }
 
     clean() { }
-
-    /**
-     * Extend the official hana build model with cds-caching env.roots so it compiles
-     * plugin entities/projections to HDI artifacts (including CachingApiService views).
-     */
-    _injectPluginRootsIntoHanaTasks(tasks) {
-        if (!pluginRoots.length) return;
-        for (const task of tasks) {
-            if (task?.for !== 'hana') continue;
-            task.options ??= {};
-            const model = Array.isArray(task.options.model)
-                ? task.options.model
-                : (task.options.model ? [task.options.model] : []);
-            let changed = false;
-            for (const root of pluginRoots) {
-                if (!model.includes(root)) {
-                    model.push(root);
-                    changed = true;
-                }
-            }
-            if (changed) {
-                task.options.model = model;
-                LOG.info('Added cds-caching model roots to hana build task', { roots: pluginRoots });
-            }
-        }
-    }
 
     static hasTask() {
         const requires = cds.env.requires || {};

@@ -266,7 +266,7 @@ The CDS store adapter (`store: 'cds'`) uses CAP's managed database connection. N
 - **SQLite**: Table created automatically by `cds deploy`
 - **SAP HANA**: Table deployed by the HDI deployer as part of your regular `cds build` / deploy pipeline
 - **PostgreSQL**: Table created automatically by the `@cap-js/postgres` adapter
-- **Multi-tenant (MTX)**: CAP's Service Manager automatically routes each tenant to its own HDI container
+- **Multi-tenant (MTX)**: CAP's Service Manager automatically routes each tenant to its own HDI container. Metrics and `Caches` rows are written only inside a tenant context (`cds.spawn` for the persistence timer). When metrics or the Caching API are enabled, `cds build` also emits `Caches` / `Metrics` / `KeyMetrics` `.hdbtable` files (same pattern as `CacheStore`), so tenant HDI deploys include those tables even if the cache store is Redis rather than `cds`. See [MTX Hybrid Test](mtx-hybrid-test.md).
 
 ### MTA Configuration
 

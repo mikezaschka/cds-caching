@@ -182,7 +182,9 @@ Secure the API with `@requires`. Do **not** use `metrics.reuse.dashboard` on sta
 }
 ```
 
-Use `cds add caching-metrics` for the UI. Each tenant's cache and metrics live in its HDI container when using `store: cds`.
+Use `cds add caching-metrics` for the UI. Each tenant's cache and metrics live in its HDI container when using `store: cds`. In-memory counters are partitioned per tenant; persistence uses `cds.spawn({ tenant })`. On HANA, `cds build` emits statistics tables (`Caches`, `Metrics`, `KeyMetrics`) whenever metrics or the Caching API are enabled — including when the cache store is Redis/memory rather than `cds`.
+
+Manual hybrid verification against a BTP trial: [MTX Hybrid Test](mtx-hybrid-test.md).
 
 ## Deprecated v1 config (shim until v3.0)
 
@@ -199,3 +201,4 @@ Startup warnings are emitted once per deprecated key. See [Upgrading to 2.0](mig
 - [Metrics Guide](metrics-guide.md)
 - [OData API](odata-api.md)
 - [Deployment Guide](deployment-guide.md)
+- [MTX Hybrid Test](mtx-hybrid-test.md)

@@ -97,16 +97,35 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     static hasTask() {
         const requires = cds.env.requires || {};
         const dbKind = requires.db?.kind || '';
-        const isHanaDB = dbKind === 'hana' || dbKind === 'sql';
-        return Object.values(requires).some(
-            r => r.impl === 'cds-caching' && (r.store === 'hana' || (r.store === 'cds' && isHanaDB))
-        );
+        // hana-mt is used in MTX hybrid / production profiles
+        const isHanaDB = dbKind === 'hana' || dbKind === 'sql' || dbKind === 'hana-mt';
+        if (!isHanaDB) return false;
+
+        const cachingConfigs = Object.values(requires).filter(r => r?.impl === 'cds-caching');
+        if (cachingConfigs.length === 0) return false;
+
+        const { getCachingRequiresEntries, isMetricsConfigured } = require('./lib/config-normalizer');
+        const { projectImportsCachingApi } = require('./lib/plugin-roots');
+        const entries = getCachingRequiresEntries(requires);
+
+        const needsStoreArtifacts = cachingConfigs.some(r => r.store === 'hana' || r.store === 'cds');
+        const needsStatistics = entries.some(e => isMetricsConfigured(e.normalized) || e.normalized.reuse?.api || e.normalized.reuse?.dashboard)
+            || projectImportsCachingApi(cds.root, cds.env.folders?.srv || 'srv');
+
+        return needsStoreArtifacts || needsStatistics;
     }
 
     async build() {
         const requires = cds.env.requires || {};
         const compileOpts = { ...this.options(), sql_mapping: cds.env.sql.names };
         let wroteCacheStore = false;
+        let wroteStatistics = false;
+
+        const { getCachingRequiresEntries, isMetricsConfigured } = require('./lib/config-normalizer');
+        const { projectImportsCachingApi } = require('./lib/plugin-roots');
+        const entries = getCachingRequiresEntries(requires);
+        const needsStatistics = entries.some(e => isMetricsConfigured(e.normalized) || e.normalized.reuse?.api || e.normalized.reuse?.dashboard)
+            || projectImportsCachingApi(cds.root, cds.env.folders?.srv || 'srv');
 
         for (const [, config] of Object.entries(requires)) {
             if (config.impl === 'cds-caching' && config.store === 'hana') {
@@ -127,6 +146,11 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 wroteCacheStore = true;
             }
         }
+
+        if (needsStatistics && !wroteStatistics) {
+            await this._buildStatisticsHdbtables(compileOpts);
+            wroteStatistics = true;
+        }
     }
 
     /**
@@ -143,6 +167,21 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
             await this.write(content).to(path.join('src/gen', file));
         }
         LOG.info('Built cds-caching CacheStore HANA artifacts from cache-store model');
+    }
+
+    /**
+     * Same gap as CacheStore: Caches / Metrics / KeyMetrics live in env.roots and are
+     * missing from the HANA CSN. Emit them whenever metrics or the CachingApi is enabled.
+     */
+    async _buildStatisticsHdbtables(compileOpts) {
+        const modelPath = path.join(__dirname, 'db', 'statistics');
+        const model = await cds.load(modelPath, { ...compileOpts, cwd: cds.root });
+        const artifacts = cds.compile.to.hdbtable(model, compileOpts);
+        for (const [content, key] of artifacts) {
+            const file = key.file || `${key.name}${key.suffix || ''}`;
+            await this.write(content).to(path.join('src/gen', file));
+        }
+        LOG.info('Built cds-caching Caches/Metrics/KeyMetrics HANA artifacts from statistics model');
     }
 });
 

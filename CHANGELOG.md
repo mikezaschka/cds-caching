@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* **mtx:** partition in-memory metrics per tenant and persist via `cds.spawn` ([#18](https://github.com/mikezaschka/cds-caching/issues/18))
+* **mtx:** lazily seed `Caches` on any CachingApi access and on Metrics/KeyMetrics READ
+* **build:** emit Caches/Metrics/KeyMetrics `.hdbtable` artifacts when metrics or the Caching API are enabled on HANA
+
+### Documentation
+
+* add [MTX hybrid test checklist](docs/mtx-hybrid-test.md) for BTP trial verification
+
 ## [2.1.0](https://github.com/mikezaschka/cds-caching/compare/2.0.2...2.1.0) (2026-08-16)
 
 ### Features

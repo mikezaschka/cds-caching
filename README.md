@@ -32,6 +32,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Dashboard](docs/dashboard.md) | Setup and usage of the monitoring dashboard |
 | [Feature Activation](docs/feature-activation.md) | Reuse vs own: metrics, API, and dashboard activation |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
+| [MTX Hybrid Test](docs/mtx-hybrid-test.md) | Manual BTP trial checklist for issue #18 / MTX |
 | [Migration Guide](docs/migration-guide.md) | **Upgrading to 2.0** and earlier releases |
 | [Example Application](docs/example-app.md) | Sample app with caching patterns |
 | [Federation Integration](docs/federation.md) | Using cds-caching with [cds-data](https://github.com/mikezaschka/cds-data) |
@@ -282,7 +283,8 @@ cds-caching supports SAP BTP multi-tenant applications using `@sap/cds-mtxs`. Wh
 
 - Enables **tenant-aware cache keys** (`{tenant}:{hash}`)
 - **Defers database operations** to request-time (avoids startup crashes without tenant context)
-- **Guards statistics persistence** to only run within a tenant request context
+- Partitions **in-memory metrics per tenant** and persists them via `cds.spawn({ tenant })` into that tenant’s HDI
+- Lazily seeds `Caches` rows on dashboard / CachingApi access (not only `READ Caches`)
 
 ### Recommended Setup
 
@@ -293,14 +295,18 @@ cds-caching supports SAP BTP multi-tenant applications using `@sap/cds-mtxs`. Wh
       "multitenancy": true,
       "caching": {
         "impl": "cds-caching",
-        "store": "cds"
+        "store": "cds",
+        "metrics": {
+          "enabled": true,
+          "persistenceInterval": 60000
+        }
       }
     }
   }
 }
 ```
 
-With `store: 'cds'`, each tenant's cache data lives in its own HDI container — fully isolated by CAP's Service Manager.
+With `store: 'cds'`, each tenant's cache data lives in its own HDI container — fully isolated by CAP's Service Manager. On HANA, `cds build` emits `CacheStore` **and** `Caches` / `Metrics` / `KeyMetrics` `.hdbtable` artifacts when metrics or the Caching API are enabled.
 
 Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefixed keys:
 
@@ -321,7 +327,7 @@ Alternatively, use `store: 'redis'` for shared Redis with automatic tenant-prefi
 
 > `isTenantAware` is automatically set to `true` in MTX mode. Set `"isTenantAware": false` in `keyManagement` to explicitly opt out.
 
-For MTX production setup (dashboard, API authorization, `store: 'cds'`), see the [Feature Activation Guide — Multi-tenancy (MTX)](docs/feature-activation.md#multi-tenancy-mtx).
+For MTX production setup (dashboard, API authorization, `store: 'cds'`), see the [Feature Activation Guide — Multi-tenancy (MTX)](docs/feature-activation.md#multi-tenancy-mtx). To verify against a BTP trial in hybrid mode, see [MTX Hybrid Test](docs/mtx-hybrid-test.md).
 
 ## Usage Patterns
 

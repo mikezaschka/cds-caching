@@ -39,6 +39,17 @@ Enable metrics in `package.json`:
 
 Run `cds deploy` after adding the metrics block so persistence tables exist. See the [Feature Activation Guide](feature-activation.md) for reuse vs manual API activation.
 
+### Multi-tenancy (MTX)
+
+When `cds.requires.multitenancy` is set:
+
+- In-memory counters are **partitioned by tenant**. `getCurrentMetrics()` returns the active tenant’s bucket only.
+- Dashboard toggles (`setMetricsEnabled` / `setKeyMetricsEnabled`) are stored as a **per-tenant overlay** on top of the process default from `package.json`.
+- The persistence timer iterates dirty tenants and writes each bucket inside `cds.spawn({ tenant })`, so CAP routes to that tenant’s HDI. Writes are skipped when there is no tenant context.
+- On HANA, enable metrics (or the Caching API) so `cds build` emits `Caches` / `Metrics` / `KeyMetrics` `.hdbtable` artifacts into the tenant deploy — required even if the cache `store` is Redis or memory.
+
+See [MTX Hybrid Test](mtx-hybrid-test.md) for a trial/hybrid checklist.
+
 Metrics can also be enabled at runtime via the programmatic API or OData API (see below).
 
 ### Enabling Metrics Programmatically

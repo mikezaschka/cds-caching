@@ -2,8 +2,8 @@ const cds = require('@sap/cds');
 const { path } = cds.utils;
 
 describe('HANA statistics build artifacts', () => {
-    it('compiles index.cds to hdbtable + CachingApiService hdbview artifacts', async () => {
-        const modelPath = path.join(__dirname, '..', 'index');
+    it('compiles db/statistics.cds to hdbtable artifacts for Caches/Metrics/KeyMetrics', async () => {
+        const modelPath = path.join(__dirname, '..', 'db', 'statistics');
         const model = await cds.load(modelPath);
         const artifacts = cds.compile.to.hdbtable(model);
 
@@ -18,10 +18,19 @@ describe('HANA statistics build artifacts', () => {
         expect(files.some(f => /Caches\.hdbtable$/i.test(f) || f.endsWith('Caches.hdbtable'))).toBe(true);
         expect(/Metrics/i.test(joined)).toBe(true);
         expect(/KeyMetrics/i.test(joined)).toBe(true);
-        // Service projections → views CAP queries as PLUGIN_CDS_CACHING_CACHINGAPISERVICE_*
-        expect(files.some(f => /CachingApiService\.Caches\.hdbview$/i.test(f))).toBe(true);
-        expect(files.some(f => /CachingApiService\.Metrics\.hdbview$/i.test(f))).toBe(true);
-        expect(files.some(f => /CachingApiService\.KeyMetrics\.hdbview$/i.test(f))).toBe(true);
+        // Service projections are redirected via @cds.persistence.name — no HDI views needed
+        expect(files.some(f => /\.hdbview$/i.test(f))).toBe(false);
+    });
+
+    it('CachingApiService projections pin persistence to base table names', async () => {
+        const modelPath = path.join(__dirname, '..', 'index');
+        const model = await cds.load(modelPath);
+        const caches = model.definitions['plugin.cds_caching.CachingApiService.Caches'];
+        const metrics = model.definitions['plugin.cds_caching.CachingApiService.Metrics'];
+        const keyMetrics = model.definitions['plugin.cds_caching.CachingApiService.KeyMetrics'];
+        expect(caches['@cds.persistence.name']).toBe('plugin_cds_caching_Caches');
+        expect(metrics['@cds.persistence.name']).toBe('plugin_cds_caching_Metrics');
+        expect(keyMetrics['@cds.persistence.name']).toBe('plugin_cds_caching_KeyMetrics');
     });
 
     it('hasTask predicate is true for redis store + metrics on HANA db', () => {

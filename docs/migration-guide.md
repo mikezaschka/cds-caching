@@ -329,7 +329,7 @@ In 1.2.x, `isTenantAware` always defaulted to `false`. In 1.3.0, it defaults to 
 
 #### If you use the CachingApiService dashboard in an MTX app
 
-Cache configuration entries (`Caches` table) are no longer written at startup in MTX mode — they're created lazily on first API / dashboard access within a tenant context (any `CachingApi` operation that connects to a cache, or `READ` of `Caches` / `Metrics` / `KeyMetrics`). In-memory metrics are partitioned per tenant and flushed with `cds.spawn({ tenant })` so rows land in that tenant’s HDI. On HANA, enable metrics (or import the Caching API) so `cds build` emits the statistics `.hdbtable` / `.hdbview` artifacts into the tenant deploy.
+Cache configuration entries (`Caches` table) are no longer written at startup in MTX mode — they're created lazily on first API / dashboard access within a tenant context (any `CachingApi` operation that connects to a cache, or `READ` of `Caches` / `Metrics` / `KeyMetrics`). In-memory metrics are partitioned per tenant and flushed with `cds.spawn({ tenant })` so rows land in that tenant’s HDI. On HANA, enable metrics (or import the Caching API) so `cds build` emits the statistics `.hdbtable` artifacts into the tenant deploy.
 
 See also [MTX Hybrid Test](mtx-hybrid-test.md) for a BTP trial checklist.
 

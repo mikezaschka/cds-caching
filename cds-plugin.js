@@ -171,19 +171,19 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
 
     /**
      * Same gap as CacheStore: Caches / Metrics / KeyMetrics live in env.roots and are
-     * missing from the HANA CSN. Compile index.cds (statistics entities + CachingApiService
-     * projections) so we emit both the base .hdbtable files and the service .hdbview files
-     * CAP queries at runtime (e.g. plugin_cds_caching_CachingApiService_Caches).
+     * missing from the HANA CSN. Emit base .hdbtable files from statistics.cds.
+     * CachingApiService projections use @cds.persistence.name to hit those tables
+     * directly (no HDI views required).
      */
     async _buildStatisticsHdbtables(compileOpts) {
-        const modelPath = path.join(__dirname, 'index');
+        const modelPath = path.join(__dirname, 'db', 'statistics');
         const model = await cds.load(modelPath, { ...compileOpts, cwd: cds.root });
         const artifacts = cds.compile.to.hdbtable(model, compileOpts);
         for (const [content, key] of artifacts) {
             const file = key.file || `${key.name}${key.suffix || ''}`;
             await this.write(content).to(path.join('src/gen', file));
         }
-        LOG.info('Built cds-caching Caches/Metrics HANA tables and CachingApiService views from index model');
+        LOG.info('Built cds-caching Caches/Metrics/KeyMetrics HANA artifacts from statistics model');
     }
 });
 

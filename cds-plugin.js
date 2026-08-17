@@ -87,12 +87,56 @@ if (cds.add?.register) {
     cds.add.register('caching-metrics', addFacet);
 }
 
-// Register HANA build plugin to generate .hdbtable artifacts during `cds build`
+// Register HANA build plugin. Plugin CDS models live in env.roots and are not part of the
+// default HANA task model (db/srv/app only), so without help the official hana build would
+// omit CacheStore / Caches / CachingApiService views. We inject those roots into the hana
+// task so it emits the same .hdbtable / .hdbview artifacts as for app services. We still
+// emit KEYV ourselves for store:'hana', and fall back to writing artifacts if no hana task runs.
 cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.Plugin {
     static taskDefaults = { src: cds.env.folders.db }
 
-    init() { }
+    init() {
+        this._injectPluginRootsIntoHanaTasks(this.context?.tasks || []);
+        // cds-caching is often created before the hana task; catch it when it is pushed.
+        const tasks = this.context?.tasks;
+        if (!tasks || tasks._cdsCachingRootsHooked) return;
+        const origPush = tasks.push.bind(tasks);
+        const inject = (task) => this._injectPluginRootsIntoHanaTasks([task]);
+        tasks.push = (...args) => {
+            const n = origPush(...args);
+            for (const task of args) inject(task);
+            return n;
+        };
+        tasks._cdsCachingRootsHooked = true;
+    }
+
     clean() { }
+
+    /**
+     * Extend the official hana build model with cds-caching env.roots so it compiles
+     * plugin entities/projections to HDI artifacts (including CachingApiService views).
+     */
+    _injectPluginRootsIntoHanaTasks(tasks) {
+        if (!pluginRoots.length) return;
+        for (const task of tasks) {
+            if (task?.for !== 'hana') continue;
+            task.options ??= {};
+            const model = Array.isArray(task.options.model)
+                ? task.options.model
+                : (task.options.model ? [task.options.model] : []);
+            let changed = false;
+            for (const root of pluginRoots) {
+                if (!model.includes(root)) {
+                    model.push(root);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                task.options.model = model;
+                LOG.info('Added cds-caching model roots to hana build task', { roots: pluginRoots });
+            }
+        }
+    }
 
     static hasTask() {
         const requires = cds.env.requires || {};
@@ -127,6 +171,10 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
         const needsStatistics = entries.some(e => isMetricsConfigured(e.normalized) || e.normalized.reuse?.api || e.normalized.reuse?.dashboard)
             || projectImportsCachingApi(cds.root, cds.env.folders?.srv || 'srv');
 
+        // Prefer the official hana task (roots injected in init). Only fall back to
+        // writing artifacts ourselves when that task is not part of this build.
+        const hanaTaskPresent = (this.context?.tasks || []).some(t => t.for === 'hana');
+
         for (const [, config] of Object.entries(requires)) {
             if (config.impl === 'cds-caching' && config.store === 'hana') {
                 const table = config.credentials?.table || 'KEYV';
@@ -141,22 +189,20 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
                 LOG.info('Building cds-caching hana table', { table, keySize });
             }
 
-            if (config.store === 'cds' && !wroteCacheStore) {
+            if (!hanaTaskPresent && config.store === 'cds' && !wroteCacheStore) {
                 await this._buildCacheStoreHdbtables(compileOpts);
                 wroteCacheStore = true;
             }
         }
 
-        if (needsStatistics && !wroteStatistics) {
+        if (!hanaTaskPresent && needsStatistics && !wroteStatistics) {
             await this._buildStatisticsHdbtables(compileOpts);
             wroteStatistics = true;
         }
     }
 
     /**
-     * The HANA build task compiles only the app `db/` folder, so `plugin.cds_caching.CacheStore`
-     * from env.roots is not part of that CSN. Emit matching .hdbtable files here.
-     * Non-HANA DBs still get the table via normal CDS deploy / DDL.
+     * Fallback when no hana build task runs: emit CacheStore .hdbtable from cache-store.cds.
      */
     async _buildCacheStoreHdbtables(compileOpts) {
         const modelPath = path.join(__dirname, 'db', 'cache-store');
@@ -170,20 +216,18 @@ cds.build?.register?.('cds-caching', class CachingBuildPlugin extends cds.build.
     }
 
     /**
-     * Same gap as CacheStore: Caches / Metrics / KeyMetrics live in env.roots and are
-     * missing from the HANA CSN. Emit base .hdbtable files from statistics.cds.
-     * CachingApiService projections use @cds.persistence.name to hit those tables
-     * directly (no HDI views required).
+     * Fallback when no hana build task runs: compile index.cds so base tables and
+     * CachingApiService projection views are both emitted.
      */
     async _buildStatisticsHdbtables(compileOpts) {
-        const modelPath = path.join(__dirname, 'db', 'statistics');
+        const modelPath = path.join(__dirname, 'index');
         const model = await cds.load(modelPath, { ...compileOpts, cwd: cds.root });
         const artifacts = cds.compile.to.hdbtable(model, compileOpts);
         for (const [content, key] of artifacts) {
             const file = key.file || `${key.name}${key.suffix || ''}`;
             await this.write(content).to(path.join('src/gen', file));
         }
-        LOG.info('Built cds-caching Caches/Metrics/KeyMetrics HANA artifacts from statistics model');
+        LOG.info('Built cds-caching Caches/Metrics HANA tables and CachingApiService views from index model');
     }
 });
 

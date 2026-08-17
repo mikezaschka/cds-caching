@@ -17,12 +17,7 @@ context plugin.cds_caching {
 
         // Writes go through the bound actions below, never through CRUD, so that
         // config rows (metricsEnabled, config) cannot be tampered with directly.
-        //
-        // @cds.persistence.name pins SQL to the base tables. Service projections
-        // would otherwise require HDI views (…CachingApiService_Caches) that the
-        // plugin cannot reliably wire into tenant containers the way app services do.
         @readonly
-        @cds.persistence.name: 'plugin_cds_caching_Caches'
         entity Caches     as projection on plugin.cds_caching.Caches
             actions {
 
@@ -49,11 +44,9 @@ context plugin.cds_caching {
             };
 
         @readonly
-        @cds.persistence.name: 'plugin_cds_caching_Metrics'
         entity Metrics    as projection on plugin.cds_caching.Metrics;
 
         @readonly
-        @cds.persistence.name: 'plugin_cds_caching_KeyMetrics'
         entity KeyMetrics as projection on plugin.cds_caching.KeyMetrics;
 
     }

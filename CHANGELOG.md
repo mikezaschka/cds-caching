@@ -1,5 +1,39 @@
 # Changelog
 
+## [3.0.0](https://github.com/mikezaschka/cds-caching/compare/2.1.0...3.0.0) (2026-08-17)
+
+### ⚠ BREAKING CHANGES
+
+* **config:** reject removed v1 statistics and dashboard keys
+* **resilience:** Cache operations now fail after 2000ms rather than waiting
+indefinitely. A store that is slow but healthy under peak load may need a
+higher operationTimeout, and operationTimeout: 0 restores the old unbounded
+behavior.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+* **dashboard:** bootstrap UI5 from a CDN instead of bundling it
+* **keys:** hash cache keys and tags with SHA-256
+* **keys:** derive cache keys from the effective query
+
+### Features
+
+* **dashboard:** bootstrap UI5 from a CDN instead of bundling it ([1803e23](https://github.com/mikezaschka/cds-caching/commit/1803e23fc6052fdf1f0edcdf619fb5b2a57a75e0)), closes [#29](https://github.com/mikezaschka/cds-caching/issues/29)
+* **encryption:** optionally encrypt cached values at rest ([9c73616](https://github.com/mikezaschka/cds-caching/commit/9c73616123727125191fdd8cc6391a32d49bd375))
+* **keys:** hash cache keys and tags with SHA-256 ([0fbe498](https://github.com/mikezaschka/cds-caching/commit/0fbe4983d7748992c11272c9717ff3b15113dd21))
+
+### Bug Fixes
+
+* **build:** emit CachingApiService hdbviews for HANA OData reads ([1e5e004](https://github.com/mikezaschka/cds-caching/commit/1e5e004e8dfaf72e36f406fd7c5b85d96bee0d4f))
+* **build:** emit CachingApiService views via official HANA build ([95b7fab](https://github.com/mikezaschka/cds-caching/commit/95b7fab7af40a8b535a0eed416c7aaaee8a47274))
+* **config:** reject removed v1 statistics and dashboard keys ([9540454](https://github.com/mikezaschka/cds-caching/commit/9540454943c74eab1bb22a42ed38c09281c4e814))
+* **encryption:** make the documented ways of supplying a key actually work ([6b12ffe](https://github.com/mikezaschka/cds-caching/commit/6b12ffed87eeb304c1f30d4930c1cc44c90ece38))
+* **keys:** derive cache keys from the effective query ([0275f96](https://github.com/mikezaschka/cds-caching/commit/0275f96735b791f7292c281944bd0af71ccd3106))
+* **mtx:** complete tenant metrics, HANA stats tables, and lazy Caches seed ([a413e17](https://github.com/mikezaschka/cds-caching/commit/a413e1723b1b8b4ec89fdeb3427b5abbf77fe2fb)), closes [#18](https://github.com/mikezaschka/cds-caching/issues/18)
+* **mtx:** map CachingApiService OData reads to base HANA tables ([9dfd053](https://github.com/mikezaschka/cds-caching/commit/9dfd0534668665a298c568d402f94ee0d66595ef))
+* **resilience:** bound cache operations so an unreachable store cannot stall requests ([4b7d4ed](https://github.com/mikezaschka/cds-caching/commit/4b7d4ed0366b7fb6973fab2c2da30fb5fdbedee1))
+* **tags:** use the bare content hash in CQL tag templates ([3b46949](https://github.com/mikezaschka/cds-caching/commit/3b4694938aaeea5d875f42c599523933f1b30ea7))
+* update npm badge link in README.md ([1b76afe](https://github.com/mikezaschka/cds-caching/commit/1b76afe1e0ee0070dd3807099a01557406b68e6c))
+
 ## Unreleased
 
 ### Breaking Changes

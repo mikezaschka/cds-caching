@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const { expect } = cds.test().in(__dirname + '/app')
 const { PREFIX } = require('../lib/support/valueEncryption')
+const { describeFromCds } = require('./helpers/cds-version')
 
 describe('encrypted cache at rest', () => {
 
@@ -100,7 +101,10 @@ describe('encrypted cache at rest', () => {
         expect(await cache.has('secret')).to.be.true
     })
 
-    describe('with the cds store, where rows are readable by anyone with database access', () => {
+    // Gated like the rest of the cds-store coverage: on cds 8 a service-level write
+    // fails inside the db service for any entity, the app's own included, which is
+    // also why the test app seeds with physical INSERTs.
+    describeFromCds(9, 'with the cds store, where rows are readable by anyone with database access', () => {
 
         let cdsCache
 

@@ -186,14 +186,14 @@ Use `cds add caching-metrics` for the UI. Each tenant's cache and metrics live i
 
 Manual hybrid verification against a BTP trial: [MTX Hybrid Test](mtx-hybrid-test.md).
 
-## Deprecated v1 config (shim until v3.0)
+## Removed in 3.0: v1 `statistics` / `dashboard` keys
 
-| v1 | v2 equivalent |
-|----|---------------|
+| Removed | Use instead |
+|---------|-------------|
 | `statistics: { … }` | `metrics: { … }` |
 | `dashboard: true` | `metrics.reuse.dashboard: true` (+ `reuse.api: true`) |
 
-Startup warnings are emitted once per deprecated key. See [Upgrading to 2.0](migration-guide.md#upgrading-to-20).
+Leaving the old keys in config causes startup to fail with a message that points here. See [Upgrading to 3.0](migration-guide.md#upgrading-to-30).
 
 ## Related documentation
 

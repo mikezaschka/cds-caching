@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+* **config:** reject removed v1 keys `statistics` and `dashboard` at startup (use `metrics` / `metrics.reuse.*`)
+
 ### Features
 
 * **mtx:** partition in-memory metrics per tenant and persist via `cds.spawn` ([#18](https://github.com/mikezaschka/cds-caching/issues/18))

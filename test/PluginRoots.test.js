@@ -66,8 +66,10 @@ describe('resolvePluginRoots', () => {
         expect(warnings.some(w => w.includes('metrics.reuse'))).toBe(true)
     })
 
-    it('maps v1 dashboard:true via normalizer to reuse dashboard', () => {
-        const normalized = normalizeCachingConfig({ dashboard: true })
+    it('maps metrics.reuse.dashboard to reuse dashboard via normalizer', () => {
+        const normalized = normalizeCachingConfig({
+            metrics: { reuse: { dashboard: true } },
+        })
         const { roots, reuseDashboard } = resolvePluginRoots({
             pluginDir,
             projectRoot: '/tmp/no-srv',

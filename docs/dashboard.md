@@ -62,7 +62,7 @@ With these flags the plugin automatically:
 
 Use **either** `metrics.reuse.dashboard` **or** `cds add caching-metrics`, not both. See [Feature Activation](feature-activation.md).
 
-> **Deprecated:** `dashboard: true` and `statistics` are still honored, with a one-time startup warning — migrate to `metrics` / `metrics.reuse` when convenient.
+> **Removed in 3.0:** `dashboard: true` and `statistics` are no longer accepted. Use `metrics` / `metrics.reuse` — see [Upgrading to 3.0](migration-guide.md#upgrading-to-30).
 
 ### Where the UI5 runtime comes from
 

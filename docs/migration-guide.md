@@ -2,63 +2,37 @@
 
 ## Upgrading to 3.0
 
-Version 3.0 changes how cache keys are derived. Every key differs from 2.x, so **read the flush step below before deploying** — otherwise old entries linger in persistent stores indefinitely.
+Cache keys and tags change shape in 3.0. **Flush persistent stores after deploy** or 2.x entries linger forever under the default TTL of `0`.
 
-### Breaking: keys are derived from the effective query
-
-Read-through keys previously came from the HTTP URL plus request metadata, and the CQN was excluded whenever the URL carried a query string. A `where` clause contributed by `@restrict` or by a custom handler lives only in the CQN, so two users reading the same URL derived the same key and the second was served the first one's rows. The query now always contributes, canonicalized so that clauses on the prototype chain are seen and property ordering cannot change a key.
-
-What this means for you:
-
-- **Correctness improves without configuration.** Reads filtered per user, per header, or by any rule that reaches the query now derive distinct keys even with `isUserAware` off.
-- **`isUserAware` is no longer the safety net.** It remains useful where a response varies per user without the query varying — a handler that filters the result in JavaScript — and for deliberate partitioning. It stays off by default, because turning it on multiplies entry count by user count and is wrong for shared reference data.
-- **Cache entries start cold.** Expect a burst of misses on first deployment.
-
-### Breaking: keys and tags are hashed with SHA-256
-
-MD5 has been replaced. Nothing exploitable followed from MD5 once the management API required authentication, but it is flagged by security scanners and unavailable on FIPS-enforcing Node builds. Keys and tag hashes moved together, so tag-based invalidation stays consistent.
-
-Keys grow from 32 to 64 hex characters plus any template prefix. The `CacheStore` key column holds 900 characters, so no schema change is needed. If you configured a HANA `KEYV` table with a custom `keySize`, confirm it leaves room for your templates.
-
-If you assert on cache keys in your own tests, or store keys outside the cache, those values change.
-
-### Behavior change: the dashboard loads UI5 from a CDN
-
-The plugin shipped a self-contained UI5 build, which was over 99% of a 196 MB package and was copied a second time into every project that ran `cds add caching-metrics`. The dashboard now bootstraps UI5 from `https://ui5.sap.com` at a pinned version, and the package is under 1 MB.
-
-Two things to check:
-
-- **Network and CSP.** Browsers must reach `https://ui5.sap.com`. If a Content Security Policy restricts script sources, allow that host — see [Content Security Policy](security.md#content-security-policy).
-- **Air-gapped landscapes.** Set `metrics.ui5Url` to a UI5 runtime you serve yourself, as an absolute `https://` URL or a same-origin path. See [Where the UI5 runtime comes from](dashboard.md#where-the-ui5-runtime-comes-from).
-
-Projects that ran `cds add caching-metrics` should re-run it to refresh `app/caching-dashboard/webapp/`. Nothing else changes: the route, the auth guard and the API are the same.
-
-### New: optional encryption of cached values
-
-A cache can now encrypt its values at rest with AES-256-GCM, for stores whose operators or backups sit outside your trust boundary. It is off by default and additive — nothing to do unless you want it. See [Encrypting cached values](security.md#encrypting-cached-values).
-
-### Behavior change: cache operations have a time bound
-
-Cache operations now fail after `operationTimeout` (2000 ms by default) instead of waiting indefinitely. Before, an unreachable store could stall the request path: commands were queued until the connection returned, so requests hung rather than falling back to the origin. Two seconds is generous enough that only a genuinely stuck store hits it, and an exceeded bound is an ordinary cache failure — read-through goes to the origin, and basic operations stay silent unless `throwOnErrors: true`.
-
-Reconnection is unaffected, so a cache recovers on its own once its store is back. If you set `throwOnErrors: true` expecting reconnection to be disabled, note that it was never actually switched off. Raise `operationTimeout` for a store that is slow but healthy under peak load, lower it if two seconds exceeds your latency budget, or set it to `0` to restore the old unbounded behavior. See [Slow and unreachable stores](programmatic-api.md#slow-and-unreachable-stores).
-
-### Not removed: the deprecated `statistics` and `dashboard` keys
-
-Earlier releases announced that these v1 config keys would be removed in 3.0. They are not. They still normalize to `metrics` and `metrics.reuse.*` with a one-time startup warning, so no configuration change is required to move to 3.0.
-
-Keeping them costs almost nothing, and removing them would have meant a silent failure mode: a leftover `statistics` block would simply stop enabling metrics, and `dashboard: true` would stop serving the UI, with nothing to indicate why. Migrating remains recommended — see [Deprecation shims](#deprecation-shims-v1-config-keys).
-
-### Required: flush persistent caches on upgrade
-
-Entries written by 2.x are unreachable under the new derivation. With the default TTL of `0` they never expire, so they occupy their store forever unless removed. Flush each cache once after deploying:
+### Required: flush persistent caches
 
 ```javascript
 const cache = await cds.connect.to('caching')
 await cache.clear()
 ```
 
-Memory stores need nothing, since they start empty. For `store: 'cds'`, Redis or HANA, do this as part of the release. `KeyMetrics` rows recorded against old keys remain readable as history; new traffic records new keys.
+Do this once per cache for `store: 'cds'`, Redis, or HANA. Memory stores start empty. Existing `KeyMetrics` rows for old keys remain as history; new traffic records new keys.
+
+### What else changes
+
+| Change | What to do |
+|--------|------------|
+| Keys include the effective query and use **SHA-256** (was MD5) | Expect cold caches after the flush. Update tests that assert on key strings. Default `CacheStore` length is fine; if you set a custom HANA `KEYV` `keySize`, confirm it still fits your templates. |
+| Dashboard UI5 loads from `https://ui5.sap.com` | Allow that host in CSP, or set `metrics.ui5Url` to a runtime you serve. Re-run `cds add caching-metrics` if you own `app/caching-dashboard/`. See [Dashboard](dashboard.md#where-the-ui5-runtime-comes-from). |
+| `operationTimeout` defaults to **2000 ms** | Raise it for a slow-but-healthy store, lower it for a tighter latency budget, or set `0` for the old unbounded wait. See [Slow and unreachable stores](programmatic-api.md#slow-and-unreachable-stores). |
+
+### Required: replace v1 `statistics` / `dashboard` keys
+
+These keys no longer work. Startup throws if they are present:
+
+| Removed | Use instead |
+|---------|-------------|
+| `"statistics": { … }` | `"metrics": { … }` |
+| `"dashboard": true` | `"metrics": { "reuse": { "api": true, "dashboard": true } }` |
+
+### Optional
+
+- **Value encryption** is off by default — enable only if you want it ([Encrypting cached values](security.md#encrypting-cached-values)).
 
 ## Upgrading to 2.1
 
@@ -214,18 +188,15 @@ Do **not** set `metrics.reuse.dashboard` when deploying to the HTML5 Application
 
 Do not combine reuse flags with their manual equivalent for the same concern (e.g. `metrics.reuse.api` + `using … index.cds` causes duplicate `CachingApiService`). See [Feature Activation](feature-activation.md).
 
-### Deprecation shims (v1 config keys)
+### Deprecation shims (removed in 3.0)
 
-v1 config still works with **one-time startup warnings**:
+Through 2.x, `statistics` and `dashboard: true` still worked with a startup warning. **3.0 removes those shims** and rejects the keys at startup — see [Upgrading to 3.0](#upgrading-to-30).
 
-- `statistics` → normalized to `metrics`
-- `dashboard: true` → normalized to `metrics.reuse.dashboard` + `metrics.reuse.api`
-
-These shims are still in place in 3.0, so migrating is a tidiness exercise rather than an upgrade blocker. The new shape is worth adopting because it separates concerns the old keys could not: `dashboard: true` always enabled the OData API together with the UI, while `metrics.reuse.api` lets you serve the API from the package and host the UI yourself.
+The `metrics` / `metrics.reuse.*` shape is required because `dashboard: true` could not express serving the API from the package while hosting the UI yourself.
 
 ### Upgrade checklist
 
-1. Update `package.json`: replace `statistics` with `metrics`; replace `dashboard: true` with `metrics.reuse.*`.
+1. Update `package.json`: replace `statistics` with `metrics`; replace `dashboard: true` with `metrics.reuse.*` (required before 3.0).
 2. Run `cds deploy` if you use database-backed metrics or `store: cds`.
 3. Remove redundant `using … index.cds` if you enable `metrics.reuse.api`.
 4. Remove `metrics.reuse.dashboard` if you use `cds add caching-metrics` (or the deprecated `cds add caching-dashboard`).

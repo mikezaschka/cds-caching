@@ -33,7 +33,7 @@ Please also read the introduction blog post: [Boosting performance in SAP Cloud 
 | [Feature Activation](docs/feature-activation.md) | Reuse vs own: metrics, API, and dashboard activation |
 | [Deployment Guide](docs/deployment-guide.md) | SAP BTP deployment for Redis, PostgreSQL, HANA, CDS |
 | [MTX Hybrid Test](docs/mtx-hybrid-test.md) | Manual BTP trial checklist for issue #18 / MTX |
-| [Migration Guide](docs/migration-guide.md) | **Upgrading to 2.0** and earlier releases |
+| [Migration Guide](docs/migration-guide.md) | **Upgrading to 3.0** and earlier releases |
 | [Example Application](docs/example-app.md) | Sample app with caching patterns |
 | [Federation Integration](docs/federation.md) | Using cds-caching with [cds-data](https://github.com/mikezaschka/cds-data) |
 
@@ -71,7 +71,7 @@ npm install cds-caching
 
 This uses the in-memory store — no additional setup needed for development.
 
-> **Upgrading from 1.x?** See [Upgrading to 2.0](docs/migration-guide.md#upgrading-to-20) — monitoring config now uses `metrics` with optional `metrics.reuse` instead of `statistics` / `dashboard: true`.
+> **Upgrading to 3.0?** See [Upgrading to 3.0](docs/migration-guide.md#upgrading-to-30) — flush persistent caches after deploy; keys and tags change shape. From 1.x, also see [Upgrading to 2.0](docs/migration-guide.md#upgrading-to-20) for the `metrics` / `metrics.reuse` config shape.
 
 ### Data Model
 
@@ -195,8 +195,7 @@ Annotations are **protocol-agnostic**: cds-caching binds at the CAP service-hand
 | `encryption.key` | none | 32-byte key (base64 or hex) enabling AES-256-GCM encryption of cached values ([docs](docs/security.md#encrypting-cached-values)) |
 | `encryption.enabled` | `false` | Require encryption without committing the key; startup fails if no key is supplied |
 | `encryption.keyEnv` | none | Name of the environment variable holding the key, for platform-supplied secrets ([docs](docs/security.md#supplying-the-key-on-a-platform)) |
-| `statistics` | — | **Deprecated** — use `metrics`; still honored, with a startup warning |
-| `dashboard` | — | **Deprecated** — use `metrics.reuse.dashboard`; still honored, with a startup warning |
+| `statistics` / `dashboard` | — | **Removed in 3.0** — use `metrics` / `metrics.reuse` ([migration](docs/migration-guide.md#upgrading-to-30)) |
 | `keyManagement.isTenantAware` | `false` (auto `true` in MTX) | Include tenant in cache keys |
 | `keyManagement.isUserAware` | `false` | Include user in cache keys |
 | `keyManagement.isLocaleAware` | `false` | Include locale in cache keys |

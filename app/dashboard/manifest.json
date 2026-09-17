@@ -15,7 +15,7 @@
 		},
 		"dataSources": {
 			"caching": {
-				"uri": "/odata/v4/caching/",
+				"uri": "/odata/v4/caching-api/",
 				"type": "OData",
 				"settings": {
 					"odataVersion": "4.0"
@@ -75,11 +75,11 @@
 			},
 			"": {
 				"type": "sap.ui.model.odata.v4.ODataModel",
+				"dataSource": "caching",
 				"settings": {
-					"serviceUrl": "/odata/v4/caching-api/",
-					"operationMode": "Server",
-					"autoExpandSelect": true,
-					"groupId": "$auto"
+				"operationMode": "Server",
+				"autoExpandSelect": true,
+				"groupId": "$auto"
 				}
 			}
 		},

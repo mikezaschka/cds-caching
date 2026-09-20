@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.0](https://github.com/mikezaschka/cds-caching/compare/3.0.1...3.1.0) (2026-09-20)
+
+### Features
+
+* **metrics:** add opt-in TagMetrics for per-tag hit ratios ([f9922c5](https://github.com/mikezaschka/cds-caching/commit/f9922c5e34857948c568f85163d9b251a60e0c58))
+
 ## [Unreleased]
 
 ### Features

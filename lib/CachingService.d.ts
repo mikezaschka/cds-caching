@@ -58,6 +58,15 @@ export interface CacheKeyMetrics {
   lastAccessed: Date;
 }
 
+export interface CacheTagMetrics {
+  tag: string;
+  hits: number;
+  misses: number;
+  totalRequests: number;
+  hitRatio: number;
+  lastAccess: Date;
+}
+
 export interface CachableFunctionOptions {
   '@cache.ttl'?: number;
   '@cache.key'?: string | object;
@@ -281,6 +290,16 @@ export declare class CachingService extends Service {
   getCurrentKeyMetrics(): Promise<CacheKeyMetrics>;
 
   /**
+   * Get tag-specific metrics for a specific period
+   */
+  getTagMetrics(tag: string, from: Date, to: Date): Promise<CacheTagMetrics>;
+
+  /**
+   * Get current tag metrics
+   */
+  getCurrentTagMetrics(): Promise<Map<string, CacheTagMetrics> | null>;
+
+  /**
    * Clear all metrics
    */
   clearMetrics(): Promise<void>;
@@ -291,6 +310,11 @@ export declare class CachingService extends Service {
   clearKeyMetrics(): Promise<void>;
 
   /**
+   * Clear tag metrics
+   */
+  clearTagMetrics(): Promise<void>;
+
+  /**
    * Enable or disable statistics at runtime
    */
   setMetricsEnabled(enabled: boolean): Promise<void>;
@@ -299,6 +323,11 @@ export declare class CachingService extends Service {
    * Enable or disable key tracking at runtime
    */
   setKeyMetricsEnabled(enabled: boolean): Promise<void>;
+
+  /**
+   * Enable or disable tag tracking at runtime
+   */
+  setTagMetricsEnabled(enabled: boolean): Promise<void>;
 
   /**
    * Persist metrics to database

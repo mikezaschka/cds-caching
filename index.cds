@@ -39,8 +39,10 @@ context plugin.cds_caching {
                 action   clear()                                               returns Boolean;
                 action   clearMetrics()                                        returns Boolean;
                 action   clearKeyMetrics()                                     returns Boolean;
+                action   clearTagMetrics()                                     returns Boolean;
                 action   setMetricsEnabled(enabled : Boolean)                  returns Boolean;
                 action   setKeyMetricsEnabled(enabled : Boolean)               returns Boolean;
+                action   setTagMetricsEnabled(enabled : Boolean)               returns Boolean;
             };
 
         @readonly
@@ -48,6 +50,9 @@ context plugin.cds_caching {
 
         @readonly
         entity KeyMetrics as projection on plugin.cds_caching.KeyMetrics;
+
+        @readonly
+        entity TagMetrics as projection on plugin.cds_caching.TagMetrics;
 
     }
 }

@@ -24,6 +24,7 @@ describe('Model Auto-Loading', () => {
             expect(entity.elements).to.have.property('name');
             expect(entity.elements).to.have.property('metricsEnabled');
             expect(entity.elements).to.have.property('keyMetricsEnabled');
+            expect(entity.elements).to.have.property('tagMetricsEnabled');
         })
 
         it('should include Metrics entity in cds.model', () => {
@@ -43,11 +44,21 @@ describe('Model Auto-Loading', () => {
             expect(entity.elements).to.have.property('operationType');
         })
 
+        it('should include TagMetrics entity in cds.model', () => {
+            expect(cds.model.definitions).to.have.property('plugin.cds_caching.TagMetrics');
+            const entity = cds.model.definitions['plugin.cds_caching.TagMetrics'];
+            expect(entity.kind).to.equal('entity');
+            expect(entity.elements).to.have.property('tag');
+            expect(entity.elements).to.have.property('hits');
+            expect(entity.elements).to.have.property('hitRatio');
+        })
+
         it('should be resolvable via cds.entities', () => {
             const entities = cds.entities('plugin.cds_caching');
             expect(entities).to.have.property('Caches');
             expect(entities).to.have.property('Metrics');
             expect(entities).to.have.property('KeyMetrics');
+            expect(entities).to.have.property('TagMetrics');
         })
     })
 

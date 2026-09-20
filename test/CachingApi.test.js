@@ -371,6 +371,33 @@ describeFromCds(9, 'Caching API Service', () => {
             })
         })
 
+        describe('setTagMetricsEnabled', () => {
+
+            it("should enable tag metrics", async () => {
+                const { data } = await POST('/odata/v4/caching-api/Caches(\'caching\')/setTagMetricsEnabled', {
+                    enabled: true
+                });
+
+                expect(data.value).to.be.true;
+
+                const config = await cache.getRuntimeConfiguration();
+                expect(config.tagMetricsEnabled).to.be.true;
+            })
+
+            it("should disable tag metrics", async () => {
+                await cache.setTagMetricsEnabled(true);
+
+                const { data } = await POST('/odata/v4/caching-api/Caches(\'caching\')/setTagMetricsEnabled', {
+                    enabled: false
+                });
+
+                expect(data.value).to.be.true;
+
+                const config = await cache.getRuntimeConfiguration();
+                expect(config.tagMetricsEnabled).to.be.false;
+            })
+        })
+
         describe('clearMetrics', () => {
 
             it("should clear all metrics", async () => {
@@ -417,6 +444,24 @@ describeFromCds(9, 'Caching API Service', () => {
                 // Verify key metrics are cleared
                 keyMetrics = await cache.getCurrentKeyMetrics();
                 expect(keyMetrics.size).to.equal(0);
+            })
+        })
+
+        describe('clearTagMetrics', () => {
+
+            it("should clear tag metrics", async () => {
+                await cache.setTagMetricsEnabled(true);
+                await cache.set("test:tag:metrics", "value", { tags: [{ value: "federation:ClearMe" }] });
+                await cache.get("test:tag:metrics");
+
+                let tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics.size).to.be.greaterThan(0);
+
+                const { data } = await POST('/odata/v4/caching-api/Caches(\'caching\')/clearTagMetrics');
+                expect(data.value).to.be.true;
+
+                tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics.size).to.equal(0);
             })
         })
     })
@@ -535,6 +580,24 @@ describeFromCds(9, 'Caching API Service', () => {
                     expect(keyMetric).to.have.property('operation');
                     expect(keyMetric).to.have.property('metadata');
                 }
+            })
+        })
+
+        describe('TagMetrics Entity', () => {
+
+            it("should return tag metrics data filterable by exact tag", async () => {
+                await cache.setTagMetricsEnabled(true);
+                const tag = "federation:ODataAirports";
+                await cache.set("test:tag:odata", "value", { tags: [{ value: tag }] });
+                await cache.get("test:tag:odata");
+                await cache.persistMetrics();
+
+                const { data } = await GET(`/odata/v4/caching-api/TagMetrics?$filter=tag eq '${tag}' and cache eq 'caching'`);
+
+                expect(data.value).to.be.an('array');
+                expect(data.value.length).to.be.greaterThan(0);
+                expect(data.value[0].tag).to.equal(tag);
+                expect(data.value[0].nativeSets).to.be.greaterThan(0);
             })
         })
     })

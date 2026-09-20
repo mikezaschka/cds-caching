@@ -2,6 +2,16 @@
 
 ## [3.0.1](https://github.com/mikezaschka/cds-caching/compare/3.0.0...3.0.1) (2026-09-20)
 
+### Bug Fixes
+
+* **dashboard:** tidy the reuse dashboard manifest ([f993b89](https://github.com/mikezaschka/cds-caching/commit/f993b89882b2158e6b0f5c9354c16c39e6be2e2c)), closes [#32](https://github.com/mikezaschka/cds-caching/issues/32)
+* **metrics:** sanitize `Infinity` values before writing KeyMetrics ([a2c54fb](https://github.com/mikezaschka/cds-caching/commit/a2c54fb81e0ed3591fcf6456d3964b5b87773951)), closes [#33](https://github.com/mikezaschka/cds-caching/issues/33)
+* **metrics:** guard against `Infinity` when `uptimeMs` is 0 in hourly stats ([e6c2e6d](https://github.com/mikezaschka/cds-caching/commit/e6c2e6d86bd1b2d23d653c813c6ed344ad36c07c)), closes [#35](https://github.com/mikezaschka/cds-caching/issues/35)
+
+### Documentation
+
+* point the MTX hybrid checklist at cds-caching 3.0 from npm ([ffafafe](https://github.com/mikezaschka/cds-caching/commit/ffafafec72fac7d6f3a112bcd4d22aa1ea837037))
+
 ## [3.0.0](https://github.com/mikezaschka/cds-caching/compare/2.1.0...3.0.0) (2026-08-17)
 
 ### ⚠ BREAKING CHANGES
@@ -35,14 +45,6 @@ Co-authored-by: Cursor <cursoragent@cursor.com>
 * **resilience:** bound cache operations so an unreachable store cannot stall requests ([4b7d4ed](https://github.com/mikezaschka/cds-caching/commit/4b7d4ed0366b7fb6973fab2c2da30fb5fdbedee1))
 * **tags:** use the bare content hash in CQL tag templates ([3b46949](https://github.com/mikezaschka/cds-caching/commit/3b4694938aaeea5d875f42c599523933f1b30ea7))
 * update npm badge link in README.md ([1b76afe](https://github.com/mikezaschka/cds-caching/commit/1b76afe1e0ee0070dd3807099a01557406b68e6c))
-
-## Unreleased
-
-### Bug Fixes
-
-* **dashboard:** tidy the reuse dashboard manifest ([#32](https://github.com/mikezaschka/cds-caching/issues/32))
-* **metrics:** sanitize `Infinity` values before writing KeyMetrics ([#33](https://github.com/mikezaschka/cds-caching/issues/33))
-* **metrics:** guard against `Infinity` when `uptimeMs` is 0 in hourly stats ([#35](https://github.com/mikezaschka/cds-caching/issues/35))
 
 ## [2.1.0](https://github.com/mikezaschka/cds-caching/compare/2.0.2...2.1.0) (2026-08-16)
 

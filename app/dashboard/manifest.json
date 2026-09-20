@@ -39,7 +39,7 @@
 			"id": "app"
 		},
 		"dependencies": {
-			"minUI5Version": "1.136.1",
+			"minUI5Version": "1.148.10",
 			"libs": {
 				"sap.ui.core": {},
 				"sap.m": {},
@@ -77,9 +77,9 @@
 				"type": "sap.ui.model.odata.v4.ODataModel",
 				"dataSource": "caching",
 				"settings": {
-				"operationMode": "Server",
-				"autoExpandSelect": true,
-				"groupId": "$auto"
+					"operationMode": "Server",
+					"autoExpandSelect": true,
+					"groupId": "$auto"
 				}
 			}
 		},

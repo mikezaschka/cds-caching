@@ -1,7 +1,10 @@
 const { existsSync, readFileSync, readdirSync } = require('fs')
 const { join } = require('path')
+const cds = require('@sap/cds')
 
 const dashboardRoot = join(__dirname, '..', 'app', 'dashboard')
+const dashboardSrcRoot = join(__dirname, '..', 'app', 'dashboard-src')
+const SERVICE = 'plugin.cds_caching.CachingApiService'
 
 /** Files the dashboard needs in order to start. */
 const REQUIRED_ASSETS = [
@@ -12,6 +15,19 @@ const REQUIRED_ASSETS = [
 	'controller/App.controller.js',
 	'i18n/i18n.properties',
 ]
+
+function assertManifestPointsAtApi(manifestPath) {
+	const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+	const uri = manifest?.['sap.app']?.dataSources?.caching?.uri
+	const model = manifest?.['sap.ui5']?.models?.['']
+
+	expect(uri).toBeTruthy()
+	expect(uri.replace(/\/?$/, '/')).toBe('/odata/v4/caching-api/')
+	expect(model).toMatchObject({ dataSource: 'caching' })
+	expect(model.settings?.serviceUrl).toBeUndefined()
+
+	return uri.replace(/\/?$/, '/')
+}
 
 describe('pre-built dashboard bundle', () => {
 
@@ -39,5 +55,18 @@ describe('pre-built dashboard bundle', () => {
 			.reduce((total, entry) => total + (entry.isDirectory() ? count(join(dir, entry.name)) : 1), 0)
 
 		expect(count(dashboardRoot)).toBeLessThan(200)
+	})
+
+	it('points the OData data source at CachingApiService', async () => {
+		const uri = assertManifestPointsAtApi(join(dashboardRoot, 'manifest.json'))
+		assertManifestPointsAtApi(join(dashboardSrcRoot, 'manifest.json'))
+
+		const model = await cds.load(join(__dirname, '..', 'index.cds'))
+		const service = model.definitions[SERVICE]
+		expect(service).toBeTruthy()
+
+		// Resolve the path CAP would actually serve (strips Service, kebab-cases).
+		const served = cds.service.protocols.path4({ definition: service, name: SERVICE })
+		expect(uri).toBe(served.endsWith('/') ? served : `${served}/`)
 	})
 })

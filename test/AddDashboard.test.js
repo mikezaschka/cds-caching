@@ -71,6 +71,26 @@ describe('cds add caching-dashboard', () => {
 		)
 	})
 
+	it('copies a dashboard whose manifest targets /odata/v4/caching-api/', async () => {
+		await runWithOptions()
+		const src = copySpy.mock.calls[0][0]
+		const manifest = JSON.parse(readFileSync(join(src, 'manifest.json'), 'utf8'))
+		expect(manifest['sap.app'].dataSources.caching.uri.replace(/\/?$/, '/')).toBe(
+			'/odata/v4/caching-api/',
+		)
+		expect(manifest['sap.ui5'].models[''].dataSource).toBe('caching')
+	})
+
+	it('copies source whose manifest targets /odata/v4/caching-api/ with --source', async () => {
+		await runWithOptions({ source: true })
+		const src = copySpy.mock.calls[0][0]
+		const manifest = JSON.parse(readFileSync(join(src, 'manifest.json'), 'utf8'))
+		expect(manifest['sap.app'].dataSources.caching.uri.replace(/\/?$/, '/')).toBe(
+			'/odata/v4/caching-api/',
+		)
+		expect(manifest['sap.ui5'].models[''].dataSource).toBe('caching')
+	})
+
 	it('writes built scaffold files by default', async () => {
 		await runWithOptions()
 

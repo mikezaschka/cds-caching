@@ -122,7 +122,7 @@ export default class CacheStatisticsService {
 
     constructor(model?: ODataModel) {
         this.model = model || new ODataModel({
-            serviceUrl: "/odata/v4/caching/",
+            serviceUrl: "/odata/v4/caching-api/",
             autoExpandSelect: true,
             groupId: "$auto"
         });

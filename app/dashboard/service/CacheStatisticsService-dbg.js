@@ -10,7 +10,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/model/odata/v4/ODataModel", "sap/ui/m
   class CacheStatisticsService {
     constructor(model) {
       this.model = model || new ODataModel({
-        serviceUrl: "/odata/v4/caching/",
+        serviceUrl: "/odata/v4/caching-api/",
         autoExpandSelect: true,
         groupId: "$auto"
       });

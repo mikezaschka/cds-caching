@@ -25,12 +25,13 @@ context plugin.cds_caching {
         @readonly
         entity Caches     as projection on plugin.cds_caching.Caches {
             *,
-            virtual metricsEnabledConfig       : Boolean,
-            virtual metricsEnabledOverride     : Boolean,
-            virtual keyMetricsEnabledConfig    : Boolean,
-            virtual keyMetricsEnabledOverride  : Boolean,
-            virtual tagMetricsEnabledConfig    : Boolean,
-            virtual tagMetricsEnabledOverride  : Boolean
+            // CDS 8 needs `virtual null as name` (not `virtual name : Type`).
+            virtual null as metricsEnabledConfig       : Boolean,
+            virtual null as metricsEnabledOverride     : Boolean,
+            virtual null as keyMetricsEnabledConfig    : Boolean,
+            virtual null as keyMetricsEnabledOverride  : Boolean,
+            virtual null as tagMetricsEnabledConfig    : Boolean,
+            virtual null as tagMetricsEnabledOverride  : Boolean
         }
             actions {
 

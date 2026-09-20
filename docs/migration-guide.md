@@ -18,6 +18,7 @@ Do this once per cache for `store: 'cds'`, Redis, or HANA. Memory stores start e
 | Change | What to do |
 |--------|------------|
 | Keys include the effective query and use **SHA-256** (was MD5) | Expect cold caches after the flush. Update tests that assert on key strings. Default `CacheStore` length is fine; if you set a custom HANA `KEYV` `keySize`, confirm it still fits your templates. |
+| Tag **templates** that use `{hash}` now embed SHA-256 (was MD5) | Flush stores so hashed tag strings match new entries. **Static tags are unchanged:** `{ value: 'federation:Entity' }`, plain string tags, and `deleteByTag('federation:Entity')` keep the same public contract as 1.x/2.x. |
 | Dashboard UI5 loads from `https://ui5.sap.com` | Allow that host in CSP, or set `metrics.ui5Url` to a runtime you serve. Re-run `cds add caching-metrics` if you own `app/caching-dashboard/`. See [Dashboard](dashboard.md#where-the-ui5-runtime-comes-from). |
 | `operationTimeout` defaults to **2000 ms** | Raise it for a slow-but-healthy store, lower it for a tighter latency budget, or set `0` for the old unbounded wait. See [Slow and unreachable stores](programmatic-api.md#slow-and-unreachable-stores). |
 

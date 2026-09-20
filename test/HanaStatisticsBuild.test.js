@@ -18,10 +18,12 @@ describe('HANA statistics build artifacts', () => {
         expect(files.some(f => /Caches\.hdbtable$/i.test(f) || f.endsWith('Caches.hdbtable'))).toBe(true);
         expect(/Metrics/i.test(joined)).toBe(true);
         expect(/KeyMetrics/i.test(joined)).toBe(true);
+        expect(/TagMetrics/i.test(joined)).toBe(true);
         // Service projections → views CAP queries as PLUGIN_CDS_CACHING_CACHINGAPISERVICE_*
         expect(files.some(f => /CachingApiService\.Caches\.hdbview$/i.test(f))).toBe(true);
         expect(files.some(f => /CachingApiService\.Metrics\.hdbview$/i.test(f))).toBe(true);
         expect(files.some(f => /CachingApiService\.KeyMetrics\.hdbview$/i.test(f))).toBe(true);
+        expect(files.some(f => /CachingApiService\.TagMetrics\.hdbview$/i.test(f))).toBe(true);
     });
 
     it('CachingApiService projections do not pin @cds.persistence.name (use HDI views)', async () => {

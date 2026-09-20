@@ -28,9 +28,10 @@ describeFromCds(9, 'Security', () => {
             expect(await statusOf(GET(`${API}/Caches`))).to.equal(401)
         })
 
-        it("rejects unauthenticated reads of Metrics and KeyMetrics", async () => {
+        it("rejects unauthenticated reads of Metrics, KeyMetrics, and TagMetrics", async () => {
             expect(await statusOf(GET(`${API}/Metrics`))).to.equal(401)
             expect(await statusOf(GET(`${API}/KeyMetrics`))).to.equal(401)
+            expect(await statusOf(GET(`${API}/TagMetrics`))).to.equal(401)
         })
 
         it("rejects unauthenticated cache entry enumeration", async () => {

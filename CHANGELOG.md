@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+* **metrics:** add opt-in `TagMetrics` dimension keyed by resolved tag string, with `setTagMetricsEnabled` / `clearTagMetrics` on the Caching API
+
+### Documentation
+
+* **migration:** clarify that 3.0 tag "shape" changes only `{hash}` templates; static `{ value }` tags and `deleteByTag` are unchanged
+
 ## [3.0.1](https://github.com/mikezaschka/cds-caching/compare/3.0.0...3.0.1) (2026-09-20)
 
 ### Bug Fixes

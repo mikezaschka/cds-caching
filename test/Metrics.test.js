@@ -16,8 +16,10 @@ describeFromCds(9, 'Cache Metrics - Testing', () => {
         // Reset metrics to known state
         await cache.setMetricsEnabled(false);
         await cache.setKeyMetricsEnabled(false);
+        await cache.setTagMetricsEnabled(false);
         await cache.clearMetrics();
         await cache.clearKeyMetrics();
+        await cache.clearTagMetrics();
     })
 
     // ============================================================================
@@ -181,6 +183,108 @@ describeFromCds(9, 'Cache Metrics - Testing', () => {
                 // Main metrics should still be disabled
                 const stats = await cache.getCurrentMetrics();
                 expect(stats).to.be.null;
+            })
+        })
+
+        describe('Tag Metrics Flag', () => {
+
+            it("should not track tag access when disabled", async () => {
+                await cache.setTagMetricsEnabled(false);
+                await cache.setMetricsEnabled(true);
+
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: "test:tag:disabled", tags: [{ value: "federation:Airports" }] }
+                );
+
+                const tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics).to.be.null;
+            })
+
+            it("should track tag access when enabled for read-through hits and misses", async () => {
+                await cache.setTagMetricsEnabled(true);
+                await cache.setMetricsEnabled(true);
+
+                const options = {
+                    key: "test:tag:enabled",
+                    tags: [{ value: "federation:Airports" }, { value: "custom:extra" }],
+                };
+
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, options);
+                await cache.rt.send(new Request({ event: "getCachedValue", data: { param1: "test1" } }), appService, options);
+
+                const tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics).to.be.instanceof(Map);
+                expect(tagMetrics.has("federation:Airports")).to.be.true;
+                expect(tagMetrics.has("custom:extra")).to.be.true;
+
+                const airports = tagMetrics.get("federation:Airports");
+                expect(airports.misses).to.equal(1);
+                expect(airports.hits).to.equal(1);
+                expect(airports.totalRequests).to.equal(2);
+                expect(airports.hitRatio).to.equal(50);
+
+                // Multi-tag entry: each tag gets its own increment, so tag totals exceed cache totals
+                const cacheStats = await cache.getCurrentMetrics();
+                expect(airports.hits + tagMetrics.get("custom:extra").hits).to.be.greaterThan(cacheStats.hits);
+            })
+
+            it("should track native set/get tags when enabled", async () => {
+                await cache.setTagMetricsEnabled(true);
+
+                await cache.set("test:native:tag", "value", { tags: [{ value: "federation:Partners" }] });
+                await cache.get("test:native:tag");
+
+                const tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics).to.be.instanceof(Map);
+                expect(tagMetrics.has("federation:Partners")).to.be.true;
+                const partners = tagMetrics.get("federation:Partners");
+                expect(partners.nativeSets).to.be.greaterThan(0);
+                expect(partners.nativeHits).to.be.greaterThan(0);
+            })
+
+            it("should track tag access independently of main metrics", async () => {
+                await cache.setTagMetricsEnabled(true);
+                await cache.setMetricsEnabled(false);
+
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "test1" } }),
+                    appService,
+                    { key: "test:tag:independent", tags: [{ value: "federation:Independent" }] }
+                );
+
+                const tagMetrics = await cache.getCurrentTagMetrics();
+                expect(tagMetrics).to.be.instanceof(Map);
+                expect(tagMetrics.has("federation:Independent")).to.be.true;
+
+                const stats = await cache.getCurrentMetrics();
+                expect(stats).to.be.null;
+            })
+
+            it("should persist and query TagMetrics by exact tag string", async () => {
+                await cache.setTagMetricsEnabled(true);
+                await cache.setMetricsEnabled(true);
+
+                const tag = "federation:PersistMe";
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "persist" } }),
+                    appService,
+                    { key: "test:tag:persist", tags: [{ value: tag }] }
+                );
+                await cache.rt.send(
+                    new Request({ event: "getCachedValue", data: { param1: "persist" } }),
+                    appService,
+                    { key: "test:tag:persist", tags: [{ value: tag }] }
+                );
+
+                await cache.persistMetrics();
+
+                const { TagMetrics } = cds.entities('plugin.cds_caching');
+                const row = await SELECT.one.from(TagMetrics).where({ cache: 'caching', tag });
+                expect(row).to.exist;
+                expect(row.hits).to.be.greaterThan(0);
+                expect(row.misses).to.be.greaterThan(0);
             })
         })
     })

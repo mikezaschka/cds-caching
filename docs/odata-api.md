@@ -44,6 +44,7 @@ The OData service provides the following entity sets and functions:
 - `Caches` - Manage cache instances and their operations
 - `Metrics` - Access general cache statistics
 - `KeyMetrics` - Access key-level performance metrics
+- `TagMetrics` - Access tag-level performance metrics (opt-in)
 
 ### Cache Operations
 
@@ -55,8 +56,10 @@ The `Caches` entity provides the following bound operations:
 - `clear()` - Clear all entries in a cache
 - `clearMetrics()` - Clear all metrics data
 - `clearKeyMetrics()` - Clear all key-level metrics
+- `clearTagMetrics()` - Clear all tag-level metrics
 - `setMetricsEnabled(enabled)` - Enable/disable general metrics
 - `setKeyMetricsEnabled(enabled)` - Enable/disable key-level metrics
+- `setTagMetricsEnabled(enabled)` - Enable/disable tag-level metrics
 
 ## Cache Management Endpoints
 
@@ -453,7 +456,7 @@ Because your model is a downstream layer, your annotation takes precedence over 
 
 ### `Caches` is read-only over OData
 
-`Caches` rows carry each cache's `config`, `metricsEnabled`, and `keyMetricsEnabled`. The entity is annotated `@readonly`, so `POST`, `PATCH`, and `DELETE` are rejected — use `setMetricsEnabled` and `setKeyMetricsEnabled` instead. This prevents a caller from silently switching metrics collection on or rewriting a cache's stored configuration.
+`Caches` rows carry each cache's `config`, `metricsEnabled`, `keyMetricsEnabled`, and `tagMetricsEnabled`. The entity is annotated `@readonly`, so `POST`, `PATCH`, and `DELETE` are rejected — use `setMetricsEnabled`, `setKeyMetricsEnabled`, and `setTagMetricsEnabled` instead. This prevents a caller from silently switching metrics collection on or rewriting a cache's stored configuration.
 
 ### Cache names are validated against configuration
 

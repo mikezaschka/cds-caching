@@ -22,7 +22,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - Restrict `CachingApiService` to an administrative role rather than leaving it at the default `authenticated-user`.
 - Set `isLocaleAware: true` for translated content, and `isUserAware: true` where a response varies per user without the query varying. See [what the awareness flags do not cover](#what-the-awareness-flags-do-not-cover).
 - Leave `debugHeaders` off.
-- Decide whether `keyMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics`.
+- Decide whether `keyMetricsEnabled` / `tagMetricsEnabled` is acceptable for your data, and who may read `KeyMetrics` / `TagMetrics`.
 - Apply rate limits in front of the management API if it is externally reachable.
 - Confirm your store's transport and at-rest encryption (Redis TLS, HANA, Postgres), and consider [encrypting cached values](#encrypting-cached-values) where the store is outside your trust boundary.
 
@@ -50,7 +50,7 @@ With CAP's mocked authentication (the default outside production), the API and d
 
 ### `Caches` is read-only over OData
 
-Cache configuration rows are exposed `@readonly`. Metrics flags are changed through the `setMetricsEnabled` and `setKeyMetricsEnabled` actions, which run through the plugin's own logic, rather than by writing to the entity.
+Cache configuration rows are exposed `@readonly`. Metrics flags are changed through the `setMetricsEnabled`, `setKeyMetricsEnabled`, and `setTagMetricsEnabled` actions, which run through the plugin's own logic, rather than by writing to the entity.
 
 ### Cache name validation
 
@@ -252,6 +252,7 @@ Where the data warrants stronger handling than this, the earlier advice still ap
 - `getEntries` returns 100 entries by default and at most 1000 per call.
 - `setEntry` rejects values larger than 1 MB.
 - `metrics.maxKeyMetrics` bounds how many distinct keys are tracked in memory.
+- `metrics.maxTagMetrics` bounds how many distinct tags are tracked in memory.
 
 No rate limiting is applied to the management API — CAP does not provide one. Enforce limits at the approuter, API gateway, or ingress if the API is reachable from outside your landscape.
 

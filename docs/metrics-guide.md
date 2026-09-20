@@ -15,14 +15,14 @@ This guide provides detailed information about the metrics and monitoring capabi
 
 ## Overview
 
-cds-caching provides comprehensive metrics collection to help you monitor and optimize cache performance. The metrics system tracks both general cache performance and individual key performance, providing insights into:
+cds-caching provides comprehensive metrics collection to help you monitor and optimize cache performance. The metrics system tracks general cache performance, individual keys, and (optionally) resolved tags:
 
 - Cache hit rates and efficiency
 - Response latencies and throughput
 - Memory usage and system performance
 - Error rates and failure patterns
 - Key-level performance analysis
-
+- Tag-level performance analysis (opt-in)
 
 ## Configuration
 
@@ -44,9 +44,9 @@ Run `cds deploy` after adding the metrics block so persistence tables exist. See
 When `cds.requires.multitenancy` is set:
 
 - In-memory counters are **partitioned by tenant**. `getCurrentMetrics()` returns the active tenant’s bucket only.
-- Dashboard toggles (`setMetricsEnabled` / `setKeyMetricsEnabled`) are stored as a **per-tenant overlay** on top of the process default from `package.json`.
+- Dashboard toggles (`setMetricsEnabled` / `setKeyMetricsEnabled` / `setTagMetricsEnabled`) are stored as a **per-tenant overlay** on top of the process default from `package.json`.
 - The persistence timer iterates dirty tenants and writes each bucket inside `cds.spawn({ tenant })`, so CAP routes to that tenant’s HDI. Writes are skipped when there is no tenant context.
-- On HANA, enable metrics (or the Caching API) so `cds build` includes the plugin model and emits `Caches` / `Metrics` / `KeyMetrics` tables plus `CachingApiService` views into the tenant deploy — required even if the cache `store` is Redis or memory.
+- On HANA, enable metrics (or the Caching API) so `cds build` includes the plugin model and emits `Caches` / `Metrics` / `KeyMetrics` / `TagMetrics` tables plus `CachingApiService` views into the tenant deploy — required even if the cache `store` is Redis or memory.
 
 See [MTX Hybrid Test](mtx-hybrid-test.md) for a trial/hybrid checklist.
 
@@ -61,6 +61,7 @@ const cache = await cds.connect.to("caching")
 // Enable metrics at runtime
 await cache.setMetricsEnabled(true)
 await cache.setKeyMetricsEnabled(true)
+await cache.setTagMetricsEnabled(true)
 ```
 
 ### Enabling Metrics via OData API
@@ -81,18 +82,26 @@ Content-Type: application/json
 {
   "enabled": true
 }
+
+### Enable tag-level metrics
+POST http://localhost:4004/odata/v4/CachingApiService/Caches('caching')/setTagMetricsEnabled
+Content-Type: application/json
+
+{
+  "enabled": true
+}
 ```
 
 ### Configuration Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `metricsEnabled` | boolean | false | Enable general cache metrics (runtime only) |
-| `keyMetricsEnabled` | boolean | false | Enable key-level metrics tracking (runtime only) |
-| `maxLatencies` | number | 1000 | Maximum number of latency samples to keep in memory |
-| `maxKeyMetrics` | number | 100 | Maximum number of keys to track metrics for |
-
-> **Note**: Metrics configuration is only available at runtime via the programmatic API or OData API. The persistence interval is not configurable and uses a fixed default value.
+| `enabled` | boolean | false | Enable general cache metrics |
+| `keyMetricsEnabled` | boolean | false | Enable key-level metrics tracking |
+| `tagMetricsEnabled` | boolean | false | Enable tag-level metrics tracking |
+| `maxLatencies` | number | 2000 | Maximum number of latency samples to keep in memory |
+| `maxKeyMetrics` | number | 1000 | Maximum number of keys to track metrics for |
+| `maxTagMetrics` | number | 1000 | Maximum number of tags to track metrics for |
 
 ## Metrics Types
 
@@ -296,6 +305,32 @@ Key-level metrics provide detailed performance data for individual cache keys:
 }
 ```
 
+### 3. Tag-Level Metrics
+
+Tag-level metrics are opt-in (`tagMetricsEnabled` / `metrics.tagMetricsEnabled`) and keyed by the **resolved** tag string (e.g. `federation:Airports`). Query with an exact match:
+
+```http
+GET /odata/v4/caching-api/TagMetrics?$filter=tag eq 'federation:Airports' and cache eq 'caching'
+```
+
+An entry can carry several tags. A single hit increments every matching tag row, so **tag totals can exceed cache-level `Metrics` totals** — that is expected.
+
+```javascript
+{
+  ID: "tag:caching:federation:Airports",
+  cache: "caching",
+  tag: "federation:Airports",
+  lastAccess: "2024-01-15T10:30:00Z",
+  period: "current",
+  hits: 120,
+  misses: 30,
+  totalRequests: 150,
+  hitRatio: 80.0,
+  avgHitLatency: 1.5,
+  avgMissLatency: 40.2
+}
+```
+
 ## Accessing Metrics
 
 ### Programmatic Access
@@ -306,7 +341,7 @@ Key-level metrics provide detailed performance data for individual cache keys:
 const cache = await cds.connect.to("caching")
 
 // Get current statistics
-const stats = await cache.getCurrentStats()
+const stats = await cache.getCurrentMetrics()
 console.log('Hit ratio:', stats.hitRatio)
 console.log('Average hit latency:', stats.avgHitLatency)
 console.log('Throughput:', stats.throughput)
@@ -321,6 +356,16 @@ for (const [key, metrics] of keyMetrics) {
         avgHitLatency: metrics.avgHitLatency
     })
 }
+
+// Get current tag metrics (Map keyed by resolved tag string)
+const tagMetrics = await cache.getCurrentTagMetrics()
+for (const [tag, metrics] of tagMetrics) {
+    console.log(`Tag ${tag}:`, {
+        hits: metrics.hits,
+        misses: metrics.misses,
+        hitRatio: metrics.hitRatio
+    })
+}
 ```
 
 #### Historical Metrics
@@ -333,6 +378,9 @@ const historicalStats = await cache.getMetrics(from, to)
 
 // Get key-specific metrics
 const keyStats = await cache.getKeyMetrics('my-cache-key', from, to)
+
+// Get tag-specific metrics
+const tagStats = await cache.getTagMetrics('federation:Airports', from, to)
 ```
 
 #### Runtime Configuration
@@ -341,15 +389,18 @@ const keyStats = await cache.getKeyMetrics('my-cache-key', from, to)
 // Enable/disable metrics at runtime
 await cache.setMetricsEnabled(true)
 await cache.setKeyMetricsEnabled(true)
+await cache.setTagMetricsEnabled(true)
 
 // Get current configuration
 const config = await cache.getRuntimeConfiguration()
 console.log('Metrics enabled:', config.metricsEnabled)
 console.log('Key metrics enabled:', config.keyMetricsEnabled)
+console.log('Tag metrics enabled:', config.tagMetricsEnabled)
 
 // Clear metrics independently (does not affect cached data)
 await cache.clearMetrics()
 await cache.clearKeyMetrics()
+await cache.clearTagMetrics()
 
 // Or clear the cache and metrics together
 await cache.clear({ clearStatistics: true })
@@ -367,6 +418,9 @@ GET http://localhost:4004/odata/v4/caching-api/Metrics?$filter=cache eq 'caching
 
 ### Get key metrics
 GET http://localhost:4004/odata/v4/caching-api/KeyMetrics?$filter=cache eq 'caching'&$orderby=lastAccess desc&$top=10
+
+### Get tag metrics for one federation entity
+GET http://localhost:4004/odata/v4/caching-api/TagMetrics?$filter=tag eq 'federation:Airports' and cache eq 'caching'
 ```
 
 #### Enable/Disable Metrics

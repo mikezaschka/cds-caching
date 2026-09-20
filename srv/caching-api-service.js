@@ -19,7 +19,7 @@ class CachingApiService extends cds.ApplicationService {
         // In MTX mode, lazily create cache entries on first dashboard / API access
         // (skipped at startup because there's no tenant context)
         if (isMultitenantMode()) {
-            this.before('READ', ['Caches', 'Metrics', 'KeyMetrics'], async () => {
+            this.before('READ', ['Caches', 'Metrics', 'KeyMetrics', 'TagMetrics'], async () => {
                 await this._ensureCacheEntries();
             });
         }
@@ -50,6 +50,21 @@ class CachingApiService extends cds.ApplicationService {
                 return true;
             } catch (error) {
                 req.error(`Failed to set key metrics enabled: ${error.message}`);
+                return false;
+            }
+        })
+
+        // Handle setTagMetricsEnabled action
+        this.on('setTagMetricsEnabled', async (req) => {
+            const { enabled } = req.data
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
+            try {
+                await cacheService.setTagMetricsEnabled(enabled)
+                req.info(`Tag metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
+                return true;
+            } catch (error) {
+                req.error(`Failed to set tag metrics enabled: ${error.message}`);
                 return false;
             }
         })
@@ -134,6 +149,15 @@ class CachingApiService extends cds.ApplicationService {
             const cache = this._cacheName(req);
             await cacheService.clearKeyMetrics();
             req.info(`Key metrics cleared successfully: ${cache}`);
+            return true;
+        });
+
+        // Handle clearTagMetrics action
+        this.on('clearTagMetrics', async (req) => {
+            const cacheService = await this._connectToCache(req);
+            const cache = this._cacheName(req);
+            await cacheService.clearTagMetrics();
+            req.info(`Tag metrics cleared successfully: ${cache}`);
             return true;
         });
 

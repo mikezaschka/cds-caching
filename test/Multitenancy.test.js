@@ -274,6 +274,13 @@ describe('Multi-Tenancy Support', () => {
             // Should not throw
             await cache.setKeyMetricsEnabled(true);
         })
+
+        it('should handle setTagMetricsEnabled without tenant context safely', async () => {
+            cds.env.requires.multitenancy = true;
+            cds.context = {};
+            // Should not throw
+            await cache.setTagMetricsEnabled(true);
+        })
     })
 
     describe('Statistics in MTX Mode', () => {

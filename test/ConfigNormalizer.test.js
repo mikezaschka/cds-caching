@@ -56,12 +56,16 @@ describe('getStatisticsHandlerOptions', () => {
             persistenceInterval: 60000,
             maxLatencies: 500,
             keyMetricsEnabled: true,
+            tagMetricsEnabled: true,
+            maxTagMetrics: 200,
         })
         expect(opts).toEqual({
             metricsEnabled: true,
             persistenceInterval: 60000,
             maxLatencies: 500,
             keyMetricsEnabled: true,
+            tagMetricsEnabled: true,
+            maxTagMetrics: 200,
         })
     })
 

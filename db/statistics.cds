@@ -5,10 +5,13 @@ entity Caches {
         config            : String;
         metricsEnabled    : Boolean default false;
         keyMetricsEnabled : Boolean default false;
+        tagMetricsEnabled : Boolean default false;
         metrics           : Composition of many Metrics
                                 on metrics.cache = $self.name;
         keyMetrics        : Composition of many KeyMetrics
                                 on keyMetrics.cache = $self.name;
+        tagMetrics        : Composition of many TagMetrics
+                                on tagMetrics.cache = $self.name;
 }
 
 entity Metrics {
@@ -125,4 +128,57 @@ entity KeyMetrics {
         locale                : String; // Locale information
         timestamp             : DateTime; // When this key was first accessed
         cacheOptions          : String; // JSON string with cache options
+}
+
+/**
+ * Per-tag metrics. Opt-in via `tagMetricsEnabled` / `metrics.tagMetricsEnabled`.
+ *
+ * An entry can carry several tags, so a single hit increments every matching tag
+ * row. Tag totals can therefore exceed cache-level `Metrics` totals — that is
+ * expected, not a bug. Query by the resolved tag string (exact match), e.g.
+ * `tag eq 'federation:Airports'`.
+ */
+entity TagMetrics {
+    key ID                    : String;
+    key cache                 : String;
+    key tag                   : String;
+        lastAccess            : DateTime;
+        period                : String enum {
+            current;
+            hourly;
+            daily;
+        };
+
+        // Read-through metrics (hits and misses only)
+        hits                  : Integer default 0;
+        misses                : Integer default 0;
+        errors                : Integer default 0;
+        totalRequests         : Integer default 0;
+        hitRatio              : Double;
+        cacheEfficiency       : Double;
+
+        // Read-through latency metrics
+        avgHitLatency         : Double;
+        minHitLatency         : Double;
+        maxHitLatency         : Double;
+        avgMissLatency        : Double;
+        minMissLatency        : Double;
+        maxMissLatency        : Double;
+        avgReadThroughLatency : Double;
+
+        // Read-through performance metrics
+        throughput            : Double;
+        errorRate             : Double;
+
+        // Native function metrics (counts only)
+        nativeHits            : Integer default 0;
+        nativeMisses          : Integer default 0;
+        nativeSets            : Integer default 0;
+        nativeDeletes         : Integer default 0;
+        nativeErrors          : Integer default 0;
+        totalNativeOperations : Integer default 0;
+        nativeThroughput      : Double;
+        nativeErrorRate       : Double;
+
+        timestamp             : DateTime;
 }

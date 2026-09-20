@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.1](https://github.com/mikezaschka/cds-caching/compare/3.1.0...3.1.1) (2026-09-20)
+
+### Bug Fixes
+
+* **dashboard:** align API URI with CachingApiService and bump UI5 LTS ([d1c76b6](https://github.com/mikezaschka/cds-caching/commit/d1c76b6fc355baf23ada05ba42e7c718f31cf014)), closes [#32](https://github.com/mikezaschka/cds-caching/issues/32)
+
 ## [3.1.0](https://github.com/mikezaschka/cds-caching/compare/3.0.1...3.1.0) (2026-09-20)
 
 ### Features

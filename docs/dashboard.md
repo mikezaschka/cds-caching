@@ -31,7 +31,7 @@ cds watch
 
 The dashboard is available at [http://localhost:4004/caching-dashboard/index.html](http://localhost:4004/caching-dashboard/index.html).
 
-## Zero-config reuse (CAP reuse & compose)
+## Reuse without copying files (CAP reuse & compose)
 
 To activate the API and dashboard from the installed package without copying files — following CAP's [reuse & compose](https://cap.cloud.sap/docs/guides/integration/reuse-and-compose#reuse-uis) pattern — set `metrics.reuse` on your caching configuration:
 
@@ -149,7 +149,7 @@ annotate plugin.cds_caching.CachingApiService with @requires: 'CacheAdmin';
 
 Your annotation is a downstream layer, so it replaces the plugin default. See [Security](security.md) for the full checklist.
 
-On BTP, `cds add caching-dashboard` additionally generates an `xs-app.json` with `authenticationType: "xsuaa"` for both the UI and `/odata/v4/caching-api/*`.
+On BTP, `cds add caching-dashboard` also generates an `xs-app.json` with `authenticationType: "xsuaa"` for both the UI and `/odata/v4/caching-api/*`.
 
 > **Local development:** with CAP's mocked authentication the dashboard now prompts for credentials. Define users under `cds.requires.auth` to log in during `cds watch`.
 

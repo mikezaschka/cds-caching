@@ -1,6 +1,6 @@
 # cds-caching OData API Reference
 
-This document provides a comprehensive reference for the cds-caching OData API, including all endpoints, request/response formats, and usage examples.
+Endpoints, request and response shapes, and examples for the cds-caching management OData API.
 
 ## Table of Contents
 
@@ -14,15 +14,13 @@ This document provides a comprehensive reference for the cds-caching OData API, 
 
 ## Overview
 
-The cds-caching plugin provides a comprehensive OData API for managing cache operations and accessing metrics data. This API allows external applications, monitoring tools, and administrative interfaces to interact with the cache service.
-
-### Base URL
-
-The API is available at the standard CAP service endpoint:
+The management API is available at the CAP service endpoint:
 
 ```
 http://localhost:4004/odata/v4/caching-api/
 ```
+
+Use it from monitoring tools, admin UIs, or scripts that need to inspect entries, toggle metrics, or clear a cache.
 
 ### Authentication
 

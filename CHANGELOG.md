@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.0.1](https://github.com/mikezaschka/cds-caching/compare/3.0.0...3.0.1) (2026-09-20)
+
 ## [3.0.0](https://github.com/mikezaschka/cds-caching/compare/2.1.0...3.0.0) (2026-08-17)
 
 ### ⚠ BREAKING CHANGES

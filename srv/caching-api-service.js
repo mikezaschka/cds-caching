@@ -1,6 +1,7 @@
 const cds = require('@sap/cds')
 const { isMultitenantMode } = require('../lib/support/MultitenancyDetector')
 const { isPluginModelAvailable } = require('../lib/util')
+const { metricsFlagsFromConfig } = require('../lib/config-normalizer')
 
 const DEFAULT_TENANT = '_default';
 
@@ -232,6 +233,7 @@ class CachingApiService extends cds.ApplicationService {
 
             for (const [name, config] of Object.entries(requires)) {
                 if (config.impl === 'cds-caching') {
+                    const flags = metricsFlagsFromConfig(config);
                     const existing = await SELECT.one.from(Caches).where({ name });
                     if (!existing) {
                         await INSERT.into(Caches).entries({
@@ -240,9 +242,13 @@ class CachingApiService extends cds.ApplicationService {
                                 impl: config.impl,
                                 store: config.store || 'memory',
                                 namespace: config.namespace || name
-                            })
+                            }),
+                            ...flags,
                         });
                         this.log.info(`Created cache entry for: ${name} (lazy init)`);
+                    } else {
+                        // Sync declarative config flags onto rows that were seeded without them.
+                        await UPDATE(Caches, name).with(flags);
                     }
                 }
             }

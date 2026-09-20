@@ -1,6 +1,7 @@
 const {
     normalizeCachingConfig,
     getStatisticsHandlerOptions,
+    metricsFlagsFromConfig,
     detectMisplacedKeyManagement,
     resetDeprecationWarnings,
 } = require('../lib/config-normalizer')
@@ -72,6 +73,27 @@ describe('getStatisticsHandlerOptions', () => {
     it('passes through the metric field length cap', () => {
         const opts = getStatisticsHandlerOptions({ maxMetricFieldLength: 512 })
         expect(opts).toEqual({ maxMetricFieldLength: 512 })
+    })
+})
+
+describe('metricsFlagsFromConfig', () => {
+
+    it('maps metrics.enabled / key / tag flags to Caches columns', () => {
+        expect(metricsFlagsFromConfig({
+            metrics: { enabled: true, keyMetricsEnabled: true, tagMetricsEnabled: true },
+        })).toEqual({
+            metricsEnabled: true,
+            keyMetricsEnabled: true,
+            tagMetricsEnabled: true,
+        })
+    })
+
+    it('defaults all flags to false when metrics are absent', () => {
+        expect(metricsFlagsFromConfig({ impl: 'cds-caching' })).toEqual({
+            metricsEnabled: false,
+            keyMetricsEnabled: false,
+            tagMetricsEnabled: false,
+        })
     })
 })
 

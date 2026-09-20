@@ -50,8 +50,9 @@
         "namespace": "testCache",
         "store": "memory",
         "debugHeaders": true,
-        "metrics": {
+          "metrics": {
           "enabled": true,
+          "tagMetricsEnabled": true,
           "persistenceInterval": 10000,
           "maxLatencies": 1000
         }

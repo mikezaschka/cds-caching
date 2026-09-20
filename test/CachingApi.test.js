@@ -24,6 +24,7 @@ describeFromCds(9, 'Caching API Service', () => {
         // Reset metrics to known state
         await cache.setMetricsEnabled(false);
         await cache.setKeyMetricsEnabled(false);
+        await cache.setTagMetricsEnabled(false);
         await cache.clearMetrics();
         await cache.clearKeyMetrics();
     })

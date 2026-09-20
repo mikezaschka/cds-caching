@@ -1,6 +1,6 @@
 # Key Management
 
-This document explains how cache keys are automatically generated for all cache operations and how you can customize this behavior through global configuration and template overrides.
+How cache keys are built for each operation, and how to change that with global settings or per-call templates.
 
 ## Overview
 
@@ -356,7 +356,7 @@ await cachedOperation("1000001")
 5. **Content Hashing**: A hash is generated from the content being cached (not context)
 6. **Final Key**: The resolved template becomes the final cache key
 
-## Best Practices
+## Practical guidance
 
 ### 1. Configure Global Settings Appropriately
 

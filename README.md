@@ -77,7 +77,7 @@ This uses the in-memory store — no additional setup needed for development.
 
 The plugin ships CDS entity definitions for database-backed features. These load **conditionally** based on your configuration — no manual `model` property needed.
 
-> **Full guide:** [Feature Activation](docs/feature-activation.md) — decision tree, BTP/MTX best practices, and rules for avoiding duplicate model loading.
+> **Full guide:** [Feature Activation](docs/feature-activation.md) — decision tree, BTP/MTX guidance, and rules for avoiding duplicate model loading.
 
 | Option | Entities loaded | Purpose |
 |--------|-----------------|---------|
@@ -258,7 +258,7 @@ For detailed key configuration and deployment instructions, see [Key Management]
 
 The plugin includes `CachingApiService`, an OData service for managing caches, browsing entries, and viewing metrics. It powers the [dashboard](docs/dashboard.md) and can be consumed by any OData client.
 
-See **[Feature Activation](docs/feature-activation.md)** for reuse vs own activation, BTP/MTX best practices, and API authorization.
+See **[Feature Activation](docs/feature-activation.md)** for reuse vs own activation, BTP/MTX guidance, and API authorization.
 
 **Quick reference:**
 

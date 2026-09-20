@@ -1,6 +1,6 @@
 # cds-caching Programmatic API Reference
 
-This document provides a comprehensive reference for the cds-caching programmatic API, including all methods, parameters, and usage examples.
+Methods, parameters, and examples for using cds-caching from CAP application code.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ This document provides a comprehensive reference for the cds-caching programmati
 
 ## Overview
 
-The cds-caching programmatic API provides a rich set of methods for managing cache operations directly in your CAP application code. This API is designed to be intuitive and follows CAP conventions.
+Connect with `cds.connect.to('caching')` (or your configured cache name) and call the methods below. Naming follows CAP conventions.
 
 ### Adapter packages (Redis / SQLite / Compression)
 

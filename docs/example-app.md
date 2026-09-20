@@ -1,12 +1,12 @@
 # Example Application
 
-The cds-caching plugin includes a comprehensive example application that demonstrates various caching use cases.
+The plugin ships an example CAP app under `examples/app/` that exercises the main caching patterns.
 
-For integrating the monitoring dashboard into your own project, see the [Dashboard Guide](dashboard.md) and [Feature Activation Guide](feature-activation.md).
+For adding the monitoring dashboard to your own project, see the [Dashboard Guide](dashboard.md) and [Feature Activation Guide](feature-activation.md).
 
 ## Example App Overview
 
-The example application lives in `examples/app/` and is a CAP application demonstrating caching patterns with annotation-based and programmatic approaches.
+The example app shows annotation-based and programmatic caching side by side.
 
 ## Use Cases
 

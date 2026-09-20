@@ -119,7 +119,7 @@ const { result } = await cache.rt.send(
 )
 ```
 
-Genuine mutations (a `POST`/`PUT`/`PATCH`/`DELETE` without a `SELECT`, or a
+Mutating requests (a `POST`/`PUT`/`PATCH`/`DELETE` without a `SELECT`, or a
 request carrying an `INSERT`/`UPDATE`/`DELETE`/`UPSERT` query) are never cached.
 
 > Alternatively, `cache.rt.run(query, remoteService, …)` caches by query

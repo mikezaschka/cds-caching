@@ -1,6 +1,6 @@
 # cds-caching Metrics Guide
 
-This guide provides detailed information about the metrics and monitoring capabilities in cds-caching, including configuration, data structures, and best practices for optimizing cache performance.
+How cds-caching collects and exposes cache metrics: configuration, data shapes, and how to keep the overhead low.
 
 ## Table of Contents
 
@@ -10,12 +10,12 @@ This guide provides detailed information about the metrics and monitoring capabi
 4. [Data Structures](#data-structures)
 5. [Accessing Metrics](#accessing-metrics)
 6. [Performance Impact](#performance-impact)
-7. [Best Practices](#best-practices)
+7. [Practical guidance](#practical-guidance)
 8. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
-cds-caching provides comprehensive metrics collection to help you monitor and optimize cache performance. The metrics system tracks general cache performance, individual keys, and (optionally) resolved tags:
+Metrics are opt-in. When enabled they track:
 
 - Cache hit rates and efficiency
 - Response latencies and throughput
@@ -465,7 +465,7 @@ Content-Type: application/json
 2. **Staging**: Enable general metrics, disable key metrics
 3. **Production**: Enable general metrics only, use key metrics selectively
 
-## Best Practices
+## Practical guidance
 
 ### 1. Configuration
 
@@ -624,16 +624,4 @@ npm test -- --grep "Metrics"
 # Run performance tests
 npm test -- --grep "Performance"
 ```
-
-## Conclusion
-
-The metrics system in cds-caching provides powerful insights into cache performance. By following the best practices outlined in this guide, you can effectively monitor and optimize your cache usage while minimizing performance impact.
-
-Remember to:
-- Enable metrics selectively based on your needs
-- Monitor key performance indicators regularly
-- Use historical data to identify trends and optimize configuration
-- Implement appropriate alerting and monitoring
-- Regularly review and clean up old metrics data
-- Monitor error counts in metrics for cache health
-- Configure throwOnErrors based on your application's error tolerance 
+ 

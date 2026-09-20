@@ -11,12 +11,11 @@ Do **not** require a full CF MTA deploy. Hybrid only needs two Cloud Foundry ser
 ## 0. Machine
 
 - Node 22, [cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html), `@sap/cds-dk` (`npm i -g @sap/cds-dk`)
-- Clone the sample next to cds-caching:
+- Clone the sample:
 
 ```bash
 cd ~/workspace
 git clone -b caching https://github.com/FabianBerr/featureFlagCaching.git
-# cds-caching already at ~/workspace/cds-caching
 ```
 
 ## 1. BTP trial
@@ -44,15 +43,15 @@ cf services   # both should be create succeeded
 
 Skip xsuaa / saas-registry for hybrid — the sample uses mocked auth locally.
 
-## 4. Wire the plugin under test
+## 4. Use cds-caching 3.0
 
 In `featureFlagCaching/package.json` dependencies:
 
 ```json
-"cds-caching": "file:../cds-caching"
+"cds-caching": "^3.0.0"
 ```
 
-Optional, to exercise metrics persistence:
+Optional, to exercise metrics persistence (under `cds.requires.caching`):
 
 ```json
 "metrics": { "enabled": true, "persistenceInterval": 10000, "reuse": { "api": true } }
@@ -106,7 +105,7 @@ First subscribe provisions the HDI container (can take a few minutes). Tenant HD
 - Tables: `plugin_cds_caching_Caches` / `Metrics` / `KeyMetrics` (and `CacheStore` when `store: cds`)
 - Views: `plugin_cds_caching_CachingApiService_Caches` (and Metrics / KeyMetrics) — OData reads these
 
-After changing the plugin, rebuild (`cds build --production`) and `cds upgrade t1` so those objects land in the tenant. If the app process died (e.g. uncaught timeout after a prior 500), restart `npm run watch:hybrid` before curling again. If subscribe fails or the schema is stale: `cds upgrade t1 --at http://localhost:4005 -u t1:`.
+After changing the sample model or cds-caching version, rebuild (`cds build --production`) and `cds upgrade t1` so those objects land in the tenant. If the app process died (e.g. uncaught timeout after a prior 500), restart `npm run watch:hybrid` before curling again. If subscribe fails or the schema is stale: `cds upgrade t1 --at http://localhost:4005 -u t1:`.
 
 ## 8. Hit the app as a tenant
 
@@ -145,7 +144,7 @@ cds subscribe t1 --to http://localhost:4005 -u t1:
 | `cf create-service` fails | Missing entitlement or wrong space |
 | Subscribe hangs | HANA not mapped to the CF space |
 | Duplicate `cds.xt.MTXServices` on **CF deploy** | Sample / cds-mtxs issue — ignore for hybrid |
-| Startup `db.read` still times out | Not on a plugin build that skips `createCacheEntry` in MTX, or `[hybrid]` missing `multitenancy` |
+| Startup `db.read` still times out | Not on cds-caching ≥ 3.0.0, or `[hybrid]` missing `multitenancy` |
 
 ## Related
 

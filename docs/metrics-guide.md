@@ -385,17 +385,24 @@ const tagStats = await cache.getTagMetrics('federation:Airports', from, to)
 
 #### Runtime Configuration
 
+Metric flags have two layers: `package.json` (`metrics.enabled` / `keyMetricsEnabled` / `tagMetricsEnabled`) is the **seed**, and the `Caches` row stores an optional **operator override**. Effective collection is `override ?? config`. An operator `false` therefore survives restarts even when config says `true`. Pass `null` to clear the override.
+
 ```javascript
-// Enable/disable metrics at runtime
+// Enable/disable metrics at runtime (persists as an operator override)
 await cache.setMetricsEnabled(true)
 await cache.setKeyMetricsEnabled(true)
 await cache.setTagMetricsEnabled(true)
 
-// Get current configuration
+// Clear the override and fall back to package.json
+await cache.setMetricsEnabled(null)
+
+// Effective flags (+ *Override fields for provenance)
 const config = await cache.getRuntimeConfiguration()
 console.log('Metrics enabled:', config.metricsEnabled)
-console.log('Key metrics enabled:', config.keyMetricsEnabled)
-console.log('Tag metrics enabled:', config.tagMetricsEnabled)
+console.log('Override:', config.metricsEnabledOverride)
+
+// Three-layer view (config / override / effective)
+const view = await cache.getMetricsConfigView()
 
 // Clear metrics independently (does not affect cached data)
 await cache.clearMetrics()

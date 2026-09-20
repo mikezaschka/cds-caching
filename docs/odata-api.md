@@ -454,7 +454,7 @@ Because your model is a downstream layer, your annotation takes precedence over 
 
 ### `Caches` is read-only over OData
 
-`Caches` rows carry each cache's `config`, `metricsEnabled`, `keyMetricsEnabled`, and `tagMetricsEnabled`. The entity is annotated `@readonly`, so `POST`, `PATCH`, and `DELETE` are rejected — use `setMetricsEnabled`, `setKeyMetricsEnabled`, and `setTagMetricsEnabled` instead. This prevents a caller from silently switching metrics collection on or rewriting a cache's stored configuration.
+`Caches` rows carry each cache's `config` and nullable metrics **overrides** (`metricsEnabled`, `keyMetricsEnabled`, `tagMetricsEnabled`). OData READ returns the **effective** booleans (override ?? `package.json`) plus `*Config` / `*Override` virtual fields; `Caches(...)/getConfigView()` returns the three-layer view. The entity is annotated `@readonly`, so `POST`, `PATCH`, and `DELETE` are rejected — use `setMetricsEnabled`, `setKeyMetricsEnabled`, and `setTagMetricsEnabled` instead (pass `null` to clear an override). This prevents a caller from silently switching metrics collection on or rewriting a cache's stored configuration.
 
 ### Cache names are validated against configuration
 

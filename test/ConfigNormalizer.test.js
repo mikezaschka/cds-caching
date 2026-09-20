@@ -97,6 +97,49 @@ describe('metricsFlagsFromConfig', () => {
     })
 })
 
+describe('buildMetricsConfigView', () => {
+    const { buildMetricsConfigView } = require('../lib/config-normalizer')
+
+    const raw = {
+        metrics: { enabled: true, tagMetricsEnabled: true },
+    }
+
+    it('uses config when override is null', () => {
+        expect(buildMetricsConfigView(raw, {
+            metricsEnabled: null,
+            keyMetricsEnabled: null,
+            tagMetricsEnabled: null,
+        }).metrics).toEqual({
+            config: true,
+            override: null,
+            effective: true,
+        })
+    })
+
+    it('lets an operator false win over config true', () => {
+        expect(buildMetricsConfigView(raw, {
+            metricsEnabled: false,
+            keyMetricsEnabled: null,
+            tagMetricsEnabled: null,
+        }).metrics).toEqual({
+            config: true,
+            override: false,
+            effective: false,
+        })
+    })
+
+    it('lets an operator true win over config false', () => {
+        expect(buildMetricsConfigView(
+            { metrics: { enabled: false } },
+            { metricsEnabled: true },
+        ).metrics).toEqual({
+            config: false,
+            override: true,
+            effective: true,
+        })
+    })
+})
+
 describe('detectMisplacedKeyManagement', () => {
 
     beforeEach(() => resetDeprecationWarnings())

@@ -1,6 +1,7 @@
 const {
     normalizeCachingConfig,
     getStatisticsHandlerOptions,
+    metricsFlagsFromConfig,
     detectMisplacedKeyManagement,
     resetDeprecationWarnings,
 } = require('../lib/config-normalizer')
@@ -72,6 +73,70 @@ describe('getStatisticsHandlerOptions', () => {
     it('passes through the metric field length cap', () => {
         const opts = getStatisticsHandlerOptions({ maxMetricFieldLength: 512 })
         expect(opts).toEqual({ maxMetricFieldLength: 512 })
+    })
+})
+
+describe('metricsFlagsFromConfig', () => {
+
+    it('maps metrics.enabled / key / tag flags to Caches columns', () => {
+        expect(metricsFlagsFromConfig({
+            metrics: { enabled: true, keyMetricsEnabled: true, tagMetricsEnabled: true },
+        })).toEqual({
+            metricsEnabled: true,
+            keyMetricsEnabled: true,
+            tagMetricsEnabled: true,
+        })
+    })
+
+    it('defaults all flags to false when metrics are absent', () => {
+        expect(metricsFlagsFromConfig({ impl: 'cds-caching' })).toEqual({
+            metricsEnabled: false,
+            keyMetricsEnabled: false,
+            tagMetricsEnabled: false,
+        })
+    })
+})
+
+describe('buildMetricsConfigView', () => {
+    const { buildMetricsConfigView } = require('../lib/config-normalizer')
+
+    const raw = {
+        metrics: { enabled: true, tagMetricsEnabled: true },
+    }
+
+    it('uses config when override is null', () => {
+        expect(buildMetricsConfigView(raw, {
+            metricsEnabled: null,
+            keyMetricsEnabled: null,
+            tagMetricsEnabled: null,
+        }).metrics).toEqual({
+            config: true,
+            override: null,
+            effective: true,
+        })
+    })
+
+    it('lets an operator false win over config true', () => {
+        expect(buildMetricsConfigView(raw, {
+            metricsEnabled: false,
+            keyMetricsEnabled: null,
+            tagMetricsEnabled: null,
+        }).metrics).toEqual({
+            config: true,
+            override: false,
+            effective: false,
+        })
+    })
+
+    it('lets an operator true win over config false', () => {
+        expect(buildMetricsConfigView(
+            { metrics: { enabled: false } },
+            { metricsEnabled: true },
+        ).metrics).toEqual({
+            config: false,
+            override: true,
+            effective: true,
+        })
     })
 })
 

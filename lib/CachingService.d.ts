@@ -35,8 +35,18 @@ export interface StatisticsMetadata {
 }
 
 export interface RuntimeConfiguration {
-  enableStatistics: boolean;
-  enableKeyTracking: boolean;
+  metricsEnabled: boolean;
+  keyMetricsEnabled: boolean;
+  tagMetricsEnabled: boolean;
+  metricsEnabledOverride?: boolean | null;
+  keyMetricsEnabledOverride?: boolean | null;
+  tagMetricsEnabledOverride?: boolean | null;
+  keyManagement?: {
+    isUserAware: boolean;
+    isTenantAware: boolean;
+    isLocaleAware: boolean;
+  };
+  throwOnErrors?: boolean;
 }
 
 export interface CacheStatistics {
@@ -315,19 +325,31 @@ export declare class CachingService extends Service {
   clearTagMetrics(): Promise<void>;
 
   /**
-   * Enable or disable statistics at runtime
+   * Enable or disable statistics at runtime.
+   * Pass `null` to clear the operator override and fall back to package.json.
    */
-  setMetricsEnabled(enabled: boolean): Promise<void>;
+  setMetricsEnabled(enabled: boolean | null): Promise<void>;
 
   /**
-   * Enable or disable key tracking at runtime
+   * Enable or disable key tracking at runtime.
+   * Pass `null` to clear the operator override and fall back to package.json.
    */
-  setKeyMetricsEnabled(enabled: boolean): Promise<void>;
+  setKeyMetricsEnabled(enabled: boolean | null): Promise<void>;
 
   /**
-   * Enable or disable tag tracking at runtime
+   * Enable or disable tag tracking at runtime.
+   * Pass `null` to clear the operator override and fall back to package.json.
    */
-  setTagMetricsEnabled(enabled: boolean): Promise<void>;
+  setTagMetricsEnabled(enabled: boolean | null): Promise<void>;
+
+  /**
+   * Config seed, operator override, and effective value for each metrics flag.
+   */
+  getMetricsConfigView(): Promise<{
+    metrics: { config: boolean; override: boolean | null; effective: boolean };
+    keyMetrics: { config: boolean; override: boolean | null; effective: boolean };
+    tagMetrics: { config: boolean; override: boolean | null; effective: boolean };
+  }>;
 
   /**
    * Persist metrics to database

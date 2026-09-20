@@ -1,5 +1,28 @@
 # Migration Guide
 
+## Upgrading past 3.1.1 (metrics flag precedence)
+
+`Caches.metricsEnabled` / `keyMetricsEnabled` / `tagMetricsEnabled` are now **nullable operator overrides**. Effective collection follows:
+
+```
+effective = (override is true|false) ? override : package.json metrics.*
+```
+
+`package.json` only seeds when the override is `null`. A runtime `setMetricsEnabled(false)` therefore survives restarts even when `metrics.enabled` is `true`. Pass `null` to `setMetricsEnabled` / `setKeyMetricsEnabled` / `setTagMetricsEnabled` to clear the override and fall back to config. OData `GET Caches` returns the **effective** booleans plus `*Config` / `*Override` virtual fields; `Caches(...)/getConfigView()` returns the three-layer view in one call.
+
+### Existing rows
+
+Non-null values already in the table cannot be told apart from seeded defaults vs deliberate toggles. **On upgrade, treat them as stale and reset to `null`** so config becomes the seed again:
+
+```sql
+UPDATE plugin_cds_caching_Caches
+SET metricsEnabled = NULL,
+    keyMetricsEnabled = NULL,
+    tagMetricsEnabled = NULL;
+```
+
+(Table name may vary with the HANA naming scheme your build emits — use the deployed `Caches` table.) Re-apply any intentional runtime toggles via the API or dashboard after deploy. Leaving old values in place freezes config out for every existing install.
+
 ## Upgrading to 3.0
 
 Cache keys and tags change shape in 3.0. **Flush persistent stores after deploy** or 2.x entries linger forever under the default TTL of `0`.

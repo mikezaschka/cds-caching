@@ -16,9 +16,23 @@ context plugin.cds_caching {
     service CachingApiService {
 
         // Writes go through the bound actions below, never through CRUD, so that
-        // config rows (metricsEnabled, config) cannot be tampered with directly.
+        // config rows and metrics overrides cannot be tampered with directly.
+        //
+        // metricsEnabled / keyMetricsEnabled / tagMetricsEnabled on the entity are
+        // nullable operator overrides (null = follow package.json). OData READ
+        // rewrites them to the *effective* value and exposes config/override
+        // provenance via virtual fields and getConfigView().
         @readonly
-        entity Caches     as projection on plugin.cds_caching.Caches
+        entity Caches     as projection on plugin.cds_caching.Caches {
+            *,
+            // CDS 8 needs `virtual null as name` (not `virtual name : Type`).
+            virtual null as metricsEnabledConfig       : Boolean,
+            virtual null as metricsEnabledOverride     : Boolean,
+            virtual null as keyMetricsEnabledConfig    : Boolean,
+            virtual null as keyMetricsEnabledOverride  : Boolean,
+            virtual null as tagMetricsEnabledConfig    : Boolean,
+            virtual null as tagMetricsEnabledOverride  : Boolean
+        }
             actions {
 
                 function getEntries(top : Integer, skip : Integer)             returns array of {
@@ -34,12 +48,34 @@ context plugin.cds_caching {
                     tags      : array of String;
                 };
 
+                /**
+                 * Config seed, operator override, and effective value for each metrics flag.
+                 */
+                function getConfigView()                                       returns {
+                    metrics : {
+                        config    : Boolean;
+                        override  : Boolean;
+                        effective : Boolean;
+                    };
+                    keyMetrics : {
+                        config    : Boolean;
+                        override  : Boolean;
+                        effective : Boolean;
+                    };
+                    tagMetrics : {
+                        config    : Boolean;
+                        override  : Boolean;
+                        effective : Boolean;
+                    };
+                };
+
                 action   setEntry(key : String, value : String, ttl : Integer) returns Boolean;
                 action   deleteEntry(key : String)                             returns Boolean;
                 action   clear()                                               returns Boolean;
                 action   clearMetrics()                                        returns Boolean;
                 action   clearKeyMetrics()                                     returns Boolean;
                 action   clearTagMetrics()                                     returns Boolean;
+                // Pass null to clear the operator override and fall back to package.json.
                 action   setMetricsEnabled(enabled : Boolean)                  returns Boolean;
                 action   setKeyMetricsEnabled(enabled : Boolean)               returns Boolean;
                 action   setTagMetricsEnabled(enabled : Boolean)               returns Boolean;

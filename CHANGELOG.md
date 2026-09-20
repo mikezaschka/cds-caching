@@ -16,11 +16,16 @@
 
 ### Features
 
-* **metrics:** add opt-in `TagMetrics` dimension keyed by resolved tag string, with `setTagMetricsEnabled` / `clearTagMetrics` on the Caching API
+* **metrics:** nullable `Caches` metric flags — DB override wins, package.json seeds; `getConfigView` exposes config / override / effective
 
 ### Documentation
 
+* **migration:** document metrics flag precedence and the recommended null reset for existing `Caches` rows
 * **migration:** clarify that 3.0 tag "shape" changes only `{hash}` templates; static `{ value }` tags and `deleteByTag` are unchanged
+
+### Bug Fixes
+
+* **metrics:** persist / resolve config-driven metric flags so `Caches` matches collection (superseded by nullable override model above)
 
 ## [3.0.1](https://github.com/mikezaschka/cds-caching/compare/3.0.0...3.0.1) (2026-09-20)
 

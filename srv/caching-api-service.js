@@ -1,6 +1,7 @@
 const cds = require('@sap/cds')
 const { isMultitenantMode } = require('../lib/support/MultitenancyDetector')
 const { isPluginModelAvailable } = require('../lib/util')
+const { buildMetricsConfigView } = require('../lib/config-normalizer')
 
 const DEFAULT_TENANT = '_default';
 
@@ -10,6 +11,30 @@ const DEFAULT_ENTRIES_PER_PAGE = 100;
 
 /** Upper bound for a single `setEntry` value, in bytes. */
 const MAX_ENTRY_VALUE_BYTES = 1024 * 1024;
+
+function flagToggleMessage(kind, enabled) {
+    if (enabled === null || enabled === undefined) return `${kind} override cleared`;
+    return `${kind} ${enabled ? 'enabled' : 'disabled'}`;
+}
+
+function enrichCachesRow(row) {
+    if (!row?.name) return;
+    const raw = cds.env.requires?.[row.name] || {};
+    const view = buildMetricsConfigView(raw, {
+        metricsEnabled: row.metricsEnabled,
+        keyMetricsEnabled: row.keyMetricsEnabled,
+        tagMetricsEnabled: row.tagMetricsEnabled,
+    });
+    row.metricsEnabledConfig = view.metrics.config;
+    row.metricsEnabledOverride = view.metrics.override;
+    row.metricsEnabled = view.metrics.effective;
+    row.keyMetricsEnabledConfig = view.keyMetrics.config;
+    row.keyMetricsEnabledOverride = view.keyMetrics.override;
+    row.keyMetricsEnabled = view.keyMetrics.effective;
+    row.tagMetricsEnabledConfig = view.tagMetrics.config;
+    row.tagMetricsEnabledOverride = view.tagMetrics.override;
+    row.tagMetricsEnabled = view.tagMetrics.effective;
+}
 
 class CachingApiService extends cds.ApplicationService {
     log = cds.log('cds-caching');
@@ -24,6 +49,24 @@ class CachingApiService extends cds.ApplicationService {
             });
         }
 
+        // Expose effective flags on Caches READ, plus config/override provenance.
+        this.on('READ', 'Caches', async (req, next) => {
+            const result = await next();
+            if (Array.isArray(result)) result.forEach(enrichCachesRow);
+            else if (result) enrichCachesRow(result);
+            return result;
+        });
+
+        this.on('getConfigView', async (req) => {
+            const name = this._cacheName(req);
+            if (!name || !this._allowedCaches().has(name)) {
+                return req.reject(404, `Unknown cache: ${name}`);
+            }
+            const { Caches } = cds.entities('plugin.cds_caching');
+            const row = await SELECT.one.from(Caches).where({ name });
+            return buildMetricsConfigView(cds.env.requires?.[name] || {}, row || {});
+        });
+
         // Handle setMetricsEnabled action
         this.on('setMetricsEnabled', async (req) => {
             const { enabled } = req.data
@@ -31,7 +74,7 @@ class CachingApiService extends cds.ApplicationService {
             const cache = this._cacheName(req);
             try {
                 await cacheService.setMetricsEnabled(enabled)
-                req.info(`Metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
+                req.info(`${flagToggleMessage('Metrics', enabled)} for cache ${cache}`);
                 return true;
             } catch (error) {
                 req.error(`Failed to set metrics enabled: ${error.message}`);
@@ -46,7 +89,7 @@ class CachingApiService extends cds.ApplicationService {
             const cache = this._cacheName(req);
             try {
                 await cacheService.setKeyMetricsEnabled(enabled)
-                req.info(`Key metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
+                req.info(`${flagToggleMessage('Key metrics', enabled)} for cache ${cache}`);
                 return true;
             } catch (error) {
                 req.error(`Failed to set key metrics enabled: ${error.message}`);
@@ -61,7 +104,7 @@ class CachingApiService extends cds.ApplicationService {
             const cache = this._cacheName(req);
             try {
                 await cacheService.setTagMetricsEnabled(enabled)
-                req.info(`Tag metrics ${enabled ? 'enabled' : 'disabled'} for cache ${cache}`);
+                req.info(`${flagToggleMessage('Tag metrics', enabled)} for cache ${cache}`);
                 return true;
             } catch (error) {
                 req.error(`Failed to set tag metrics enabled: ${error.message}`);
@@ -240,7 +283,10 @@ class CachingApiService extends cds.ApplicationService {
                                 impl: config.impl,
                                 store: config.store || 'memory',
                                 namespace: config.namespace || name
-                            })
+                            }),
+                            metricsEnabled: null,
+                            keyMetricsEnabled: null,
+                            tagMetricsEnabled: null,
                         });
                         this.log.info(`Created cache entry for: ${name} (lazy init)`);
                     }

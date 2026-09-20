@@ -3,9 +3,10 @@ namespace plugin.cds_caching;
 entity Caches {
     key name              : String;
         config            : String;
-        metricsEnabled    : Boolean default false;
-        keyMetricsEnabled : Boolean default false;
-        tagMetricsEnabled : Boolean default false;
+        // Nullable overrides: null = follow package.json metrics.*; true/false = operator decision.
+        metricsEnabled    : Boolean;
+        keyMetricsEnabled : Boolean;
+        tagMetricsEnabled : Boolean;
         metrics           : Composition of many Metrics
                                 on metrics.cache = $self.name;
         keyMetrics        : Composition of many KeyMetrics

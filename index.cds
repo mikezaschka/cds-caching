@@ -21,28 +21,44 @@ context plugin.cds_caching {
         entity Caches     as projection on plugin.cds_caching.Caches
             actions {
 
-                function getEntries(top : Integer, skip : Integer)             returns array of {
+                function getEntries(top: Integer, skip: Integer)            returns array of {
                     entryKey  : String;
                     value     : String;
                     timestamp : DateTime;
                     tags      : array of String;
                 };
 
-                function getEntry(key : String)                                returns {
+                function getEntry(key: String)                              returns {
                     value     : String;
                     timestamp : DateTime;
                     tags      : array of String;
                 };
 
-                action   setEntry(key : String, value : String, ttl : Integer) returns Boolean;
-                action   deleteEntry(key : String)                             returns Boolean;
-                action   clear()                                               returns Boolean;
-                action   clearMetrics()                                        returns Boolean;
-                action   clearKeyMetrics()                                     returns Boolean;
-                action   clearTagMetrics()                                     returns Boolean;
-                action   setMetricsEnabled(enabled : Boolean)                  returns Boolean;
-                action   setKeyMetricsEnabled(enabled : Boolean)               returns Boolean;
-                action   setTagMetricsEnabled(enabled : Boolean)               returns Boolean;
+                action   setEntry(key: String, value: String, ttl: Integer) returns Boolean;
+                action   deleteEntry(key: String)                           returns Boolean;
+                action   clear()                                            returns Boolean;
+                action   clearTagMetrics()                                  returns Boolean;
+                action   setTagMetricsEnabled(enabled: Boolean)             returns Boolean;
+                @Common.SideEffects: {
+                    $Type         : 'Common.SideEffectsType',
+                    TargetEntities: [in.Metrics]
+                }
+                action   clearMetrics()                                     returns Boolean;
+                @Common.SideEffects: {
+                    $Type         : 'Common.SideEffectsType',
+                    TargetEntities: [in.keyMetrics]
+                }
+                action   clearKeyMetrics()                                  returns Boolean;
+                @Common.SideEffects: {
+                    $Type         : 'Common.SideEffectsType',
+                    TargetEntities: [in]
+                }
+                action   setMetricsEnabled(enabled: Boolean)                returns Boolean;
+                @Common.SideEffects: {
+                    $Type         : 'Common.SideEffectsType',
+                    TargetEntities: [in]
+                }
+                action   setKeyMetricsEnabled(enabled: Boolean)             returns Boolean;
             };
 
         @readonly
@@ -56,3 +72,101 @@ context plugin.cds_caching {
 
     }
 }
+
+annotate plugin.cds_caching.CachingApiService.Caches with @(
+    UI.LineItem      : [
+        {
+            $Type: 'UI.DataField',
+            Value: name,
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: metricsEnabled,
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: keyMetricsEnabled,
+        },
+    ],
+    UI.Identification: [
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action: 'plugin.cds_caching.CachingApiService.setMetricsEnabled',
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action: 'plugin.cds_caching.CachingApiService.setKeyMetricsEnabled',
+        },
+    ],
+    UI.Facets        : [{
+        $Type : 'UI.ReferenceFacet',
+        Target: 'metrics/@UI.LineItem',
+    }, ]
+);
+
+annotate plugin.cds_caching.CachingApiService.Metrics with @(UI.LineItem: [
+    {
+        $Type: 'UI.DataField',
+        Value: timestamp,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: avgHitLatency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: avgMissLatency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: errors,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: totalRequests,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: hitRatio,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: throughput,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: errorRate,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: cacheEfficiency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: avgReadThroughLatency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: avgHitLatency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: avgMissLatency,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: hits,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: misses,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: name,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: timestamp,
+    },
+]);

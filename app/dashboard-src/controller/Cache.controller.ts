@@ -10,6 +10,8 @@ import { Button$PressEvent } from "sap/m/Button";
 import { Switch$ChangeEvent } from "sap/m/Switch";
 import Fragment from "sap/ui/core/Fragment";
 import Popover from "sap/m/Popover";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 
 /**
  * @namespace cds.plugin.caching.dashboard.controller
@@ -68,6 +70,8 @@ export default class Cache extends BaseController {
     private loadStatistics(refresh = false): void {
         const table = this.getView().byId("metricsTable") as Table;
         const binding = table.getBinding("rows") as ODataListBinding;
+        const cacheName = this.getAppModel().getProperty("/selectedCache") as string;
+        binding.filter([new Filter("cache", FilterOperator.EQ, cacheName)]);
         if (binding.isSuspended()) {
             binding.resume();
         }
@@ -79,9 +83,8 @@ export default class Cache extends BaseController {
     private loadKeyMetricsData(refresh = false): void {
         const table = this.getView().byId("keyMetricsTable") as Table;
         const binding = table.getBinding("rows") as ODataListBinding;
-        if (binding.isSuspended()) {
-            binding.resume();
-        }
+        const cacheName = this.getAppModel().getProperty("/selectedCache") as string;
+        binding.filter([new Filter("cache", FilterOperator.EQ, cacheName)]);
         if (refresh) {
             binding.refresh();
         }

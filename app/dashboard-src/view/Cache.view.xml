@@ -165,11 +165,6 @@
 						<ui:Table id="metricsTable" rows="{
 								  	path: '/Metrics',
 									suspended: true,
-									filters: [{
-										path: 'cache',
-										operator: 'EQ',
-										value1: '{app>/selectedCache}'
-									}],
 									sorter: {
 										path: 'timestamp',
 										descending: true
@@ -457,12 +452,7 @@
 						</Toolbar>
 						<ui:Table id="keyMetricsTable" rows="{
 								  	path: '/KeyMetrics',
-									suspended: true,
-									filters: [{
-										path: 'cache',
-										operator: 'EQ',
-										value1: '{app>/selectedCache}'
-									}]
+									suspended: true
 								  }" 
 								  rowMode="Auto" 
 								  selectionMode="Single"

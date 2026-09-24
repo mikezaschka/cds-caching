@@ -3,7 +3,7 @@ const { fs, path } = cds.utils;
 const CachingService = require('./lib/CachingService')
 const { scanCachingAnnotations } = require('./lib/util')
 const { getCachingRequiresEntries, detectMisplacedKeyManagement } = require('./lib/config-normalizer')
-const { resolvePluginRoots } = require('./lib/plugin-roots')
+const { resolvePluginRoots, injectRootsUnlessGenSrvMode } = require('./lib/plugin-roots')
 
 const LOG = cds.log("cds-caching");
 
@@ -31,8 +31,14 @@ const { roots: pluginRoots, reuseDashboard, warnings } = resolvePluginRoots({
     srvFolder: cds.env.folders?.srv || 'srv',
     normalizedConfigs,
 })
-for (const root of pluginRoots) {
-    if (!cds.env.roots.includes(root)) cds.env.roots.push(root)
+const injected = injectRootsUnlessGenSrvMode(
+    cds.root,
+    cds.env.folders?.srv || 'srv',
+    pluginRoots,
+    cds.env.roots
+)
+if (!injected && pluginRoots.length > 0) {
+    LOG.debug('gen/srv CSN detected — skipping absolute root injection to prevent CDS 10 duplicate definition errors')
 }
 for (const message of warnings) LOG.warn(message)
 

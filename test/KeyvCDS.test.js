@@ -207,6 +207,20 @@ describeFromCds(9, 'KeyvCDS Store Adapter', () => {
             const result = await cache.get('rapid')
             expect(result).to.equal('second')
         })
+
+        // Regression for #44: concurrent writers to the SAME key must not
+        // collide on the CacheStore primary key. The old read-then-insert
+        // path made parallel writers all take the INSERT branch and throw a
+        // unique-constraint violation; the UPSERT path is last-write-wins.
+        it('should handle many parallel set operations on the same key', async () => {
+            const promises = []
+            for (let i = 0; i < 20; i++) {
+                promises.push(cache.set('same-key', `value-${i}`))
+            }
+            await Promise.all(promises)
+            const result = await cache.get('same-key')
+            expect(result).to.match(/^value-\d+$/)
+        })
     })
 
     describe('Edge Cases', () => {
